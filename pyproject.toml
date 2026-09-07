@@ -53,6 +53,7 @@ dependencies = [
     "sentencepiece",
     "vllm>=0.22.0",
     "matplotlib-venn>=1.1.2",
+    "trident",
 ]
 
 
@@ -75,3 +76,6 @@ explicit = true
 torch = { index = "pytorch-cu130" }
 torchvision = { index = "pytorch-cu130" }
 torchaudio = { index = "pytorch-cu130" }
+# PyPI's "trident" is an unrelated astrophysics package (trident-project.org);
+# the WSI toolkit (mahmoodlab/TRIDENT) is git-only, pinned to its v0.3.2 tag.
+trident = { git = "https://github.com/mahmoodlab/TRIDENT.git", tag = "v0.3.2" }

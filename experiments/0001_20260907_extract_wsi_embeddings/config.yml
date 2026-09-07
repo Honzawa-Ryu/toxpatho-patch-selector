@@ -1,0 +1,24 @@
+# ============================================================
+# Experiment Configuration — 0001_extract_wsi_embeddings
+# ============================================================
+# One TRIDENT (mahmoodlab/TRIDENT) pass over all local Liver WSIs:
+# tissue segmentation -> patch coordinates -> patch embeddings.
+# RUN_MODE is "single" (see run_slurm.sh) — nothing here is swept.
+# ============================================================
+
+seed: 42
+
+# --- Data ---
+organ: "Liver"
+pathological_image_csv: "corrected/open_tggates_pathological_image.csv"
+individual_csv: "corrected/open_tggates_individual.csv"
+
+# --- TRIDENT pipeline (run_batch_of_slides.py flags) ---
+trident_task: "all"          # seg -> coords -> feat in one call
+segmenter: "hest"             # TRIDENT's default tissue segmenter
+reader_type: "openslide"      # explicit reader for .svs (Aperio) files
+mag: 20.0                     # magnification level to tile at
+patch_size: 256                # patch side length (px) at `mag`
+overlap: 0                     # pixel overlap between adjacent patches
+patch_encoder: "uni_v2"        # UNI2-h — gated on HuggingFace, needs HF_TOKEN
+gpus: [0]
