@@ -11,6 +11,15 @@ set -uo pipefail
 # Resolve absolute path of the project root
 PROJECT_ROOT="${SLURM_SUBMIT_DIR}"
 
+# .env（.gitignore対象）があれば読み込む。SIF_PATH未設定ならプロジェクト固有
+# イメージの既定パスにフォールバックする（scripts/slurm_entry.shと同じ設計）。
+if [ -f "${PROJECT_ROOT}/.env" ]; then
+    set -a
+    source "${PROJECT_ROOT}/.env"
+    set +a
+fi
+SIF_PATH="${SIF_PATH:-${PROJECT_ROOT}/env/env.sif}"
+
 echo "=========================================="
 echo "Starting uv sync on compute node..."
 echo "Project Root: ${PROJECT_ROOT}"
