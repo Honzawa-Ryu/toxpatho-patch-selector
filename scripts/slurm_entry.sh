@@ -35,6 +35,16 @@ if [ -z "${EXP_NAME:-}" ]; then
     _bootstrap_fail "MISSING_EXP_NAME" "EXP_NAME is not set. Source slurm_entry.sh from an experiment run_slurm.sh."
 fi
 
+# .env（.gitignore対象、プロジェクトルート直下）があれば読み込む。
+# SIF_PATH未設定ならプロジェクト固有イメージの既定パスにフォールバックする
+# （toxpatho-ssl-comparison等の兄弟プロジェクトと同じ設計）。
+if [ -f "${PROJECT_ROOT}/.env" ]; then
+    set -a
+    source "${PROJECT_ROOT}/.env"
+    set +a
+fi
+SIF_PATH="${SIF_PATH:-${PROJECT_ROOT}/env/env.sif}"
+
 # =====================================================
 # Scheduler abstraction
 # =====================================================
