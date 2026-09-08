@@ -28,3 +28,11 @@ review-expで結果を集約する際、debug-experimentで調査する際は、
 - UNI2-h（`uni_v2`）はHuggingFace上でgatedなモデル。`HF_TOKEN`環境変数（既にシェルにexport済み）が
   `#SBATCH --export=ALL`経由でジョブに引き継がれる前提。トークンにUNI2-hへのアクセスが
   承認されていないと `run_batch_of_slides` がダウンロード段階で失敗する。
+- TRIDENT v0.3.2は`run_batch_of_slides`/`run_single_slide`/`trident batch`/`trident single`の
+  console scriptが全て壊れている（`pyproject.toml`の`[tool.poetry.scripts]`がルート直下の
+  `run_batch_of_slides.py`等をentry pointに指定しているが、poetryのビルドがそのファイルを
+  パッケージに含めていないため、インストール後は`ModuleNotFoundError: No module named
+  'run_batch_of_slides'`で必ず落ちる。アップストリームのパッケージングバグ、v0.3.2固定なら
+  再発する）。回避策として`run_batch_of_slides.py`（`trident`パッケージ以外への依存なし）を
+  `libraries/trident_run_batch_of_slides.py`にvendoringし、`.venv`のpythonで直接実行している
+  （`experiment.py`の`run_trident_pipeline()`参照）。今後TRIDENTを呼ぶ実験でも同じ回避策が要る。

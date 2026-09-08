@@ -73,6 +73,7 @@ def run_trident_pipeline(
     wsi_dir: Path,
     job_dir: Path,
     *,
+    trident_script: Path,
     task: str,
     segmenter: str,
     reader_type: str,
@@ -85,10 +86,15 @@ def run_trident_pipeline(
     """Run TRIDENT's full pipeline (segmentation -> coords -> features) once
     over every .svs under wsi_dir, writing into job_dir.
 
-    Implement this as a subprocess call to the `run_batch_of_slides` console
-    script that `pip install`ing the `trident` package puts on PATH (see
-    pyproject.toml's [tool.uv.sources] entry — this is mahmoodlab/TRIDENT,
-    NOT the unrelated PyPI package also named "trident").
+    Runs `trident_script` (libraries/trident_run_batch_of_slides.py — a
+    vendored copy of TRIDENT's own run_batch_of_slides.py, see that file's
+    docstring) with the current interpreter, instead of the `run_batch_of_slides`
+    console script that `pip install`ing the `trident` package puts on PATH:
+    that console script is broken (ModuleNotFoundError) because TRIDENT
+    v0.3.2's packaging never bundles the root-level module its own entry
+    point points at. pyproject.toml's [tool.uv.sources] entry still installs
+    `trident` itself from mahmoodlab/TRIDENT (NOT the unrelated PyPI package
+    also named "trident") — only the console-script wrapper is unusable.
 
     Required flags for this experiment:
         --task <task>               ("all" = segmenter -> coords -> feat in one call)
@@ -118,7 +124,7 @@ def run_trident_pipeline(
     TRIDENT run must not be recorded as complete_run() in main().
     """
     argv = [
-        "run_batch_of_slides",
+        sys.executable, str(trident_script),
         "--task", task,
         "--wsi_dir", str(wsi_dir),
         "--search_nested",
@@ -186,6 +192,7 @@ def main() -> None:
     run_trident_pipeline(
         wsi_dir,
         job_dir,
+        trident_script=project_root / "libraries" / "trident_run_batch_of_slides.py",
         task=config.get("trident_task", "all"),
         segmenter=config.get("segmenter", "hest"),
         reader_type=config.get("reader_type", "openslide"),
