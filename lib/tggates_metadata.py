@@ -8,6 +8,10 @@ from pathlib import Path
 
 import pandas as pd
 
+# open_tggates_pathology.csv の GRADE_TYPE に出る値の重症度順。
+# "P" (present) は等級が付いていないことを表すので、この順序には載せない。
+GRADE_ORDER = {"minimal": 1, "slight": 2, "moderate": 3, "severe": 4}
+
 
 def build_liver_slide_manifest(
     wsi_dir: Path,
@@ -133,3 +137,105 @@ def build_liver_slide_manifest(
     manifest = manifest[columns].sort_values("slide_id").reset_index(drop=True)
 
     return manifest
+
+
+def _as_int_key(series: pd.Series) -> pd.Series:
+    """Normalize a TG-GATEs ID column to int so joins across tables line up.
+
+    open_tggates_*.csv holds zero-padded IDs (EXP_ID="0117", GROUP_ID="01").
+    pandas strips the padding when it infers an int dtype, but any caller that
+    reads with dtype=str keeps it — and merging a padded "0117" against an
+    unpadded 117 matches zero rows *silently*, which looks exactly like
+    "this slide has no findings". Force both sides through int here.
+    """
+    return pd.to_numeric(series, errors="raise").astype(int)
+
+
+def attach_pathology_findings(
+    manifest: pd.DataFrame,
+    pathology_csv: Path,
+    organ: str = "Liver",
+) -> pd.DataFrame:
+    """Add per-slide pathology findings to a slide manifest.
+
+    Args:
+        manifest: Output of build_liver_slide_manifest() — one row per slide,
+            with exp_id / group_id / individual_id identifying the animal.
+        pathology_csv: Path to open_tggates_pathology.csv. One row per
+            (animal, finding): EXP_ID, GROUP_ID, INDIVIDUAL_ID, ORGAN,
+            FINDING_TYPE, TOPOGRAPHY_TYPE, GRADE_TYPE (minimal/slight/
+            moderate/severe/P), SP_FLG ("true" when the finding is regarded
+            as spontaneous/background rather than treatment-related).
+        organ: Organ to filter the pathology table to.
+
+    Returns:
+        A copy of manifest with these columns added (one row per slide,
+        row count and order unchanged):
+            n_findings:      number of finding rows for that animal
+            has_finding:     n_findings > 0
+            finding_types:   sorted unique FINDING_TYPE values (list[str])
+            finding_sites:   sorted unique "FINDING_TYPE @ TOPOGRAPHY_TYPE" strings.
+                             Keep these: one finding name covers several
+                             different lesions and the topography is what
+                             separates them — "Hypertrophy" spans hypertrophy
+                             of bile duct epithelium, hepatocytes, Ito cells
+                             and Kupffer cells, which are not the same thing.
+            max_grade:       the most severe GRADE_TYPE present, or None when
+                             the slide has no graded finding (findings that
+                             only carry "P" leave this None while has_finding
+                             stays True)
+            max_grade_ord:   max_grade mapped through GRADE_ORDER (NA if None)
+            n_findings_treatment_related: findings with SP_FLG != true
+
+    Note:
+        An animal with no row in the pathology table is a genuine negative
+        (no finding recorded), not a join failure — unlike the manifest join
+        in build_liver_slide_manifest(), a missing match here is expected and
+        is filled with 0 / False / [] rather than raising.
+    """
+    key = ["exp_id", "group_id", "individual_id"]
+
+    findings = pd.read_csv(pathology_csv)
+    findings = findings[findings["ORGAN"] == organ].copy()
+    findings = findings.rename(
+        columns={"EXP_ID": "exp_id", "GROUP_ID": "group_id", "INDIVIDUAL_ID": "individual_id"}
+    )
+    for col in key:
+        findings[col] = _as_int_key(findings[col])
+
+    out = manifest.copy()
+    for col in key:
+        out[col] = _as_int_key(out[col])
+
+    findings["grade_ord"] = findings["GRADE_TYPE"].map(GRADE_ORDER)
+    findings["is_treatment_related"] = (
+        findings["SP_FLG"].astype(str).str.lower() != "true"
+    )
+    findings["finding_site"] = (
+        findings["FINDING_TYPE"].astype(str)
+        + " @ "
+        + findings["TOPOGRAPHY_TYPE"].fillna("unspecified").astype(str)
+    )
+
+    per_animal = findings.groupby(key).agg(
+        n_findings=("FINDING_TYPE", "size"),
+        finding_types=("FINDING_TYPE", lambda s: sorted(set(s))),
+        finding_sites=("finding_site", lambda s: sorted(set(s))),
+        max_grade_ord=("grade_ord", "max"),
+        n_findings_treatment_related=("is_treatment_related", "sum"),
+    )
+
+    out = out.merge(per_animal, on=key, how="left")
+
+    out["n_findings"] = out["n_findings"].fillna(0).astype(int)
+    out["n_findings_treatment_related"] = (
+        out["n_findings_treatment_related"].fillna(0).astype(int)
+    )
+    out["has_finding"] = out["n_findings"] > 0
+    for col in ["finding_types", "finding_sites"]:
+        out[col] = out[col].apply(lambda v: v if isinstance(v, list) else [])
+
+    ord_to_grade = {v: k for k, v in GRADE_ORDER.items()}
+    out["max_grade"] = out["max_grade_ord"].map(ord_to_grade)
+
+    return out
