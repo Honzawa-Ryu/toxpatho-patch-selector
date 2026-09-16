@@ -1,0 +1,33 @@
+# ============================================================
+# Experiment Configuration — 0002_control_contrast_patch_scoring
+# ============================================================
+# Control群のpatch embedding分布からの逸脱でpatchを採点し、それが病理所見を
+# どの程度拾えているかを測る。設計の背景は同ディレクトリの plan.md を参照。
+# RUN_MODE は "single"（run_slurm.sh）— ここにあるものは何も掃引しない。
+# ============================================================
+
+seed: 42
+
+# --- 入力（0001の出力をそのまま読む） ---
+source_experiment: "0001_20260907_extract_wsi_embeddings"
+manifest_relpath: "trident_all_slides/slide_manifest.parquet"
+features_relpath: "trident_job/20x_256px_0px_overlap/features_uni_v2"
+pathology_csv: "corrected/open_tggates_pathology.csv"
+organ: "Liver"
+
+# --- 前処理 ---
+# L2正規化してからPCA。スライド間の染色濃度差が距離を支配しないようにする。
+# PCAはcontrol patchのみで学習する（「正常肝の張る空間」を基準にするため）。
+l2_normalize: true
+pca_components: 64
+pca_patches_per_slide: 1000
+
+# --- patchスコアリング ---
+knn_k: 10                  # bank内の最近傍何個との平均距離を使うか
+bank_size: 100000          # bankが大きい場合のサブサンプル上限（全control用）
+query_chunk: 4096          # GPUに載せる距離行列のクエリ側チャンク幅
+mahalanobis_ridge: 1.0e-3  # 共分散に足すridge（bankの平均分散に対する比）
+
+# --- 集約・評価 ---
+top_k_pcts: [1, 5, 10]     # slideスコア = 上位k%patchの平均
+n_top_patches: 20          # 0003の可視化・偽陽性確認用に残す上位patch数
