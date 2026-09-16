@@ -1,0 +1,100 @@
+finding_site,compound_name,n_animals,rank_in_site,tier
+Hypertrophy @ Centrilobular,benzbromarone,50,1,1
+Hypertrophy @ Centrilobular,ticlopidine,41,2,1
+Hypertrophy @ Centrilobular,thioacetamide,40,3,1
+Hypertrophy @ Centrilobular,phenobarbital,35,4,2
+Hypertrophy @ Centrilobular,diltiazem,35,5,2
+Hypertrophy @ Centrilobular,bendazac,34,6,2
+"Change, eosinophilic @ Centrilobular",aspirin,23,1,1
+"Change, eosinophilic @ Centrilobular",bucetin,14,2,1
+"Change, eosinophilic @ Centrilobular",disopyramide,14,3,1
+"Change, eosinophilic @ Centrilobular",ethionine,10,4,2
+"Change, eosinophilic @ Centrilobular",ethambutol,9,5,2
+"Change, eosinophilic @ Centrilobular",clomipramine,9,6,2
+Ground glass appearance @ Centrilobular,hexachlorobenzene,40,1,1
+Ground glass appearance @ Centrilobular,promethazine,31,2,1
+Ground glass appearance @ Centrilobular,papaverine,23,3,1
+Ground glass appearance @ Centrilobular,benzbromarone,22,4,2
+Ground glass appearance @ Centrilobular,phenobarbital,22,5,2
+Ground glass appearance @ Centrilobular,ethambutol,22,6,2
+Increased mitosis @ Hepatocyte,WY-14643,18,1,1
+Increased mitosis @ Hepatocyte,methapyrilene,15,2,1
+Increased mitosis @ Hepatocyte,gemfibrozil,13,3,1
+Increased mitosis @ Hepatocyte,hexachlorobenzene,11,4,2
+Increased mitosis @ Hepatocyte,fenofibrate,10,5,2
+Increased mitosis @ Hepatocyte,methylene dianiline,9,6,2
+Hypertrophy @ Hepatocyte,methapyrilene,33,1,1
+Hypertrophy @ Hepatocyte,methylene dianiline,23,2,1
+Hypertrophy @ Hepatocyte,phenytoin,22,3,1
+Hypertrophy @ Hepatocyte,imipramine,21,4,2
+Hypertrophy @ Hepatocyte,chloramphenicol,19,5,2
+Hypertrophy @ Hepatocyte,amitriptyline,16,6,2
+Single cell necrosis @ Hepatocyte,methapyrilene,25,1,1
+Single cell necrosis @ Hepatocyte,thioacetamide,16,2,1
+Single cell necrosis @ Hepatocyte,ethambutol,14,3,1
+Single cell necrosis @ Hepatocyte,acetamide,12,4,2
+Single cell necrosis @ Hepatocyte,methylene dianiline,10,5,2
+Single cell necrosis @ Hepatocyte,lomustine,6,6,2
+"Vacuolization, cytoplasmic @ Hepatocyte",amitriptyline,16,1,1
+"Vacuolization, cytoplasmic @ Hepatocyte",diltiazem,16,2,1
+"Vacuolization, cytoplasmic @ Hepatocyte",ethinylestradiol,16,3,1
+"Vacuolization, cytoplasmic @ Hepatocyte",imipramine,13,4,2
+"Vacuolization, cytoplasmic @ Hepatocyte",hydroxyzine,9,5,2
+"Vacuolization, cytoplasmic @ Hepatocyte",amiodarone,7,6,2
+Swelling @ Centrilobular,acetamidofluorene,60,1,1
+Swelling @ Centrilobular,sulfasalazine,22,2,1
+Swelling @ Centrilobular,clofibrate,20,3,1
+Swelling @ Centrilobular,griseofulvin,4,4,2
+Swelling @ Centrilobular,acetaminophen,3,5,2
+Swelling @ Centrilobular,cimetidine,3,6,2
+"Hematopoiesis, extramedullary @ unspecified",phenacetin,12,1,1
+"Hematopoiesis, extramedullary @ unspecified",mefenamic acid,6,2,1
+"Hematopoiesis, extramedullary @ unspecified",lornoxicam,4,3,1
+"Hematopoiesis, extramedullary @ unspecified",sulindac,4,4,2
+"Hematopoiesis, extramedullary @ unspecified",meloxicam,3,5,2
+Anisonucleosis @ Hepatocyte,acetamide,19,1,1
+Anisonucleosis @ Hepatocyte,methapyrilene,16,2,1
+Anisonucleosis @ Hepatocyte,ethambutol,7,3,1
+Anisonucleosis @ Hepatocyte,nitrosodiethylamine,5,4,2
+"Degeneration, granular, eosinophilic @ Hepatocyte",WY-14643,60,1,1
+"Degeneration, granular, eosinophilic @ Hepatocyte",fenofibrate,46,2,1
+"Degeneration, granular, eosinophilic @ Hepatocyte",gemfibrozil,30,3,1
+"Degeneration, granular, eosinophilic @ Hepatocyte",lomustine,10,4,2
+Cellular infiltration @ Centrilobular,carbon tetrachloride,52,1,1
+Cellular infiltration @ Centrilobular,acetaminophen,13,2,1
+Cellular infiltration @ Centrilobular,ethionine,7,3,1
+Cellular infiltration @ Centrilobular,bromobenzene,3,4,2
+"Proliferation, bile duct @ Periportal",acetamidofluorene,50,1,1
+"Proliferation, bile duct @ Periportal",naphthyl isothiocyanate,19,2,1
+"Proliferation, bile duct @ Periportal",nitrosodiethylamine,8,3,1
+"Proliferation, bile duct @ Periportal",allyl alcohol,5,4,2
+Cellular foci @ unspecified,acetamidofluorene,13,1,1
+Cellular foci @ unspecified,thioacetamide,8,2,1
+Cellular foci @ unspecified,nitrosodiethylamine,3,3,1
+"Change, acidophilic @ Hepatocyte",acetamide,28,1,1
+"Change, acidophilic @ Hepatocyte",monocrotaline,13,2,1
+"Change, acidophilic @ Hepatocyte",naphthyl isothiocyanate,13,3,1
+"Hematopoiesis, extramedullary @ Sinusoid",ibuprofen,14,1,1
+"Hematopoiesis, extramedullary @ Sinusoid",iproniazid,11,2,1
+"Hematopoiesis, extramedullary @ Sinusoid",naproxen,8,3,1
+Fibrosis @ Centrilobular,carbon tetrachloride,22,1,1
+Fibrosis @ Centrilobular,monocrotaline,11,2,1
+Fibrosis @ Centrilobular,thioacetamide,5,3,1
+Fibrosis @ Periportal,naphthyl isothiocyanate,12,1,1
+Fibrosis @ Periportal,monocrotaline,10,2,1
+Fibrosis @ Periportal,allyl alcohol,7,3,1
+"Proliferation, bile duct @ unspecified",methylene dianiline,30,1,1
+"Proliferation, bile duct @ unspecified",lomustine,12,2,1
+"Proliferation, bile duct @ unspecified",thioacetamide,5,3,1
+Single cell necrosis @ Centrilobular,ethionamide,12,1,1
+Single cell necrosis @ Centrilobular,phalloidin,9,2,1
+Single cell necrosis @ Centrilobular,theophylline,3,3,1
+"Deposit, pigment @ Kupffer cell",iproniazid,14,1,1
+"Deposit, pigment @ Kupffer cell",ethambutol,6,2,1
+"Deposit, pigment @ Kupffer cell",methylene dianiline,5,3,1
+Cellular infiltration @ Periportal,naphthyl isothiocyanate,20,1,1
+Cellular infiltration @ Periportal,acetamidofluorene,18,2,1
+Cellular infiltration @ Periportal,allyl alcohol,7,3,1
+"Change, eosinophilic @ Hepatocyte",methylene dianiline,14,1,1
+"Change, eosinophilic @ Hepatocyte",thioacetamide,5,2,1
+"Change, eosinophilic @ Hepatocyte",rosiglitazone maleate,3,3,1

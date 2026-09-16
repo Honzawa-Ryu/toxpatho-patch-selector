@@ -36,3 +36,75 @@ review-expで結果を集約する際、debug-experimentで調査する際は、
   再発する）。回避策として`run_batch_of_slides.py`（`trident`パッケージ以外への依存なし）を
   `libraries/trident_run_batch_of_slides.py`にvendoringし、`.venv`のpythonで直接実行している
   （`experiment.py`の`run_trident_pipeline()`参照）。今後TRIDENTを呼ぶ実験でも同じ回避策が要る。
+
+## 0002_20260912_control_contrast_patch_scoring
+
+- 設計は `experiments/0002_20260912_control_contrast_patch_scoring/plan.md` にある。
+- **join keyのゼロ埋めに注意**: `open_tggates_pathology.csv` / `open_tggates_pathological_image.csv` を
+  `dtype=str` で読むと `EXP_ID="0117"`, `GROUP_ID="01"` のようにゼロ埋めされた文字列になるが、
+  `slide_manifest.parquet` 側は int（`117`, `1`）で入っている。素朴に文字列同士でmergeすると
+  1行もマッチせず「全219枚が所見なし」という無言の誤った結果になる。両側を int に正規化してから結合すること。
+- **手元のWSIは反復投与のControl群のみ完備**。Highは150枚中59枚（4day 0/40, 8day 15/40,
+  15day 19/39, 29day 25/31）、Low/Middleは0枚。`data/corrected/open_tggates_pathological_image.csv` の
+  `FILE_LOCATION`（ftp URL）から追加DL可能。DLする場合は 4/8/15/29 day の Liver のみで、
+  既存の `data/TGGATEs/WSI/Liver/<N>_day/` 構造に合わせて置くこと。
+- 現データではHigh群の58/59が所見ありで、Control群の157/160が所見なし。つまり
+  「所見の有無」と「投与群」がほぼ同義になっており、スコアが所見を捉えているのか
+  投与群のbatch差を捉えているのかを分離できない。Low/Middle追加が本質的な解決になる。
+- CPUだけの軽い確認を `srun` で流す場合、このプロジェクトは `/workspace/andre01` 配下なので
+  `small-andre01` 等の andre01 パーティションを使う。`*-o` 系（small-creator-o 等）は
+  `/workspace/filesrv01|02` からしか投入できず `Error: *-o jobs must run from ...` で弾かれる。
+
+## 0003_20260912_control_absent_cluster_mining
+
+- 設計は `experiments/0003_20260912_control_absent_cluster_mining/plan.md`。
+  「patch embeddingをクラスタリングし、Controlにほぼ現れないクラスタを引けば所見特有の
+  形態が取れるのではないか」という仮説の検証。0002（距離ベース）とは別物で、
+  0002が苦手なびまん性所見（phenobarbital等）を頻度ベースで拾えるかが焦点。
+- **PCAをcontrol patchのみで学習してはいけない**（0002はそうしている）。所見特有の方向は
+  controlでの分散が小さく、control限定のPCAでは削られる可能性がある。拾いたいものを
+  前処理で消すことになるので、controlと投与群を均等にサンプルして学習する。
+- **クラスタ占有率の群間比較はスライド単位で行う**。同一スライドのpatchは独立ではないので、
+  patch単位で検定するとn=数百万になり些細な差でも有意になる（pseudo-replication）。
+- control欠損クラスタには染色ムラ・気泡・ペンマーク等の単一スライド由来アーチファクトが
+  必ず混ざる。クラスタごとの寄与スライド数・寄与化合物数を必ず出し、1〜2枚に集中している
+  ものは候補から外すこと。
+
+## 0005_20260913_stain_normalized_embeddings
+
+- 0004で、病変の無いcontrol同士が由来する実験で有意に分離することが分かった
+  （silhouette 0.175, z=31.9）。染色バッチが埋め込みに乗っているため、Macenko正規化
+  （`lib/stain.py`）してから同じエンコーダで埋め込み直す。座標は0001の計算結果を再利用する
+  （画素値を変えてもセグメンテーションとタイル分割は変わらないため）。
+- **抽出経路は0001と完全に一致していることを確認済み**: 正規化を切って抽出した特徴量と
+  0001の特徴量のcos類似度が1.0000。`trident.patch_encoder_models.load.encoder_factory`
+  と `encoder.eval_transforms` をそのまま使い、autocastの精度もTRIDENTと同じにしてある。
+  ここがずれると「正規化の効果」と「抽出経路の差」が混ざるので、変更時は必ず再確認すること。
+- **Macenkoの実装で踏んだ罠2つ**:
+  1. 固有ベクトルの符号は不定。第1軸が平均OD方向と逆を向くと射影角が±πの切れ目をまたぎ、
+     パーセンタイルが分布の両端ではなく切れ目の両側を拾う。結果、染色ベクトル2本がほぼ平行に
+     潰れて `max_c` が発散する（実際に 9.9 / 29.1 という値が出た）。`fit_macenko` で第1軸を
+     平均OD方向に揃えて回避している。cos(H,E)>0.99 で例外を投げる保険も入れた。
+  2. 文献既定の参照濃度 `MAXC_REF=[1.97, 1.03]` はこの切片群（control 16枚から推定して
+     [2.56, 1.69]）より淡く、そこに合わせると全体が褪色する。好酸性の強弱そのものが
+     所見の手がかりなので、参照はデータ内のcontrolスライドから推定して使うこと。
+- 正規化ありとなしの埋め込みのcos類似度は0.958。効いてはいるが埋め込みを壊してはいない。
+- **読み方**: 正規化後に期待するのは「controlを実験でラベル付けしたときの分離度が下がる」
+  ことと「投与群 vs control の分離は保たれる」ことの両方。後者まで下がるなら、
+  正規化がバッチと一緒に病変の手がかり（好酸性の強弱など）も消している。
+- 0003/0004は `variant_key` をconfigから取るようにしてあるので、`features_dir` と
+  `variant_key` を差し替えれば正規化版を別ランとして残せる（完了ガードはvariant_key単位）。
+
+## 0006_20260915_clustering_method_comparison
+
+- 0003のMiniBatchKMeansを kNNグラフ+Leiden / DBSCAN に差し替えて比較した。
+  解析側は `lib/cluster_analysis.py`（0003から移設）で3手法完全に共通。
+- **結論: この用途ではk-meansが最も良い**（LOCO 0.747 vs Leiden 0.65-0.68 vs DBSCAN 0.51-0.54）。
+  patch埋め込み空間が離散的な塊ではなく連続体なので、「自然な切れ目」を探す手法は
+  切れ目を見つけられない。Leidenはr=2.0でも43クラスタ止まり、DBSCANはノイズ率24-66%。
+- **粒度を揃えた比較になっていない**点に注意（k-means 100 vs Leiden 20-43）。
+  差が手法由来か粒度由来かは未分離。Leidenの解像度を上げた追試が要る。
+- `leidenalg` / `igraph` を pyproject.toml に追加済み。kNNグラフはGPUで厳密計算
+  （`lib/clustering.knn_graph`）しているので faiss/pynndescent は入れていない。
+- Leidenは20万点・約250万エッジで6〜17分かかる。326万patch全体には適用できないため、
+  部分集合でクラスタを決めてkNN多数決で全体に伝播する構成にしてある。
