@@ -1,0 +1,34 @@
+# ============================================================
+# Experiment Configuration — 0005_stain_normalized_embeddings
+# ============================================================
+# 0004で、病変の無いcontrol同士が由来する実験で有意に分離することが分かった
+# （silhouette 0.175, z=31.9）。染色バッチが埋め込みに乗っている。
+# Macenko正規化してから同じエンコーダで埋め込み直し、0003/0004を再実行して
+# 結論がバッチ由来かどうかを確かめる。
+#
+# 座標は0001が計算済みのものを再利用する（セグメンテーションとタイル分割は
+# 画素値を変えても同じ結果になるので、やり直す意味が無い）。
+# ============================================================
+
+seed: 42
+
+# --- 入力 ---
+# 0003/0004と同じ219枚。0001のmanifestは590枚で再生成されているため使わない。
+manifest_parquet: "outputs/0004_20260913_finding_label_granularity/label_granularity/slide_manifest_with_sites.parquet"
+source_features_dir: "outputs/0001_20260907_extract_wsi_embeddings/trident_job/20x_256px_0px_overlap/features_uni_v2"
+
+# --- 出力 ---
+# 0001と同じレイアウトにして、0003のfeatures_dirを差し替えるだけで読めるようにする
+features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko"
+
+# --- 染色正規化 ---
+# 参照はデータ内のcontrolスライドから推定する。文献既定値はこの切片群より淡く、
+# そこに合わせると褪色して好酸性の強弱が潰れる。
+reference_slides: 16            # 参照推定に使うcontrolスライド数（8実験に散る）
+reference_patches_per_slide: 20
+fit_patches_per_slide: 40       # 各スライドの染色ベクトル推定に使うpatch数
+
+# --- エンコーダ（0001と完全に同一にすること）---
+patch_encoder: "uni_v2"
+batch_size: 64
+num_workers: 7
