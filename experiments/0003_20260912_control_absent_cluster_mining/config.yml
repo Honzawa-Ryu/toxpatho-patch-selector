@@ -1,0 +1,46 @@
+# ============================================================
+# Experiment Configuration — 0003_control_absent_cluster_mining
+# ============================================================
+# patch embeddingをクラスタリングし、Control群にほぼ現れないクラスタを引く。
+# 設計と落とし穴は同ディレクトリの plan.md を参照。
+# RUN_MODE は "single"（k はこのスクリプト内で掃引する）。
+# ============================================================
+
+seed: 42
+
+# --- 入力 ---
+# 0002が保存した219枚のmanifest（所見ラベル付き）を指す。0001の
+# slide_manifest.parquet を直接見ないのは、0001が590枚で再実行中で、
+# manifestには既に590枚が載っているのに埋め込みはまだ生成途中のため。
+# 再抽出が終わったら 0001 側の manifest に切り替えて回し直す。
+manifest_parquet: "outputs/0002_20260912_control_contrast_patch_scoring/control_contrast/slide_manifest_with_findings.parquet"
+features_dir: "outputs/0001_20260907_extract_wsi_embeddings/trident_job/20x_256px_0px_overlap/features_uni_v2"
+
+# --- 前処理 ---
+# PCAはcontrolと投与群から同数ずつサンプルして学習する（0002はcontrolのみ）。
+# control限定だと、所見特有＝controlでの分散が小さい方向が削られうる。
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- クラスタリング ---
+k_values: [100, 500, 2000]
+kmeans_fit_sample: 500000
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+# --- control欠損クラスタの判定 ---
+presence_eps: 0.001        # スライドのpatchの0.1%以上を占めたら「出現」とみなす
+min_treated_presence: 0.1  # 投与スライドの1割以上に出現すること
+q_threshold: 0.05          # Mann-Whitney（スライド単位）のBH補正後q値
+min_compounds: 2           # 単一化合物に閉じたクラスタは所見候補から外す
+
+# --- 所見との対応づけ ---
+max_finding_types: 15      # 頻度上位の所見だけFisher検定にかける
+
+# --- 代表patchの可視化 ---
+exemplar_k: 500            # どのkのクラスタを切り出すか
+n_exemplar_clusters: 12
+n_exemplars_per_cluster: 36
+exemplar_grid_cols: 6
