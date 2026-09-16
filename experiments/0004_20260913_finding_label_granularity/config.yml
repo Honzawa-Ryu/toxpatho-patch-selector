@@ -1,0 +1,31 @@
+# ============================================================
+# Experiment Configuration — 0004_finding_label_granularity
+# ============================================================
+# 所見名の粒度と形態クラスタの粒度のずれを見る。設計は plan.md。
+# 0003のクラスタ割当をそのまま使うので、埋め込みの再計算は無い。
+# ============================================================
+
+seed: 42
+
+# --- 入力（0003の出力） ---
+source_run_dir: "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining"
+pathology_csv: "corrected/open_tggates_pathology.csv"
+organ: "Liver"
+
+# --- どのクラスタリングを使うか ---
+# k=100はLOCOで最も所見と対応が取れていた粒度（k=2000は断片化して転移しない）。
+k: 100
+
+# --- H1/H2 の対象 ---
+# 部位と化合物の交絡を免れて検証できる唯一のケース。Centrilobular Hypertrophy は
+# phenobarbital / promethazine / thioacetamide の3化合物が共有している。
+target_finding: "Hypertrophy"
+target_topography: "Centrilobular"
+
+q_threshold: 0.05
+n_report_clusters: 5
+presence_eps: 0.001
+
+# --- ラベル体系の比較 ---
+# 細かいラベルほどsilhouetteは機械的に上がりうるので、並べ替え帰無分布と比較する。
+n_permutations: 200
