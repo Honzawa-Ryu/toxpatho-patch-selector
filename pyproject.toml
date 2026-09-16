@@ -22,6 +22,10 @@ dependencies = [
     "tqdm",
     "requests",
     "scikit-learn",
+    # クラスタリング手法の比較（0006）でLeidenを使う。kNNグラフ自体はGPUで自前に
+    # 作るので、faiss/pynndescentのような近傍探索ライブラリは足していない。
+    "leidenalg",
+    "igraph",
     "scipy",
     "seaborn",
 

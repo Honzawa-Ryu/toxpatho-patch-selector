@@ -1,0 +1,49 @@
+# ============================================================
+# Experiment Configuration — 0006_clustering_method_comparison
+# ============================================================
+# 0003のMiniBatchKMeansを、kNNグラフ+Leiden と DBSCAN に置き換えて比較する。
+# 解析側（control欠損クラスタの判定・所見との対応・LOCO AUROC）は lib/cluster_analysis.py に
+# 出してあり、3手法で完全に同一。違うのはクラスタリングだけ。
+# ============================================================
+
+seed: 42
+variant_key: "method_comparison"
+
+# --- 入力（0005の染色正規化済み特徴量。現時点で一番良い状態）---
+manifest_parquet: "outputs/0004_20260913_finding_label_granularity/label_granularity/slide_manifest_with_sites.parquet"
+features_dir: "outputs/0005_20260913_stain_normalized_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"
+
+# --- 前処理（0003と同一）---
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- 全手法が共有する部分集合 ---
+# 326万patchはLeidenにはグラフが大きすぎ、DBSCANには64次元の近傍探索が重すぎる。
+# 20万点でクラスタ構造を決め、全patchへkNN多数決で伝播する。
+# 20万点 x k=15 で無向エッジ約250万本。igraphが現実的に扱える規模。
+subsample: 200000
+knn_k: 15
+knn_chunk: 1024
+propagate_k: 15
+propagate_chunk: 4096
+
+# --- 手法とパラメータ ---
+kmeans_k: [100]              # 0003との連続性を見るための対照
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+leiden_resolutions: [0.5, 1.0, 2.0]
+
+# epsはk距離（k番目の近傍までの距離）の分位点で指定する。絶対値で決めると
+# PCA次元やL2正規化の有無でスケールが変わって意味を失うため。
+dbscan_eps_quantiles: [0.3, 0.5, 0.7]
+dbscan_min_samples: 50
+
+# --- 解析（0003と同一の閾値）---
+presence_eps: 0.001
+min_treated_presence: 0.1
+q_threshold: 0.05
+min_compounds: 2
+max_finding_types: 15
