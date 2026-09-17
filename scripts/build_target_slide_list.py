@@ -198,6 +198,22 @@ def main() -> int:
     ].drop_duplicates("slide_id").sort_values(["compound_name", "sacrifice_period", "dose_level"])
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
+
+    # rsync --files-from 用のリスト。パスは Liver/ を起点とした相対パスで、
+    # ローカルの data/TGGATEs/WSI/Liver/ と同じ階層を前提にしている。
+    # 1ファイル1行にしておくと、転送が1セッションで済む（パスワード入力も1回）。
+    todo_all = slides[~slides["already_local"]]
+    for name, subset in [
+        ("all", todo_all),
+        ("tier1", todo_all[todo_all["tier"] == 1]),
+        ("tier2", todo_all[todo_all["tier"] == 2]),
+    ]:
+        rel = [
+            f"{str(period).replace(' ', '_')}/{sid}.svs"
+            for period, sid in zip(subset["sacrifice_period"], subset["slide_id"])
+        ]
+        (args.out_dir / f"rsync_files_{name}.txt").write_text("\n".join(sorted(rel)) + "\n")
+        print(f"rsync_files_{name}.txt: {len(rel)} 行")
     slides.to_parquet(args.out_dir / "target_slides.parquet", index=False)
     slides.to_csv(args.out_dir / "target_slides.csv", index=False)
     selection.to_csv(args.out_dir / "finding_site_compounds.csv", index=False)
