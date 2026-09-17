@@ -288,3 +288,91 @@ patch量を見ていないため、他化合物が数十patch寄与するだけ�
 （cluster 14 が `Cellular infiltration`/`Change, acidophilic`/`Hemorrhage` の3つに
 完全に同じq値 3.3e-10 で紐づいたのはこのため）。所見の絞り込みは現データでは
 できていない。解決には同じ所見を出す別化合物の追加が要る。
+
+## CCl4追加とmin_treated_presence撤廃（2026-09-17）
+
+[[planned-compound-expansion-download]] の最優先だったCCl4（tier1, 0007で100枚抽出）
+を追加し、`config_ccl4.yml`（variant: `cluster_mining_ccl4`）として
+219枚+CCl4 100枚=319枚・512万patchで再実行した。マニフェスト・特徴量の結合は
+`scripts/build_ccl4_comparison_manifest.py`（symlinkのみ、新規埋め込み計算なし）。
+
+### 決定的実験: `Degeneration, fatty` は cholesterol と CCl4 で別クラスタに分かれた
+
+k=100で、CCl4のfatty陽性60枚は6クラスタ（4/5/14/52/62/67）に、cholesterolの
+fatty陽性10枚は別の5クラスタ（96/39/61/53/42）に入り、**両者は一切重ならない**
+（patch割当の時点で交差ゼロ、control_absentの閾値判定とは独立の事実）。
+CCl4=小葉中心性・cholesterol=辺縁性という分布の違いを支持する。
+
+**ただし重要な訂正**: CCl4側の6クラスタは脂肪変性に特異的ではなかった。
+高用量29日目のスライドは`Degeneration, fatty`と同時に`Cellular infiltration`/
+`Degeneration, hydropic`/`Fibrosis`が必ずセットで出現し（全てCentrilobular）、
+6クラスタ全部がこの4所見すべてに同程度以上有意（`hydropic`はOR=infで全クラスタ）。
+さらにslide 26644は`Degeneration, fatty`がgrade=**slight**なのに該当クラスタの
+被覆率96.5%——所見の重症度と被覆率が対応しないケースがあり、この6クラスタが
+拾っているのは「脂肪変性」ではなく**CCl4高用量・長期の複合centrilobular障害
+シグネチャ**と読むのが正確。一方cholesterol側はgrade（severe/moderate）と
+被覆率（81%/56%）がおおむね対応しており、共起所見も毎回1つだけで、こちらは
+比較的fatty特異的。「クラスタ⇄所見ではなくクラスタ⇄スライドの表現型」問題
+（k=100・k=500での既知の限界、上記参照）がCCl4でも再現した形。
+
+control群の被覆率は同一exp_id内で用量に単調増加（CCl4: Control 0.5%→Low 35%→
+Middle 61%→High 80%、全期間共通exp_id=67／WY-14643: Control 0.0%→High 57.3%、
+exp_id=182）。試験間バッチ差ではなく用量依存の本物の信号であることの根拠。
+なお本runは染色正規化（Macenko）を適用していない生UNI2埋め込み。
+
+### min_treated_presence がcholesterol等の本物の信号を機械的に落としていた
+
+k=100で、purity（control_q95<0.001）とq値（<0.05）はクリアしながら
+`treated_presence_frac`（投与群139枚中の出現率）だけが`min_treated_presence=0.1`
+（必要13.9枚）に届かず落ちていたクラスタが**9個**（53/21/42/54/65/93/81/29/63、
+7.9%〜5.0%、あと数枚で通過）。このうち42・53はcholesterolの`Degeneration, fatty`
+そのもの、54はthioacetamide特異的な形態。9化合物・139枚の投与群プールでは
+「全体の10%」という絶対枚数が、化合物単位では本物でも相対的に少数派の信号を
+落とす方向に働いていた。
+
+`config_ccl4_no_presence_filter.yml`（min_treated_presence=0 全k）で検証:
+
+| k | 候補数（有→無） | LOCO AUROC（有→無） |
+|---|---|---|
+| 100 | 10→19 | **0.560→0.836** |
+| 500 | 1→6 | 0.507→0.563 |
+| 2000 | 4→12 | 0.443→**0.412**（悪化） |
+
+k=100/500は撤廃で大幅改善（cholesterolの`Degeneration, fatty`がついにOR=36.6/41.3
+で単体候補に、ethambutol/monocrotalineの新しい所見も出現）。k=2000だけは逆に
+悪化（ノイズ増）——min_compoundsと同じく、**kが細かいほど閾値を緩めるべき、
+粗いほど厳しくするべき**という同じ構造の問題。
+
+**決定: min_treated_presenceもmin_compoundsと同じ形でkごとに設定できるようにし
+（`experiment.py`の`min_treated_presence_for_k()`）、`config_ccl4.yml`を
+正式採用した値（k=100: 0.0, k=500: 0.0, k=2000: 0.1）に更新・再実行した。**
+このコーパス規模・化合物数が今後も増える前提なら、絶対枚数ベースの閾値は
+化合物数が増えるほど不利に働くはずなので、将来的には「投与群全体の10%」ではなく
+「その化合物の投与スライド数の10%」のような相対化も検討候補（今回は未実装）。
+
+### 空間隣接付きLeidenは悪化した（負の結果）
+
+0006のグラフ基盤に、同一スライド内のxy近傍エッジ（`spatial_knn_within_slide`）を
+特徴量kNNエッジと合成する`leiden_spatial`を追加し（`lib/clustering.py`）、
+219+CCl4コーパスで比較（`0006/config_ccl4_spatial.yml`）:
+
+| 手法 | クラスタ数 | 候補 | LOCO AUROC |
+|---|---|---|---|
+| kmeans k100 | 100 | 10 | 0.526 |
+| leiden r=1.0（空間無し） | 28 | 3 | 0.530 |
+| leiden_spatial r=1.0（空間あり、重み1.0） | 14 | **0** | 0.510（偶然） |
+
+空間隣接エッジ（重み=特徴量エッジと同等）を足すとクラスタがさらに粗くなり
+（28→14）、control欠損の純度基準を満たすクラスタが**ゼロ**になった。組織内で
+隣接する病変patchと正常patchが同じコミュニティに引き寄せられ、「形態」ではなく
+「同じ組織片にいるか」でクラスタが決まってしまったためと考えられる。
+`spatial_weight`を下げる（0.2〜0.3程度）かresolutionを上げて対抗する余地は
+あるが、現時点では不採用。
+
+### 次にやること
+
+- 化合物・スライドをさらに増やした時、min_treated_presenceの絶対枚数基準が
+  再び不利に働かないか確認する（相対化を検討）。
+- WY-14643の複合クラスタ（0/21/25/55/65/77/93の7個）も、CCl4と同じ「複合表現型
+  仮説」で共起所見を洗い直す。
+- 空間regularizationはspatial_weightを下げたバージョンで再挑戦する余地あり。

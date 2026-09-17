@@ -80,18 +80,24 @@ def save_exemplars(
     n_per_cluster: int,
     grid_cols: int,
     logger: logging.Logger,
+    subdir: str = "",
 ) -> None:
     """Crop the patches closest to each cluster centroid into one contact sheet.
 
     Reading each WSI is the expensive part, so patches are grouped by slide and
     every slide is opened once.
+
+    subdir: written under run_dir/exemplars/<subdir>/ — used to separate
+    candidate ("included") clusters from the rest ("excluded") when the
+    caller wants exemplars for every cluster, not just the control-absent
+    candidates.
     """
     import openslide
     from PIL import Image
 
     slide_ids = manifest["slide_id"].tolist()
     svs_paths = dict(zip(manifest["slide_id"], manifest["svs_path"]))
-    out_dir = run_dir / "exemplars"
+    out_dir = run_dir / "exemplars" / subdir if subdir else run_dir / "exemplars"
     out_dir.mkdir(parents=True, exist_ok=True)
     # 連結済み行列での各スライドの開始位置。global index からスライド内 index を引くのに使う。
     offsets = np.cumsum([0] + [len(coords[s]) for s in slide_ids])
@@ -241,9 +247,27 @@ def main() -> None:
     )
 
     presence_eps = config["presence_eps"]
-    min_treated_presence = config["min_treated_presence"]
     q_threshold = config["q_threshold"]
-    min_compounds = config["min_compounds"]
+    # plan.md 2026-09-16の決定: k=100はmin_compounds>=2を外す（同一表現型の別変種を
+    # 落としていたため）。k>=500は外すと候補が爆発しLOCOも落ちるので維持。
+    # plan.md 2026-09-17の決定: min_treated_presence も同じ理由・同じ形でkごとに
+    # 変える。複数化合物が同じ投与群プールを共有する319枚コーパスでは、
+    # 「投与群全体の10%」という絶対枚数の壁が化合物単位の本物の信号を
+    # 機械的に落としていた（cluster 42/53/54等）。k=100/500は外す方がLOCOも
+    # 上がる（0.560→0.836 / 0.507→0.563）。k=2000は逆に必要（外すと0.443→0.412）。
+    # どちらも下位互換のためintのままでよく、その場合は全kに同じ値を使う。
+    min_compounds_cfg = config["min_compounds"]
+    min_treated_presence_cfg = config["min_treated_presence"]
+
+    def min_compounds_for_k(k: int) -> int:
+        if isinstance(min_compounds_cfg, dict):
+            return min_compounds_cfg[str(k)]
+        return min_compounds_cfg
+
+    def min_treated_presence_for_k(k: int) -> float:
+        if isinstance(min_treated_presence_cfg, dict):
+            return min_treated_presence_cfg[str(k)]
+        return min_treated_presence_cfg
 
     all_stats = []
     all_assoc = []
@@ -255,6 +279,8 @@ def main() -> None:
 
     for k in config["k_values"]:
         logger.info(f"--- k={k} ---")
+        min_compounds = min_compounds_for_k(k)
+        min_treated_presence = min_treated_presence_for_k(k)
         kmeans = MiniBatchKMeans(
             n_clusters=k,
             random_state=seed,
@@ -336,26 +362,35 @@ def main() -> None:
             }
         )
 
-        if k == config["exemplar_k"] and len(candidates):
-            ranked = (
+        if k == config["exemplar_k"]:
+            # 「排除された」＝候補選定(select_candidates)に落ちたクラスタ。正常組織や
+            # アーチファクトの見え方を目で確認できるよう、候補外も全クラスタ分書き出す。
+            included = (
                 stats[stats["cluster_id"].isin(candidates)]
                 .nsmallest(config["n_exemplar_clusters"], "q_value")["cluster_id"]
                 .to_numpy()
+                if len(candidates)
+                else np.array([], dtype=int)
             )
-            save_exemplars(
-                run_dir,
-                manifest,
-                coords,
-                patch_sizes,
-                slide_index,
-                assignments,
-                kmeans.cluster_centers_,
-                embeddings,
-                ranked,
-                n_per_cluster=config["n_exemplars_per_cluster"],
-                grid_cols=config["exemplar_grid_cols"],
-                logger=logger,
-            )
+            excluded = np.setdiff1d(np.arange(k), candidates)
+            for subdir, ranked in (("included", included), ("excluded", excluded)):
+                if len(ranked) == 0:
+                    continue
+                save_exemplars(
+                    run_dir,
+                    manifest,
+                    coords,
+                    patch_sizes,
+                    slide_index,
+                    assignments,
+                    kmeans.cluster_centers_,
+                    embeddings,
+                    ranked,
+                    n_per_cluster=config["n_exemplars_per_cluster"],
+                    grid_cols=config["exemplar_grid_cols"],
+                    logger=logger,
+                    subdir=subdir,
+                )
 
     # ── Save results ──────────────────────────────────────────────────────────
     assignments_df = pd.DataFrame(assignments_out)

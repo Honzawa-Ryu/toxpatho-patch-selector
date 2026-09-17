@@ -1,0 +1,46 @@
+# ============================================================
+# Experiment Configuration — 0003 variant: 219+CCl4、min_treated_presence無し
+# ============================================================
+# config_ccl4.yml と同じ入力・同じ条件で、min_treated_presence だけを0にした版。
+# k=100で「純度・有意性はクリアだが投与群カバー率(10%)未達」で落ちていた9クラスタ
+# （53/21/42/54/65/93/81/29/63）を復活させて候補リストがどう変わるか見る。
+# ============================================================
+
+seed: 42
+
+# --- 入力 ---
+variant_key: "cluster_mining_ccl4_no_presence_filter"
+manifest_parquet: "outputs/0003_20260912_control_absent_cluster_mining/manifest_219_plus_ccl4.parquet"
+features_dir: "outputs/0003_20260912_control_absent_cluster_mining/features_219_plus_ccl4"
+
+# --- 前処理 ---
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- クラスタリング ---
+k_values: [100, 500, 2000]
+kmeans_fit_sample: 500000
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+# --- control欠損クラスタの判定 ---
+presence_eps: 0.001
+min_treated_presence: 0.0  # ユーザー指示によりいったん無効化（比較検証用）
+q_threshold: 0.05
+# plan.md 2026-09-16の決定: k=100はmin_compounds>=2を外す（同一表現型の別変種を
+# 拾うため）。k>=500は外すと候補が爆発しLOCOも落ちるので維持。
+min_compounds:
+  "100": 1
+  "500": 2
+  "2000": 2
+
+# --- 所見との対応づけ ---
+max_finding_types: 15
+
+# --- 代表patchの可視化 ---
+exemplar_k: 100
+n_exemplar_clusters: 100  # 候補は最大k個までしかありえないので、事実上「候補は全部出す」の意味
+n_exemplars_per_cluster: 36
+exemplar_grid_cols: 6
