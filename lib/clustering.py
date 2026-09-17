@@ -47,15 +47,80 @@ def knn_graph(
     return idx_out, dist_out
 
 
+def spatial_knn_within_slide(
+    xy: np.ndarray, slide_index: np.ndarray, k: int, device: torch.device
+) -> np.ndarray:
+    """k nearest neighbours in (x, y) tissue-coordinate space, restricted to
+    points on the same slide (per-slide block, so patches from different
+    slides can never look "adjacent" just because their pixel coordinates
+    happen to overlap).
+
+    Args:
+        xy: (n, 2) patch coordinates (same units as knn_graph's caller — here
+            level-0 pixel coords, unnormalized; only relative distance within
+            a slide matters).
+        slide_index: (n,) integer slide id per point, same order as xy.
+        k: neighbours per point. Slides with <=k points get min(k, n_slide-1).
+
+    Returns:
+        (n, k) neighbour indices into xy/slide_index (global, not per-slide),
+        self excluded. Points on a singleton slide get themselves repeated
+        (harmless: leiden_clusters dedupes self-pairs implicitly since
+        min==max collapses to a single-node "edge" that igraph ignores when
+        building from the deduped pair list — but see caller, which filters
+        those out explicitly to avoid depending on that).
+    """
+    out = np.zeros((len(xy), k), dtype=np.int64)
+    for slide in np.unique(slide_index):
+        member = np.flatnonzero(slide_index == slide)
+        n_slide = len(member)
+        if n_slide <= 1:
+            out[member] = member[:, None]
+            continue
+        k_slide = min(k, n_slide - 1)
+        idx, _ = knn_graph(np.ascontiguousarray(xy[member]).astype(np.float32), k_slide, device)
+        local = member[idx]  # (n_slide, k_slide) -> global indices
+        if k_slide < k:
+            local = np.pad(local, ((0, 0), (0, k - k_slide)), mode="edge")
+        out[member] = local
+    return out
+
+
+def _undirected_pairs(neighbors: np.ndarray) -> np.ndarray:
+    n, k = neighbors.shape
+    sources = np.repeat(np.arange(n, dtype=np.int64), k)
+    targets = neighbors.reshape(-1)
+    keep = sources != targets
+    sources, targets = sources[keep], targets[keep]
+    lo = np.minimum(sources, targets)
+    hi = np.maximum(sources, targets)
+    return np.unique(np.stack([lo, hi], axis=1), axis=0)
+
+
 def leiden_clusters(
-    neighbors: np.ndarray, resolution: float, seed: int, n_iterations: int = -1
+    neighbors: np.ndarray,
+    resolution: float,
+    seed: int,
+    n_iterations: int = -1,
+    *,
+    spatial_neighbors: np.ndarray | None = None,
+    spatial_weight: float = 1.0,
 ) -> np.ndarray:
     """Leiden community detection on an undirected kNN graph.
 
     Args:
-        neighbors: (n, k) neighbour indices from knn_graph().
+        neighbors: (n, k) neighbour indices from knn_graph() (feature space).
         resolution: RBConfiguration resolution. Higher gives more, smaller communities.
         n_iterations: -1 runs until the partition stops improving.
+        spatial_neighbors: optional (n, k_spatial) indices from
+            spatial_knn_within_slide(). When given, tissue-adjacency edges are
+            unioned into the graph alongside the feature-similarity ones, each
+            edge weighted by how many of the two neighbour sets support it
+            (1.0 for feature-only or spatial-only, 1.0 + spatial_weight for an
+            edge both sets agree on) so patches that are both morphologically
+            similar AND physically touching are pulled together hardest.
+        spatial_weight: weight given to a spatial-only edge relative to a
+            feature-only edge (1.0 = equal footing).
 
     The graph is made undirected by keeping each pair once (i < j): a kNN graph is
     asymmetric (j may be among i's neighbours without the reverse), and leaving it
@@ -64,20 +129,30 @@ def leiden_clusters(
     import igraph as ig
     import leidenalg
 
-    n, k = neighbors.shape
-    sources = np.repeat(np.arange(n, dtype=np.int64), k)
-    targets = neighbors.reshape(-1)
-    lo = np.minimum(sources, targets)
-    hi = np.maximum(sources, targets)
-    pairs = np.unique(np.stack([lo, hi], axis=1), axis=0)
+    n = neighbors.shape[0]
+    feat_pairs = _undirected_pairs(neighbors)
 
-    graph = ig.Graph(n=n, edges=[tuple(e) for e in pairs], directed=False)
+    if spatial_neighbors is None:
+        graph = ig.Graph(n=n, edges=[tuple(e) for e in feat_pairs], directed=False)
+        weights = None
+    else:
+        spatial_pairs = _undirected_pairs(spatial_neighbors)
+        feat_keys = feat_pairs[:, 0].astype(np.int64) * n + feat_pairs[:, 1]
+        spatial_keys = spatial_pairs[:, 0].astype(np.int64) * n + spatial_pairs[:, 1]
+        all_pairs = np.unique(np.concatenate([feat_pairs, spatial_pairs]), axis=0)
+        all_keys = all_pairs[:, 0].astype(np.int64) * n + all_pairs[:, 1]
+        in_feat = np.isin(all_keys, feat_keys)
+        in_spatial = np.isin(all_keys, spatial_keys)
+        weights = np.where(in_feat, 1.0, 0.0) + np.where(in_spatial, spatial_weight, 0.0)
+        graph = ig.Graph(n=n, edges=[tuple(e) for e in all_pairs], directed=False)
+
     partition = leidenalg.find_partition(
         graph,
         leidenalg.RBConfigurationVertexPartition,
         resolution_parameter=resolution,
         seed=seed,
         n_iterations=n_iterations,
+        weights=weights,
     )
     return np.asarray(partition.membership, dtype=np.int64)
 

@@ -72,6 +72,15 @@ def build_runs(config: dict) -> list[dict]:
         runs.append(
             {"method": "leiden", "param_name": "resolution", "param": float(r), "label": f"leiden_r{r}"}
         )
+    for r in config.get("leiden_spatial_resolutions", []):
+        runs.append(
+            {
+                "method": "leiden_spatial",
+                "param_name": "resolution",
+                "param": float(r),
+                "label": f"leiden_spatial_r{r}",
+            }
+        )
     for q in config.get("dbscan_eps_quantiles", []):
         runs.append(
             {"method": "dbscan", "param_name": "eps_quantile", "param": float(q), "label": f"dbscan_q{q}"}
@@ -90,7 +99,13 @@ def main() -> None:
         occupancy_matrix,
         select_candidates,
     )
-    from lib.clustering import dbscan_clusters, knn_graph, leiden_clusters, propagate_labels
+    from lib.clustering import (
+        dbscan_clusters,
+        knn_graph,
+        leiden_clusters,
+        propagate_labels,
+        spatial_knn_within_slide,
+    )
     from lib.output_utils import complete_run, get_run_dir, write_run_metadata
     from lib.patch_features import read_slide_features, sample_patch_matrix
 
@@ -154,6 +169,7 @@ def main() -> None:
             logger.info(f"projected {i + 1}/{len(manifest)} slides")
     embeddings = np.concatenate(projected)
     slide_index = np.concatenate(slide_index_parts)
+    xy_all = np.concatenate([coords[s] for s in manifest["slide_id"]])
     del projected, slide_index_parts
     logger.info(f"patch matrix: {embeddings.shape}")
 
@@ -170,6 +186,16 @@ def main() -> None:
         f"kNNグラフ (k={knn_k}): k距離の分位点 "
         f"{ {q: round(float(np.quantile(kdist, q)), 4) for q in [0.1, 0.3, 0.5, 0.7, 0.9]} }"
     )
+
+    # leiden_spatial 用: 特徴量グラフと同じ部分集合上で、同一スライド内の
+    # 座標近傍グラフも作っておく（隣接patchが同じクラスタに寄りやすくなる）。
+    spatial_neighbors = None
+    if config.get("leiden_spatial_resolutions"):
+        spatial_k = config.get("spatial_knn_k", knn_k)
+        spatial_neighbors = spatial_knn_within_slide(
+            xy_all[sub_idx], slide_index[sub_idx], spatial_k, device
+        )
+        logger.info(f"空間隣接グラフ (同一スライド内, k={spatial_k}) 構築完了")
 
     # ── 手法ごとにクラスタリング → 同一の解析 ──────────────────────────────────
     presence_eps = config["presence_eps"]
@@ -200,6 +226,14 @@ def main() -> None:
             sub_labels = model.labels_
         elif method == "leiden":
             sub_labels = leiden_clusters(neighbors, run["param"], seed)
+        elif method == "leiden_spatial":
+            sub_labels = leiden_clusters(
+                neighbors,
+                run["param"],
+                seed,
+                spatial_neighbors=spatial_neighbors,
+                spatial_weight=config.get("spatial_edge_weight", 1.0),
+            )
         elif method == "dbscan":
             eps = float(np.quantile(kdist, run["param"]))
             run["eps"] = eps

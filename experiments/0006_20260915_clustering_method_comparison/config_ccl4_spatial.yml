@@ -1,0 +1,56 @@
+# ============================================================
+# Experiment Configuration — 0006 variant: 空間隣接付きLeiden (219+CCl4)
+# ============================================================
+# ユーザー提案: patchのkNNグラフ（特徴量空間）に、同一スライド内の空間近傍
+# エッジ（隣接relations）も足してLeidenを回すとどうなるか。
+# 0006本体の結論（2026-09-15）は「特徴量空間だけのLeidenはk-meansに全指標で
+# 劣る（patch embedding空間が連続体で自然な切れ目がない）」。空間隣接を足すと
+# 組織的に隣り合うpatchが同じクラスタに寄りやすくなり、0003 config_ccl4.yml で
+# 見えたcontrol群の「ごま塩」状の細分化や、cholesterolクラスタの断片化
+# （min_treated_presence割れ）が緩和されるかを見る。
+#
+# 対照として kmeans_k100（0003 config_ccl4.yml と同じ設定）と、空間無しの
+# leiden r=1.0（0006本体でLeiden最良だった条件）も同じジョブ内で回し、
+# 同じ表で3者を比較できるようにする。
+# ============================================================
+
+seed: 42
+variant_key: "spatial_leiden_ccl4"
+
+# --- 入力（0003 config_ccl4.yml と同じ219+CCl4結合コーパス。染色正規化なし）---
+manifest_parquet: "outputs/0003_20260912_control_absent_cluster_mining/manifest_219_plus_ccl4.parquet"
+features_dir: "outputs/0003_20260912_control_absent_cluster_mining/features_219_plus_ccl4"
+
+# --- 前処理（0003と同一）---
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- 全手法が共有する部分集合 ---
+subsample: 200000
+knn_k: 15
+knn_chunk: 1024
+propagate_k: 15
+propagate_chunk: 4096
+
+# --- 手法とパラメータ ---
+kmeans_k: [100]                    # 0003 config_ccl4.yml (k=100) との対照
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+leiden_resolutions: [1.0]          # 空間無し。0006本体でLeiden中最良だった条件
+leiden_spatial_resolutions: [1.0]  # 同じ解像度で空間隣接エッジを追加
+spatial_knn_k: 15                  # 同一スライド内でのxy近傍数（knn_kと同じにして条件を揃える）
+spatial_edge_weight: 1.0           # 特徴量エッジと同じ重み
+
+dbscan_eps_quantiles: []           # 0006本体で候補1個のみ・ノイズ24-66%と既に不成立が分かっている
+
+# --- 解析 ---
+# plan.md 2026-09-16の決定を踏襲し、min_compoundsは絞らない
+# （単一化合物のクラスタも本物の形態バリアントでありうる）。
+presence_eps: 0.001
+min_treated_presence: 0.1
+q_threshold: 0.05
+min_compounds: 1
+max_finding_types: 15
