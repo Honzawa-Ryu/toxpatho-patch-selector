@@ -1,0 +1,33 @@
+# ============================================================
+# Experiment Configuration — 0007_ccl4_fatty_degeneration_embeddings
+# ============================================================
+# Scoped TRIDENT (mahmoodlab/TRIDENT) pass over just the carbon
+# tetrachloride (CCl4) Liver WSIs newly downloaded for the fatty
+# degeneration subtyping comparison (see memory:
+# fatty-degeneration-subtyping-theme). Same params as 0001 so the
+# resulting UNI2 embeddings live in the same space and can be combined
+# with 0001's/0003's existing patches.
+#
+# Split into --chunk_id 0..n_chunks-1 (run_slurm.sh array) so the 100
+# CCl4 slides extract in parallel across the 4 GPUs on x-large-andre01
+# instead of one slide at a time.
+# ============================================================
+
+seed: 42
+
+# --- Data ---
+organ: "Liver"
+pathological_image_csv: "corrected/open_tggates_pathological_image.csv"
+individual_csv: "corrected/open_tggates_individual.csv"
+compound_name: "carbon tetrachloride"
+n_chunks: 4
+
+# --- TRIDENT pipeline (run_batch_of_slides.py flags) — identical to 0001 ---
+trident_task: "all"
+segmenter: "hest"
+reader_type: "openslide"
+mag: 20.0
+patch_size: 256
+overlap: 0
+patch_encoder: "uni_v2"
+gpus: [0]
