@@ -1,0 +1,48 @@
+# ============================================================
+# Experiment Configuration — 0008_tier1_corpus_embeddings
+# ============================================================
+# tier1（build_target_slide_list.py選定、43化合物）の残り2,755枚を埋め込む。
+# 0001と同じTRIDENT呼び出し・同じパラメータ。0001/0007が既に埋め込み済みの
+# 690枚（元8化合物219→590枚 + CCl4 100枚）は対象から除外し、差分だけを処理する。
+#
+# 0007と同じく --chunk_id 0..n_chunks-1（run_slurm.sh array）で
+# x-large-andre01の4GPUに分割実行する。
+# ============================================================
+
+seed: 42
+
+# --- データ ---
+organ: "Liver"
+pathological_image_csv: "corrected/open_tggates_pathological_image.csv"
+individual_csv: "corrected/open_tggates_individual.csv"
+n_chunks: 4
+
+# --- ローカルSSDへの事前ステージング ---
+# 2026-09-18: NFS(/workspace)から直接読むとsegmentationがI/O待ちで律速になる
+# ことが判明（4GPU中ほぼ常に0-1枚しか動いておらず、プロセスの半数近くがD状態）。
+# チャンクごとに必要な.svsだけを一括コピーしてから読む。ジョブ固有のSCRATCH_DIR
+# ではなく固定パスにして、再投入やチャンク間で重複コピーしないようにする。
+staging_dir: "/scratch/honzawa/wsi_staging_tier1"
+# サブバッチのサイズ。バッチiの処理中にバッチi+1のステージングをバックグラウンドで
+# 進める（転送と処理を並行化）。小さすぎるとTRIDENT呼び出し毎のモデルロードの
+# オーバーヘッドが相対的に増えるが、689枚を30枚ずつに分けても呼び出し回数は
+# 23回程度なので無視できる規模。
+staging_batch_size: 30
+
+# --- 既に埋め込み済みのスライドを除外するための特徴量ディレクトリ ---
+exclude_features_dirs:
+  - "outputs/0001_20260907_extract_wsi_embeddings/trident_job/20x_256px_0px_overlap/features_uni_v2"
+  - "outputs/0007_20260917_ccl4_fatty_degeneration_embeddings/trident_job_chunk0/20x_256px_0px_overlap/features_uni_v2"
+  - "outputs/0007_20260917_ccl4_fatty_degeneration_embeddings/trident_job_chunk1/20x_256px_0px_overlap/features_uni_v2"
+  - "outputs/0007_20260917_ccl4_fatty_degeneration_embeddings/trident_job_chunk2/20x_256px_0px_overlap/features_uni_v2"
+  - "outputs/0007_20260917_ccl4_fatty_degeneration_embeddings/trident_job_chunk3/20x_256px_0px_overlap/features_uni_v2"
+
+# --- TRIDENT pipeline（0001/0007と同一）---
+trident_task: "all"
+segmenter: "hest"
+reader_type: "openslide"
+mag: 20.0
+patch_size: 256
+overlap: 0
+patch_encoder: "uni_v2"
+gpus: [0]

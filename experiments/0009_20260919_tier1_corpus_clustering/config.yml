@@ -1,0 +1,45 @@
+# ============================================================
+# Experiment Configuration — 0009_tier1_corpus_clustering
+# ============================================================
+# 0006（219+CCl4コーパスでのk-means vs Leiden vs DBSCAN比較）と同じ建付けを、
+# tier1コーパス全体（0001 + 0007の4チャンク + 0008の4チャンク、計3,441枚。
+# scripts/build_tier1_corpus_manifest.py で結合）に対して回す。
+# 解析ロジック・パラメータは0006本体（config.yml）から変更していない。
+# ============================================================
+
+seed: 42
+variant_key: "tier1_corpus"
+
+# --- 入力（tier1コーパス全体。build_tier1_corpus_manifest.py が生成）---
+manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
+features_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"
+
+# --- 前処理（0006と同一）---
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- 全手法が共有する部分集合（0006と同一）---
+subsample: 200000
+knn_k: 15
+knn_chunk: 1024
+propagate_k: 15
+propagate_chunk: 4096
+
+# --- 手法とパラメータ（0006本体と同一）---
+kmeans_k: [100]
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+leiden_resolutions: [0.5, 1.0, 2.0]
+
+dbscan_eps_quantiles: [0.3, 0.5, 0.7]
+dbscan_min_samples: 50
+
+# --- 解析（0006と同一の閾値）---
+presence_eps: 0.001
+min_treated_presence: 0.1
+q_threshold: 0.05
+min_compounds: 2
+max_finding_types: 15

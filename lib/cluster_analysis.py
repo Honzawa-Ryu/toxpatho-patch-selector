@@ -30,6 +30,22 @@ def occupancy_matrix(
     return counts / np.clip(totals, 1, None)
 
 
+def control_group_by_dose(manifest: pd.DataFrame) -> np.ndarray:
+    """Default reference group: untreated animals."""
+    return (manifest["dose_level"] == "Control").to_numpy()
+
+
+def control_group_by_finding(manifest: pd.DataFrame) -> np.ndarray:
+    """Reference group: slides with no recorded finding, treated or not.
+
+    dose_levelで切ると、投与されたが所見が出なかったスライド（tier1コーパスでは
+    投与群2,570枚中1,323枚）が陽性側に入り、逆に自然発生病変のあるcontrol
+    （871枚中40枚）が陰性側に入る。「病変の形態を拾う」のが目的ならこちらが
+    直接の対比になる。
+    """
+    return ~manifest["has_finding"].to_numpy().astype(bool)
+
+
 def cluster_statistics(
     occ: np.ndarray,
     manifest: pd.DataFrame,
@@ -37,14 +53,20 @@ def cluster_statistics(
     presence_eps: float,
     min_treated_presence: float,
     logger: logging.Logger,
+    reference_selector=control_group_by_dose,
 ) -> pd.DataFrame:
-    """Per-cluster comparison of occupancy between control and treated slides.
+    """Per-cluster comparison of occupancy between a reference group and the rest.
 
     The test is Mann-Whitney U over *slides* (not patches): patches within a
     slide are not independent, so testing on patches would put n in the
     millions and make any trivial difference significant.
+
+    `reference_selector` decides what counts as the reference ("control") side.
+    Default is dose_level == "Control"; control_group_by_finding() switches it
+    to "no finding recorded". Column names keep the control_/treated_ prefixes
+    either way.
     """
-    is_control = (manifest["dose_level"] == "Control").to_numpy()
+    is_control = reference_selector(manifest)
     ctrl = occ[is_control]
     trt = occ[~is_control]
 
@@ -171,6 +193,7 @@ def leave_one_compound_out_auroc(
     q_threshold: float,
     min_compounds: int,
     logger: logging.Logger,
+    reference_selector=control_group_by_dose,
 ) -> tuple[float | None, pd.DataFrame]:
     """AUROC of a cluster-based slide score, with cluster selection held out.
 
@@ -193,6 +216,7 @@ def leave_one_compound_out_auroc(
             presence_eps=presence_eps,
             min_treated_presence=min_treated_presence,
             logger=logger,
+            reference_selector=reference_selector,
         )
         selected = select_candidates(
             train_stats, q_threshold=q_threshold, min_compounds=min_compounds

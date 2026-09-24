@@ -1,0 +1,50 @@
+# ============================================================
+# Experiment Configuration — 0009 variant: kmeans kスイープ
+# ============================================================
+# 2026-09-19 本体run（variant_key=tier1_corpus）の結果: kmeans_k100はcontrol_absent=0
+# （100クラスタ中ひとつもcontrolから分離できていない）。44化合物のcontrolを
+# プールしてもなお、k=100だとほぼ全クラスタに何らかのcontrol由来patchが
+# 混入している（ユーザー仮説: 化合物44種分のバリエーションが増えたのに箱の数
+# =kが変わっていないため、鳩の巣原理的に押し込まれている）。
+#
+# k以外の条件（前処理・サブサンプル・解析閾値）は本体runから一切変更せず、
+# kmeans_kだけを100刻みで2000まで振って、control_absentが出始めるkを探る。
+# Leiden/DBSCANは今回対象外（build_runsが空リストなら実行されない）。
+# ============================================================
+
+seed: 42
+variant_key: "kmeans_k100_subsample_500k"
+
+# --- 入力（本体runと同一）---
+manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
+features_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"
+
+# --- 前処理（本体runと同一）---
+l2_normalize: true
+pca_components: 64
+pca_patches_per_group: 160000
+
+# --- 全手法が共有する部分集合（本体runと同一）---
+subsample: 500000
+knn_k: 15
+knn_chunk: 1024
+propagate_k: 15
+propagate_chunk: 3000
+
+# --- 手法とパラメータ：kmeans_kのみ100刻みで2000まで振る ---
+kmeans_k: [100]
+kmeans_batch_size: 10000
+kmeans_n_init: 3
+kmeans_max_iter: 300
+
+leiden_resolutions: []
+dbscan_eps_quantiles: []
+dbscan_min_samples: 50
+
+# --- 解析（本体runと同一の閾値）---
+presence_eps: 0.001
+min_treated_presence: 0.1
+q_threshold: 0.05
+min_compounds: 2
+max_finding_types: 15
+embedding_cache_dir: "outputs/0009_20260919_tier1_corpus_clustering/embedding_cache"
