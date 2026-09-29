@@ -1,0 +1,20 @@
+{
+  "version": "2026-09-25",
+  "sensitivity_entrypoint": ".venv/bin/python scripts/audit_tier1_labels.py",
+  "vocabulary": "saved exp0009 kmeans_k_sweep_part3 cluster_kmeans_k2000",
+  "k": 2000,
+  "presence_eps": 0.001,
+  "min_treated_presence": 0.0,
+  "min_compounds": 1,
+  "q_threshold": 0.05,
+  "main_evaluation_arm": "known_unique_animals",
+  "label": "any source-recorded pathology finding, not individual lesion or patch diagnosis",
+  "holdout": "candidate selection only; PCA and clustering held fixed from full corpus",
+  "summary_metrics": ["pooled_any_finding_auroc", "macro_any_finding_auroc"],
+  "cluster_quality": "k-specific tissue_frac_cc >= 0.85; sampled image quality, not a lesion label",
+  "secondary_finding_display_min_precision": 0.7,
+  "main_subset_status": "exploratory; neither v1 nor v2 is a validated final benchmark",
+  "facility_status": "unknown",
+  "subset_comparison_entrypoint": ".venv/bin/python scripts/build_matched_benchmark_v2.py",
+  "image_review_entrypoint": ".venv/bin/python scripts/build_subset_review_sheets.py"
+}

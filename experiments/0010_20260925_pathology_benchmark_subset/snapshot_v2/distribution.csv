@@ -1,0 +1,29 @@
+compound_name,role,dose_level,target_grades,target_spontaneous_flags,slides
+1% cholesterol + 0.25% sodium cholate,control,Control,,,3
+1% cholesterol + 0.25% sodium cholate,positive,High,slight,False,3
+1% cholesterol + 0.25% sodium cholate,treated_negative,High,,,3
+WY-14643,control,Control,,,3
+WY-14643,positive,Low,minimal,True,1
+WY-14643,positive,Middle,minimal,True,2
+WY-14643,treated_negative,Low,,,1
+WY-14643,treated_negative,Middle,,,2
+amitriptyline,control,Control,,,3
+amitriptyline,positive,Low,minimal,True,2
+amitriptyline,positive,Middle,minimal,True,1
+amitriptyline,treated_negative,Low,,,2
+amitriptyline,treated_negative,Middle,,,1
+ethinylestradiol,control,Control,,,3
+ethinylestradiol,positive,Low,minimal,True,3
+ethinylestradiol,treated_negative,Low,,,3
+gemfibrozil,control,Control,,,3
+gemfibrozil,positive,High,minimal,True,1
+gemfibrozil,positive,Low,minimal,True,1
+gemfibrozil,positive,Middle,minimal,True,1
+gemfibrozil,treated_negative,High,,,1
+gemfibrozil,treated_negative,Low,,,1
+gemfibrozil,treated_negative,Middle,,,1
+monocrotaline,control,Control,,,3
+monocrotaline,positive,High,slight,False,2
+monocrotaline,positive,Middle,slight,False,1
+monocrotaline,treated_negative,High,,,2
+monocrotaline,treated_negative,Middle,,,1

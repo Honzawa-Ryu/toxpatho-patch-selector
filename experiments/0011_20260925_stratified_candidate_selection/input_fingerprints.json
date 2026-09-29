@@ -1,0 +1,7 @@
+{
+  "experiments/0010_20260925_pathology_benchmark_subset/label_audit/occupancy_k2000.npy": "719463796a5396e44d1780356400e1c4c4912b22b990a683bb70b7c82a3d133e",
+  "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_label_audit.csv": "05a08c1e4f610898385cc79dd817e0e85fe403d579876da9bf19f756cae80491",
+  "experiments/0010_20260925_pathology_benchmark_subset/scale_trace/large_k2000_stats.csv": "d3f4e6fb93bc27ecdf47c611e5b66780dabdd21fba8177225986e4bb5afbefff",
+  "outputs/0011_20260925_stratified_candidate_selection/manifest.parquet": "19a3528d2eddd12d3f5de6f3bcc9009e4eacd78689961c9566cdd9c0e9335d90",
+  "scripts/build_selection_gallery.py": "eaf9f2ae666127d697aaa1b360c6f7fdd94710476ead025c2c5cdf2ff3fa3342"
+}

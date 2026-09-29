@@ -1,0 +1,36 @@
+{
+  "version": "v1",
+  "target_finding": "Degeneration, granular, eosinophilic",
+  "target_topography": "Hepatocyte",
+  "selection_uses_clusters": false,
+  "min_triplets_per_compound": 10,
+  "selected_compounds": [
+    "fenofibrate",
+    "gemfibrozil",
+    "lomustine"
+  ],
+  "selection_order": "deterministic stratum/grade/dose round robin; numeric slide ID tie break",
+  "facility_verified": false,
+  "pathology_visually_verified": false,
+  "sources": {
+    "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet": "154a3e96d42a2178a018ef056fe0a18a31dadd123be33873ddd6114861a40642",
+    "data/corrected/open_tggates_pathology.csv": "c20dd94839d9a8968059b91b871203000780ca7b5b31778d2d27d5e99bdd637f",
+    "scripts/build_pathology_benchmark_subset.py": "a9cb9187305e6c604442f4a50f3006c2ca3dc5e0c33acb1a280178efc1007490"
+  },
+  "artifacts": {
+    "candidate_distribution.csv": "5449307dd6da947d926b31c78f5e4c893f2ee4e47814de3d4f172337fc668b3d",
+    "candidate_finding_rows.csv": "5654e0cc7dd8e6de6a6b35bcb188a23f3e75274033a73afe89fd97dff296f552",
+    "candidate_summary.csv": "f22696bd85cf1d3c508ab689cd31c1ed7b535ba8186c14b248a1dc21aa6e309f",
+    "cofindings.csv": "9c5b7cc028dfaf678d577dd3aee2c31cbbd45a95a374d368d1d4cabd87cf53a2",
+    "control_slide_ids.txt": "3c5e4c0175c32c0168bf7a6585cdfa4553de3a30b5ea743ad7b8d365456debca",
+    "eligibility_audit.csv": "a14696aabe386e1d54b18db43d53bddeb05390deb50fca2c486c6d354384fd4f",
+    "matching_strata.csv": "48f8de44f2df463f1ba1bdf4abfd8aa6fd6967425891e38bec12005e862922f0",
+    "positive_slide_ids.txt": "502f0b2a7c53b0f51f6e0ab5ceaa39c0f98728ab36b4dbeee2ce7b2863e12db8",
+    "slides.csv": "e943855b6831921a5c6981234a320105102b61e07b68ab4eae7acf09bc234fee",
+    "subset_counts.csv": "4ac3ddb6ccb9614b64923e9a3227e14f164aedd633d366b03df8f05de39cc386",
+    "subset_dose_time.csv": "b54b4aa50c9945f2f2002eefe9194f1a1b5b966962dd5b98819dd66d4f845f8d",
+    "subset_severity.csv": "e86402d2ffac39463e4c29dbec85b834e8275f002dea8ccac98b4226806531cd",
+    "treated_negative_slide_ids.txt": "8b70863cc4398b581e3027ff7582b876dbe4ed88ea749a665d013db52f17cee2"
+  },
+  "pandas_version": "3.0.3"
+}

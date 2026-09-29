@@ -1,0 +1,20 @@
+{
+  "clusters": 489,
+  "patches": 11736,
+  "crop_errors": 0,
+  "sampling_seeds": [
+    20260925,
+    20260926
+  ],
+  "checks": "24 unique patches per cluster; all images exist; metadata complete; HTML embedded data generated",
+  "sha256": {
+    "scripts/compare_stratified_selection.py": "c66d3800aa619a7147d52197575cdd906b22a8253b74e7935549e4ded968b373",
+    "scripts/compare_control_reference_scope.py": "0c02b463b31859060c0b657479529654425dfd52331ff00dfb0c132493d21c3a",
+    "scripts/build_selection_gallery.py": "c4c61d130ab6ae8ea2cee1dca0e1afa95405d1c08e27e782b31da18827881905",
+    "scripts/extend_selection_gallery.py": "d717b9d51838ab6c0055f06bf263c4390de9cb1c803a5da4c1ffd305ec40231d",
+    "/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/outputs/0011_20260925_stratified_candidate_selection/gallery/catalog.csv": "aba30042addfe24fac6fc8d2c3ac70990794c1c1891f6827a95fa9032980e4b6",
+    "/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/outputs/0011_20260925_stratified_candidate_selection/gallery/tiles.csv": "1ca513131f63dd5e434fd6a97b68cc3eef64b6ceede4c22047b763f2549f764b",
+    "/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/outputs/0011_20260925_stratified_candidate_selection/gallery/index.html": "c706d523e0f7aeb101038b6ced0a60e59d1d4ac3bb07c05cd1bb2a867e4269f4",
+    "/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/experiments/0011_20260925_stratified_candidate_selection/ablation_summary_all_variants.csv": "ca273a21a01c38a7b2749097c76cef31560298eb5fe48b106ad35a320c8abfab"
+  }
+}

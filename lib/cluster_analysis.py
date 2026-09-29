@@ -32,6 +32,10 @@ def occupancy_matrix(
 
 def control_group_by_dose(manifest: pd.DataFrame) -> np.ndarray:
     """Default reference group: untreated animals."""
+    if not manifest["dose_level"].isin(["Control", "Low", "Middle", "High"]).all():
+        raise ValueError("Unknown dose labels: audit metadata and exclude unknown slides before evaluation")
+    if "pathology_label_status" in manifest and manifest["pathology_label_status"].eq("unknown").any():
+        raise ValueError("Unknown pathology coverage: filter eligible slides before evaluation")
     return (manifest["dose_level"] == "Control").to_numpy()
 
 
@@ -43,6 +47,9 @@ def control_group_by_finding(manifest: pd.DataFrame) -> np.ndarray:
     （871枚中40枚）が陰性側に入る。「病変の形態を拾う」のが目的ならこちらが
     直接の対比になる。
     """
+    control_group_by_dose(manifest)  # Also reject historical manifests with missing metadata.
+    if manifest["has_finding"].isna().any():
+        raise ValueError("Unknown pathology labels cannot serve as negative controls")
     return ~manifest["has_finding"].to_numpy().astype(bool)
 
 
@@ -119,7 +126,7 @@ def cluster_statistics(
 
 
 def select_candidates(stats: pd.DataFrame, *, q_threshold: float, min_compounds: int) -> np.ndarray:
-    """Cluster ids that look like finding-specific morphology rather than artifact."""
+    """Cluster ids meeting enrichment criteria; morphology requires visual review."""
     mask = (
         stats["control_absent"]
         & (stats["q_value"] < q_threshold)

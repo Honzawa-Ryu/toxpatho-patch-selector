@@ -1,0 +1,450 @@
+slide_id,compound_name,dose_level,sacrifice_period,exp_id,group_id,individual_id,BARCODE,COMPOUND_NAME,DOSE_LEVEL,SACRIFICE_PERIOD,ORGAN,FINDING_TYPE,TOPOGRAPHY_TYPE,GRADE_TYPE,SP_FLG
+66141,1% cholesterol + 0.25% sodium cholate,High,4 day,698,5,1,003017906001,1% cholesterol + 0.25% sodium cholate,High,4 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66145,1% cholesterol + 0.25% sodium cholate,High,4 day,698,5,2,No ChipData,1% cholesterol + 0.25% sodium cholate,High,4 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66148,1% cholesterol + 0.25% sodium cholate,High,4 day,698,5,3,003017906002,1% cholesterol + 0.25% sodium cholate,High,4 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66153,1% cholesterol + 0.25% sodium cholate,High,4 day,698,5,4,No ChipData,1% cholesterol + 0.25% sodium cholate,High,4 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66156,1% cholesterol + 0.25% sodium cholate,High,4 day,698,5,5,003017906003,1% cholesterol + 0.25% sodium cholate,High,4 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66160,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,1,003017906007,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66164,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,2,No ChipData,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66167,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,3,003017906008,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66171,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,4,003017906009,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66175,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,5,No ChipData,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,"Degeneration, fatty",Peripheral,slight,false
+66179,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,1,No ChipData,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,"Degeneration, fatty",Peripheral,moderate,false
+66183,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,2,003017906013,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,"Degeneration, fatty",Peripheral,moderate,false
+66187,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,3,003017906014,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,"Degeneration, fatty",Peripheral,moderate,false
+66191,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,4,No ChipData,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,"Degeneration, fatty",Peripheral,moderate,false
+66195,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,5,003017906015,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,"Degeneration, fatty",Peripheral,moderate,false
+66203,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,2,No ChipData,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,"Degeneration, fatty",Peripheral,severe,false
+66207,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,3,No ChipData,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,"Degeneration, fatty",Peripheral,severe,false
+66211,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,4,003017906020,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,"Degeneration, fatty",Peripheral,severe,false
+70945,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,1,003017906019,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,"Degeneration, fatty",Peripheral,severe,false
+70946,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,5,003017906021,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,"Degeneration, fatty",Peripheral,severe,false
+26456,carbon tetrachloride,Low,4 day,67,9,1,No ChipData,carbon tetrachloride,Low,4 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26458,carbon tetrachloride,Low,4 day,67,9,2,003017670014,carbon tetrachloride,Low,4 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26459,carbon tetrachloride,Low,4 day,67,9,3,003017670015,carbon tetrachloride,Low,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26461,carbon tetrachloride,Low,4 day,67,9,4,003017670016,carbon tetrachloride,Low,4 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26463,carbon tetrachloride,Low,4 day,67,9,5,No ChipData,carbon tetrachloride,Low,4 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26465,carbon tetrachloride,Middle,4 day,67,13,1,No ChipData,carbon tetrachloride,Middle,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26467,carbon tetrachloride,Middle,4 day,67,13,2,003017670017,carbon tetrachloride,Middle,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26470,carbon tetrachloride,Middle,4 day,67,13,3,No ChipData,carbon tetrachloride,Middle,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26472,carbon tetrachloride,Middle,4 day,67,13,4,003017670018,carbon tetrachloride,Middle,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26474,carbon tetrachloride,Middle,4 day,67,13,5,003017670019,carbon tetrachloride,Middle,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26476,carbon tetrachloride,High,4 day,67,17,1,003017670020,carbon tetrachloride,High,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26479,carbon tetrachloride,High,4 day,67,17,2,No ChipData,carbon tetrachloride,High,4 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26481,carbon tetrachloride,High,4 day,67,17,3,No ChipData,carbon tetrachloride,High,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26483,carbon tetrachloride,High,4 day,67,17,4,003017670021,carbon tetrachloride,High,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26485,carbon tetrachloride,High,4 day,67,17,5,003017670022,carbon tetrachloride,High,4 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26507,carbon tetrachloride,Low,8 day,67,10,1,003017670026,carbon tetrachloride,Low,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26509,carbon tetrachloride,Low,8 day,67,10,2,003017670027,carbon tetrachloride,Low,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26511,carbon tetrachloride,Low,8 day,67,10,3,No ChipData,carbon tetrachloride,Low,8 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26513,carbon tetrachloride,Low,8 day,67,10,4,No ChipData,carbon tetrachloride,Low,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26515,carbon tetrachloride,Low,8 day,67,10,5,003017670028,carbon tetrachloride,Low,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26516,carbon tetrachloride,Middle,8 day,67,14,1,003017670029,carbon tetrachloride,Middle,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26518,carbon tetrachloride,Middle,8 day,67,14,2,003017670030,carbon tetrachloride,Middle,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26520,carbon tetrachloride,Middle,8 day,67,14,3,No ChipData,carbon tetrachloride,Middle,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26522,carbon tetrachloride,Middle,8 day,67,14,4,003017671001,carbon tetrachloride,Middle,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26524,carbon tetrachloride,Middle,8 day,67,14,5,No ChipData,carbon tetrachloride,Middle,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26526,carbon tetrachloride,High,8 day,67,18,1,003017671002,carbon tetrachloride,High,8 day,Liver,"Degeneration, fatty",Centrilobular,moderate,false
+26528,carbon tetrachloride,High,8 day,67,18,2,003017671003,carbon tetrachloride,High,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26530,carbon tetrachloride,High,8 day,67,18,3,003017671004,carbon tetrachloride,High,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26532,carbon tetrachloride,High,8 day,67,18,4,No ChipData,carbon tetrachloride,High,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26534,carbon tetrachloride,High,8 day,67,18,5,No ChipData,carbon tetrachloride,High,8 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26556,carbon tetrachloride,Low,15 day,67,11,1,003017672002,carbon tetrachloride,Low,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26559,carbon tetrachloride,Low,15 day,67,11,2,No ChipData,carbon tetrachloride,Low,15 day,Liver,"Degeneration, fatty",Centrilobular,minimal,false
+26561,carbon tetrachloride,Low,15 day,67,11,3,003017672003,carbon tetrachloride,Low,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26563,carbon tetrachloride,Low,15 day,67,11,4,No ChipData,carbon tetrachloride,Low,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26564,carbon tetrachloride,Low,15 day,67,11,5,003017672004,carbon tetrachloride,Low,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26566,carbon tetrachloride,Middle,15 day,67,15,1,003017672005,carbon tetrachloride,Middle,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26568,carbon tetrachloride,Middle,15 day,67,15,2,No ChipData,carbon tetrachloride,Middle,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26570,carbon tetrachloride,Middle,15 day,67,15,3,003017672006,carbon tetrachloride,Middle,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26571,carbon tetrachloride,Middle,15 day,67,15,4,No ChipData,carbon tetrachloride,Middle,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26573,carbon tetrachloride,Middle,15 day,67,15,5,003017672007,carbon tetrachloride,Middle,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26575,carbon tetrachloride,High,15 day,67,19,1,003017672008,carbon tetrachloride,High,15 day,Liver,"Degeneration, fatty",Centrilobular,moderate,false
+26578,carbon tetrachloride,High,15 day,67,19,2,003017672009,carbon tetrachloride,High,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26580,carbon tetrachloride,High,15 day,67,19,3,No ChipData,carbon tetrachloride,High,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26582,carbon tetrachloride,High,15 day,67,19,4,003017672010,carbon tetrachloride,High,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26584,carbon tetrachloride,High,15 day,67,19,5,No ChipData,carbon tetrachloride,High,15 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26608,carbon tetrachloride,Low,29 day,67,12,1,No ChipData,carbon tetrachloride,Low,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26610,carbon tetrachloride,Low,29 day,67,12,2,003017672014,carbon tetrachloride,Low,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26613,carbon tetrachloride,Low,29 day,67,12,3,003017672015,carbon tetrachloride,Low,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26616,carbon tetrachloride,Low,29 day,67,12,4,No ChipData,carbon tetrachloride,Low,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26620,carbon tetrachloride,Low,29 day,67,12,5,003017672016,carbon tetrachloride,Low,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26623,carbon tetrachloride,Middle,29 day,67,16,1,003017672017,carbon tetrachloride,Middle,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26626,carbon tetrachloride,Middle,29 day,67,16,2,003017672018,carbon tetrachloride,Middle,29 day,Liver,"Degeneration, fatty",Centrilobular,moderate,false
+26630,carbon tetrachloride,Middle,29 day,67,16,3,No ChipData,carbon tetrachloride,Middle,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26632,carbon tetrachloride,Middle,29 day,67,16,4,003017672019,carbon tetrachloride,Middle,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26635,carbon tetrachloride,Middle,29 day,67,16,5,No ChipData,carbon tetrachloride,Middle,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26639,carbon tetrachloride,High,29 day,67,20,1,003017672020,carbon tetrachloride,High,29 day,Liver,"Degeneration, fatty",Centrilobular,moderate,false
+26641,carbon tetrachloride,High,29 day,67,20,2,003017672021,carbon tetrachloride,High,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26644,carbon tetrachloride,High,29 day,67,20,3,003017672022,carbon tetrachloride,High,29 day,Liver,"Degeneration, fatty",Centrilobular,slight,false
+26647,carbon tetrachloride,High,29 day,67,20,4,No ChipData,carbon tetrachloride,High,29 day,Liver,"Degeneration, fatty",Centrilobular,severe,false
+26651,carbon tetrachloride,High,29 day,67,20,5,No ChipData,carbon tetrachloride,High,29 day,Liver,"Degeneration, fatty",Centrilobular,moderate,false
+29538,WY-14643,Low,4 day,182,5,1,003017709007,WY-14643,Low,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29541,WY-14643,Low,4 day,182,5,2,003017709008,WY-14643,Low,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29543,WY-14643,Low,4 day,182,5,3,No ChipData,WY-14643,Low,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29545,WY-14643,Low,4 day,182,5,4,003017709009,WY-14643,Low,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29548,WY-14643,Low,4 day,182,5,5,No ChipData,WY-14643,Low,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29550,WY-14643,Low,8 day,182,6,1,No ChipData,WY-14643,Low,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29553,WY-14643,Low,8 day,182,6,2,003017709019,WY-14643,Low,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29555,WY-14643,Low,8 day,182,6,3,No ChipData,WY-14643,Low,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29557,WY-14643,Low,8 day,182,6,4,003017709020,WY-14643,Low,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29560,WY-14643,Low,8 day,182,6,5,003017709021,WY-14643,Low,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29562,WY-14643,Low,15 day,182,7,1,No ChipData,WY-14643,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29565,WY-14643,Low,15 day,182,7,2,003017707022,WY-14643,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29567,WY-14643,Low,15 day,182,7,3,No ChipData,WY-14643,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29570,WY-14643,Low,15 day,182,7,4,003017707023,WY-14643,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29572,WY-14643,Low,15 day,182,7,5,003017707024,WY-14643,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29574,WY-14643,Low,29 day,182,8,1,No ChipData,WY-14643,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29577,WY-14643,Low,29 day,182,8,2,003017708004,WY-14643,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29579,WY-14643,Low,29 day,182,8,3,003017708005,WY-14643,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29581,WY-14643,Low,29 day,182,8,4,No ChipData,WY-14643,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29583,WY-14643,Low,29 day,182,8,5,003017708006,WY-14643,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29586,WY-14643,Middle,4 day,182,9,1,003017709010,WY-14643,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29588,WY-14643,Middle,4 day,182,9,2,003017709011,WY-14643,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29590,WY-14643,Middle,4 day,182,9,3,No ChipData,WY-14643,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29593,WY-14643,Middle,4 day,182,9,4,No ChipData,WY-14643,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29595,WY-14643,Middle,4 day,182,9,5,003017709012,WY-14643,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29597,WY-14643,Middle,8 day,182,10,1,003017709022,WY-14643,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29600,WY-14643,Middle,8 day,182,10,2,No ChipData,WY-14643,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29602,WY-14643,Middle,8 day,182,10,3,003017709023,WY-14643,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29605,WY-14643,Middle,8 day,182,10,4,No ChipData,WY-14643,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29607,WY-14643,Middle,8 day,182,10,5,003017709024,WY-14643,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29609,WY-14643,Middle,15 day,182,11,1,003017707025,WY-14643,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29611,WY-14643,Middle,15 day,182,11,2,003017707026,WY-14643,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29613,WY-14643,Middle,15 day,182,11,3,003017707027,WY-14643,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29615,WY-14643,Middle,15 day,182,11,4,No ChipData,WY-14643,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29617,WY-14643,Middle,15 day,182,11,5,No ChipData,WY-14643,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29619,WY-14643,Middle,29 day,182,12,1,003017708007,WY-14643,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29621,WY-14643,Middle,29 day,182,12,2,003017708008,WY-14643,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29623,WY-14643,Middle,29 day,182,12,3,No ChipData,WY-14643,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29625,WY-14643,Middle,29 day,182,12,4,003017708009,WY-14643,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29627,WY-14643,Middle,29 day,182,12,5,No ChipData,WY-14643,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29629,WY-14643,High,4 day,182,13,1,003017709013,WY-14643,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29631,WY-14643,High,4 day,182,13,2,No ChipData,WY-14643,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29633,WY-14643,High,4 day,182,13,3,003017709014,WY-14643,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29635,WY-14643,High,4 day,182,13,4,No ChipData,WY-14643,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29637,WY-14643,High,4 day,182,13,5,003017709015,WY-14643,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29639,WY-14643,High,8 day,182,14,1,003017709025,WY-14643,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29641,WY-14643,High,8 day,182,14,2,003017709026,WY-14643,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29645,WY-14643,High,8 day,182,14,3,No ChipData,WY-14643,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29647,WY-14643,High,8 day,182,14,4,003017709027,WY-14643,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29648,WY-14643,High,8 day,182,14,5,No ChipData,WY-14643,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29650,WY-14643,High,15 day,182,15,1,003017707028,WY-14643,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29652,WY-14643,High,15 day,182,15,2,003017707029,WY-14643,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29654,WY-14643,High,15 day,182,15,3,No ChipData,WY-14643,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29656,WY-14643,High,15 day,182,15,4,No ChipData,WY-14643,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29658,WY-14643,High,15 day,182,15,5,003017707030,WY-14643,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29659,WY-14643,High,29 day,182,16,1,No ChipData,WY-14643,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29662,WY-14643,High,29 day,182,16,2,003017708010,WY-14643,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29664,WY-14643,High,29 day,182,16,3,003017708011,WY-14643,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29668,WY-14643,High,29 day,182,16,5,No ChipData,WY-14643,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+71007,WY-14643,High,29 day,182,16,4,003017708012,WY-14643,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+24963,clofibrate,High,8 day,99,14,1,No ChipData,clofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+24965,clofibrate,High,8 day,99,14,2,003017679022,clofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+24967,clofibrate,High,8 day,99,14,3,003017679023,clofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+24969,clofibrate,High,8 day,99,14,4,No ChipData,clofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+24972,clofibrate,High,8 day,99,14,5,003017679024,clofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25012,clofibrate,High,15 day,99,15,1,003017686020,clofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25015,clofibrate,High,15 day,99,15,2,No ChipData,clofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25021,clofibrate,High,15 day,99,15,4,003017686021,clofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25024,clofibrate,High,15 day,99,15,5,003017686022,clofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25047,clofibrate,Middle,29 day,99,12,1,003017686029,clofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25053,clofibrate,Middle,29 day,99,12,3,003017686030,clofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25055,clofibrate,Middle,29 day,99,12,4,003017687001,clofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25057,clofibrate,Middle,29 day,99,12,5,No ChipData,clofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+25060,clofibrate,High,29 day,99,16,1,003017687002,clofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,slight,false
+25063,clofibrate,High,29 day,99,16,2,003017687003,clofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,slight,false
+25065,clofibrate,High,29 day,99,16,3,No ChipData,clofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,slight,false
+25067,clofibrate,High,29 day,99,16,4,003017687004,clofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,slight,false
+25069,clofibrate,High,29 day,99,16,5,No ChipData,clofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,slight,false
+70445,clofibrate,High,15 day,99,15,3,No ChipData,clofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Centrilobular,minimal,false
+35000,fenofibrate,Low,15 day,434,7,5,003017495006,fenofibrate,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35003,fenofibrate,Low,29 day,434,8,1,003017495016,fenofibrate,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35006,fenofibrate,Low,29 day,434,8,2,No ChipData,fenofibrate,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35008,fenofibrate,Low,29 day,434,8,3,003017495017,fenofibrate,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35011,fenofibrate,Low,29 day,434,8,4,No ChipData,fenofibrate,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35014,fenofibrate,Low,29 day,434,8,5,003017495018,fenofibrate,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35017,fenofibrate,Middle,4 day,434,9,1,003017431020,fenofibrate,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35020,fenofibrate,Middle,4 day,434,9,2,003017431021,fenofibrate,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35023,fenofibrate,Middle,4 day,434,9,3,003017431022,fenofibrate,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35025,fenofibrate,Middle,4 day,434,9,4,No ChipData,fenofibrate,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35028,fenofibrate,Middle,4 day,434,9,5,No ChipData,fenofibrate,Middle,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35031,fenofibrate,Middle,8 day,434,10,1,No ChipData,fenofibrate,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35033,fenofibrate,Middle,8 day,434,10,2,003017432002,fenofibrate,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35036,fenofibrate,Middle,8 day,434,10,3,003017432003,fenofibrate,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35039,fenofibrate,Middle,8 day,434,10,4,003017432004,fenofibrate,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35041,fenofibrate,Middle,8 day,434,10,5,No ChipData,fenofibrate,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35045,fenofibrate,Middle,15 day,434,11,1,003017495007,fenofibrate,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35048,fenofibrate,Middle,15 day,434,11,2,No ChipData,fenofibrate,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35052,fenofibrate,Middle,15 day,434,11,3,003017495008,fenofibrate,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35054,fenofibrate,Middle,15 day,434,11,4,003017495009,fenofibrate,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35058,fenofibrate,Middle,15 day,434,11,5,No ChipData,fenofibrate,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35061,fenofibrate,Middle,29 day,434,12,1,003017495019,fenofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35064,fenofibrate,Middle,29 day,434,12,2,003017495020,fenofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35067,fenofibrate,Middle,29 day,434,12,3,No ChipData,fenofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35070,fenofibrate,Middle,29 day,434,12,4,003017495021,fenofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35073,fenofibrate,Middle,29 day,434,12,5,No ChipData,fenofibrate,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35076,fenofibrate,High,4 day,434,13,1,003017431023,fenofibrate,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35079,fenofibrate,High,4 day,434,13,2,003017431024,fenofibrate,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35082,fenofibrate,High,4 day,434,13,3,No ChipData,fenofibrate,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35085,fenofibrate,High,4 day,434,13,4,003017431025,fenofibrate,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35087,fenofibrate,High,4 day,434,13,5,No ChipData,fenofibrate,High,4 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+35090,fenofibrate,High,8 day,434,14,1,No ChipData,fenofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35093,fenofibrate,High,8 day,434,14,2,003017432005,fenofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35095,fenofibrate,High,8 day,434,14,3,003017432006,fenofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35098,fenofibrate,High,8 day,434,14,4,No ChipData,fenofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35101,fenofibrate,High,8 day,434,14,5,003017432007,fenofibrate,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+35104,fenofibrate,High,15 day,434,15,1,003017495010,fenofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35107,fenofibrate,High,15 day,434,15,2,003017495011,fenofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35110,fenofibrate,High,15 day,434,15,3,No ChipData,fenofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35112,fenofibrate,High,15 day,434,15,4,No ChipData,fenofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35115,fenofibrate,High,15 day,434,15,5,003017495012,fenofibrate,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35118,fenofibrate,High,29 day,434,16,1,003017495022,fenofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35121,fenofibrate,High,29 day,434,16,2,No ChipData,fenofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35124,fenofibrate,High,29 day,434,16,3,No ChipData,fenofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35127,fenofibrate,High,29 day,434,16,4,003017495023,fenofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+35130,fenofibrate,High,29 day,434,16,5,003017495024,fenofibrate,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29882,gemfibrozil,Low,15 day,184,7,1,No ChipData,gemfibrozil,Low,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29893,gemfibrozil,Low,29 day,184,8,1,003017724022,gemfibrozil,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29898,gemfibrozil,Low,29 day,184,8,3,003017724024,gemfibrozil,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29901,gemfibrozil,Low,29 day,184,8,4,No ChipData,gemfibrozil,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29903,gemfibrozil,Low,29 day,184,8,5,No ChipData,gemfibrozil,Low,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29929,gemfibrozil,Middle,15 day,184,11,1,No ChipData,gemfibrozil,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29931,gemfibrozil,Middle,15 day,184,11,2,003017724013,gemfibrozil,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29933,gemfibrozil,Middle,15 day,184,11,3,No ChipData,gemfibrozil,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29935,gemfibrozil,Middle,15 day,184,11,4,003017724014,gemfibrozil,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29937,gemfibrozil,Middle,15 day,184,11,5,003017724015,gemfibrozil,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29939,gemfibrozil,Middle,29 day,184,12,1,003017724025,gemfibrozil,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29941,gemfibrozil,Middle,29 day,184,12,2,003017724026,gemfibrozil,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29943,gemfibrozil,Middle,29 day,184,12,3,No ChipData,gemfibrozil,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29945,gemfibrozil,Middle,29 day,184,12,4,003017724027,gemfibrozil,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29947,gemfibrozil,Middle,29 day,184,12,5,No ChipData,gemfibrozil,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29958,gemfibrozil,High,8 day,184,14,1,003017725022,gemfibrozil,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29960,gemfibrozil,High,8 day,184,14,2,003017725023,gemfibrozil,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29962,gemfibrozil,High,8 day,184,14,3,003017725024,gemfibrozil,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29965,gemfibrozil,High,8 day,184,14,4,No ChipData,gemfibrozil,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29967,gemfibrozil,High,8 day,184,14,5,No ChipData,gemfibrozil,High,8 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,minimal,false
+29969,gemfibrozil,High,15 day,184,15,1,003017724016,gemfibrozil,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29971,gemfibrozil,High,15 day,184,15,2,003017724017,gemfibrozil,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29973,gemfibrozil,High,15 day,184,15,3,No ChipData,gemfibrozil,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29975,gemfibrozil,High,15 day,184,15,4,No ChipData,gemfibrozil,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29977,gemfibrozil,High,15 day,184,15,5,003017724018,gemfibrozil,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+29978,gemfibrozil,High,29 day,184,16,1,No ChipData,gemfibrozil,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29980,gemfibrozil,High,29 day,184,16,2,No ChipData,gemfibrozil,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,severe,false
+29982,gemfibrozil,High,29 day,184,16,3,003017724028,gemfibrozil,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29984,gemfibrozil,High,29 day,184,16,4,003017724029,gemfibrozil,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+29986,gemfibrozil,High,29 day,184,16,5,003017724030,gemfibrozil,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32369,lomustine,High,15 day,311,15,1,003017105005,lomustine,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32372,lomustine,High,15 day,311,15,2,003017105006,lomustine,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32374,lomustine,High,15 day,311,15,3,003017105007,lomustine,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32375,lomustine,High,15 day,311,15,4,No ChipData,lomustine,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+32378,lomustine,High,15 day,311,15,5,No ChipData,lomustine,High,15 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,slight,false
+32381,lomustine,High,29 day,311,16,1,003017105017,lomustine,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32384,lomustine,High,29 day,311,16,2,003017105018,lomustine,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32387,lomustine,High,29 day,311,16,3,003017105019,lomustine,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32389,lomustine,High,29 day,311,16,4,No ChipData,lomustine,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+32392,lomustine,High,29 day,311,16,5,No ChipData,lomustine,High,29 day,Liver,"Degeneration, granular, eosinophilic",Hepatocyte,moderate,false
+46720,thioacetamide,Low,29 day,117,8,1,003017674026,thioacetamide,Low,29 day,Liver,"Degeneration, granular, eosinophilic",,minimal,false
+46727,thioacetamide,Low,29 day,117,8,3,003017674028,thioacetamide,Low,29 day,Liver,"Degeneration, granular, eosinophilic",,minimal,false
+46753,thioacetamide,Middle,8 day,117,10,1,003017665012,thioacetamide,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46756,thioacetamide,Middle,8 day,117,10,2,003017665013,thioacetamide,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46758,thioacetamide,Middle,8 day,117,10,3,No ChipData,thioacetamide,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46759,thioacetamide,Middle,8 day,117,10,4,003017665014,thioacetamide,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46763,thioacetamide,Middle,8 day,117,10,5,No ChipData,thioacetamide,Middle,8 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46765,thioacetamide,Middle,15 day,117,11,1,003017674017,thioacetamide,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46768,thioacetamide,Middle,15 day,117,11,2,No ChipData,thioacetamide,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46769,thioacetamide,Middle,15 day,117,11,3,003017674018,thioacetamide,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46772,thioacetamide,Middle,15 day,117,11,4,No ChipData,thioacetamide,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46774,thioacetamide,Middle,15 day,117,11,5,003017674019,thioacetamide,Middle,15 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46778,thioacetamide,Middle,29 day,117,12,1,No ChipData,thioacetamide,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46781,thioacetamide,Middle,29 day,117,12,2,003017674029,thioacetamide,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46783,thioacetamide,Middle,29 day,117,12,3,003017674030,thioacetamide,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46787,thioacetamide,Middle,29 day,117,12,4,003017675001,thioacetamide,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46789,thioacetamide,Middle,29 day,117,12,5,No ChipData,thioacetamide,Middle,29 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46792,thioacetamide,High,4 day,117,13,1,003017665003,thioacetamide,High,4 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46795,thioacetamide,High,4 day,117,13,2,003017665004,thioacetamide,High,4 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46797,thioacetamide,High,4 day,117,13,3,No ChipData,thioacetamide,High,4 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46800,thioacetamide,High,4 day,117,13,4,003017665005,thioacetamide,High,4 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46803,thioacetamide,High,4 day,117,13,5,No ChipData,thioacetamide,High,4 day,Liver,"Degeneration, granular, eosinophilic",,slight,false
+46806,thioacetamide,High,8 day,117,14,1,003017665015,thioacetamide,High,8 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46809,thioacetamide,High,8 day,117,14,2,No ChipData,thioacetamide,High,8 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46811,thioacetamide,High,8 day,117,14,3,003017665016,thioacetamide,High,8 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46815,thioacetamide,High,8 day,117,14,4,003017665017,thioacetamide,High,8 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46817,thioacetamide,High,8 day,117,14,5,No ChipData,thioacetamide,High,8 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46820,thioacetamide,High,15 day,117,15,1,003017674020,thioacetamide,High,15 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46823,thioacetamide,High,15 day,117,15,2,003017674021,thioacetamide,High,15 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46826,thioacetamide,High,15 day,117,15,3,003017674022,thioacetamide,High,15 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46829,thioacetamide,High,15 day,117,15,4,No ChipData,thioacetamide,High,15 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46831,thioacetamide,High,15 day,117,15,5,No ChipData,thioacetamide,High,15 day,Liver,"Degeneration, granular, eosinophilic",,moderate,false
+46833,thioacetamide,High,29 day,117,16,1,003017675002,thioacetamide,High,29 day,Liver,"Degeneration, granular, eosinophilic",,severe,false
+46835,thioacetamide,High,29 day,117,16,2,003017675003,thioacetamide,High,29 day,Liver,"Degeneration, granular, eosinophilic",,severe,false
+46839,thioacetamide,High,29 day,117,16,3,003017675004,thioacetamide,High,29 day,Liver,"Degeneration, granular, eosinophilic",,severe,false
+46841,thioacetamide,High,29 day,117,16,4,No ChipData,thioacetamide,High,29 day,Liver,"Degeneration, granular, eosinophilic",,severe,false
+46844,thioacetamide,High,29 day,117,16,5,No ChipData,thioacetamide,High,29 day,Liver,"Degeneration, granular, eosinophilic",,severe,false
+66171,1% cholesterol + 0.25% sodium cholate,High,8 day,698,6,4,003017906009,1% cholesterol + 0.25% sodium cholate,High,8 day,Liver,Necrosis,Hepatocyte,slight,false
+66179,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,1,No ChipData,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,Necrosis,Hepatocyte,slight,false
+66191,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,4,No ChipData,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,Necrosis,Hepatocyte,slight,false
+66195,1% cholesterol + 0.25% sodium cholate,High,15 day,698,7,5,003017906015,1% cholesterol + 0.25% sodium cholate,High,15 day,Liver,Necrosis,Hepatocyte,slight,false
+70945,1% cholesterol + 0.25% sodium cholate,High,29 day,698,8,1,003017906019,1% cholesterol + 0.25% sodium cholate,High,29 day,Liver,Necrosis,Hepatocyte,slight,false
+29527,WY-14643,Control,29 day,182,4,1,003017708001,WY-14643,Control,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+29550,WY-14643,Low,8 day,182,6,1,No ChipData,WY-14643,Low,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+29553,WY-14643,Low,8 day,182,6,2,003017709019,WY-14643,Low,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+29565,WY-14643,Low,15 day,182,7,2,003017707022,WY-14643,Low,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29574,WY-14643,Low,29 day,182,8,1,No ChipData,WY-14643,Low,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+29579,WY-14643,Low,29 day,182,8,3,003017708005,WY-14643,Low,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+29611,WY-14643,Middle,15 day,182,11,2,003017707026,WY-14643,Middle,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29617,WY-14643,Middle,15 day,182,11,5,No ChipData,WY-14643,Middle,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29621,WY-14643,Middle,29 day,182,12,2,003017708008,WY-14643,Middle,29 day,Liver,Necrosis,Hepatocyte,slight,true
+29629,WY-14643,High,4 day,182,13,1,003017709013,WY-14643,High,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+29645,WY-14643,High,8 day,182,14,3,No ChipData,WY-14643,High,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+29650,WY-14643,High,15 day,182,15,1,003017707028,WY-14643,High,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29668,WY-14643,High,29 day,182,16,5,No ChipData,WY-14643,High,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+51780,acetamidofluorene,High,4 day,569,13,1,003017564010,acetamidofluorene,High,4 day,Liver,Necrosis,,minimal,true
+51837,acetamidofluorene,Low,8 day,569,6,5,No ChipData,acetamidofluorene,Low,8 day,Liver,Necrosis,,minimal,true
+28067,acetaminophen,Middle,4 day,42,13,1,No ChipData,acetaminophen,Middle,4 day,Liver,Necrosis,Centrilobular,minimal,false
+28150,acetaminophen,High,4 day,42,17,2,003017643010,acetaminophen,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+28154,acetaminophen,High,4 day,42,17,3,No ChipData,acetaminophen,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+28157,acetaminophen,High,4 day,42,17,4,003017643011,acetaminophen,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+28174,acetaminophen,High,8 day,42,18,4,003017643022,acetaminophen,High,8 day,Liver,Necrosis,Centrilobular,minimal,false
+28210,acetaminophen,High,29 day,42,20,4,003017644017,acetaminophen,High,29 day,Liver,Necrosis,Centrilobular,minimal,false
+25614,allyl alcohol,High,4 day,103,13,2,No ChipData,allyl alcohol,High,4 day,Liver,Necrosis,,minimal,true
+25614,allyl alcohol,High,4 day,103,13,2,No ChipData,allyl alcohol,High,4 day,Liver,Necrosis,Periportal,minimal,false
+25619,allyl alcohol,High,4 day,103,13,4,003017727023,allyl alcohol,High,4 day,Liver,Necrosis,Periportal,minimal,false
+25653,allyl alcohol,High,8 day,103,14,1,003017728004,allyl alcohol,High,8 day,Liver,Necrosis,Periportal,slight,false
+25655,allyl alcohol,High,8 day,103,14,2,003017728005,allyl alcohol,High,8 day,Liver,Necrosis,Periportal,minimal,false
+25659,allyl alcohol,High,8 day,103,14,4,003017728006,allyl alcohol,High,8 day,Liver,Necrosis,Periportal,slight,false
+25661,allyl alcohol,High,8 day,103,14,5,No ChipData,allyl alcohol,High,8 day,Liver,Necrosis,Periportal,slight,false
+25686,allyl alcohol,Middle,15 day,103,11,2,003017726002,allyl alcohol,Middle,15 day,Liver,Necrosis,,minimal,true
+25697,allyl alcohol,High,15 day,103,15,1,No ChipData,allyl alcohol,High,15 day,Liver,Necrosis,Periportal,minimal,false
+25703,allyl alcohol,High,15 day,103,15,3,003017726004,allyl alcohol,High,15 day,Liver,Necrosis,Periportal,slight,false
+25708,allyl alcohol,High,15 day,103,15,5,003017726006,allyl alcohol,High,15 day,Liver,Necrosis,Periportal,slight,false
+34153,amitriptyline,Low,4 day,368,5,5,003017192025,amitriptyline,Low,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+34169,amitriptyline,Low,8 day,368,6,5,003017193007,amitriptyline,Low,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+34223,amitriptyline,Middle,8 day,368,10,5,003017193010,amitriptyline,Middle,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+4835,aspirin,Control,8 day,128,2,1,003017717017,aspirin,Control,8 day,Liver,Necrosis,,minimal,true
+4847,aspirin,Low,8 day,128,6,4,No ChipData,aspirin,Low,8 day,Liver,Necrosis,,minimal,true
+4883,aspirin,Low,15 day,128,7,5,No ChipData,aspirin,Low,15 day,Liver,Necrosis,,minimal,true
+4896,aspirin,High,15 day,128,15,3,No ChipData,aspirin,High,15 day,Liver,Necrosis,,minimal,true
+70464,aspirin,High,15 day,128,15,5,003017716022,aspirin,High,15 day,Liver,Necrosis,,minimal,true
+24875,clofibrate,Control,4 day,99,1,5,No ChipData,clofibrate,Control,4 day,Liver,Necrosis,,minimal,true
+24972,clofibrate,High,8 day,99,14,5,003017679024,clofibrate,High,8 day,Liver,Necrosis,,minimal,true
+21824,diltiazem,Control,8 day,413,2,4,No ChipData,diltiazem,Control,8 day,Liver,Necrosis,,minimal,true
+22191,diltiazem,High,15 day,413,15,5,No ChipData,diltiazem,High,15 day,Liver,Necrosis,,minimal,true
+33580,ethinylestradiol,Control,8 day,305,2,5,003017099017,ethinylestradiol,Control,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+33586,ethinylestradiol,Control,15 day,305,3,3,No ChipData,ethinylestradiol,Control,15 day,Liver,Necrosis,Hepatocyte,slight,true
+33606,ethinylestradiol,Low,4 day,305,5,3,No ChipData,ethinylestradiol,Low,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+33628,ethinylestradiol,Low,15 day,305,7,4,003017083023,ethinylestradiol,Low,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+33636,ethinylestradiol,Low,29 day,305,8,3,No ChipData,ethinylestradiol,Low,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+33637,ethinylestradiol,Low,29 day,305,8,4,003017086003,ethinylestradiol,Low,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+33643,ethinylestradiol,Middle,4 day,305,9,2,003017096021,ethinylestradiol,Middle,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+33646,ethinylestradiol,Middle,4 day,305,9,4,No ChipData,ethinylestradiol,Middle,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+33655,ethinylestradiol,Middle,8 day,305,10,3,003017099023,ethinylestradiol,Middle,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+33685,ethinylestradiol,High,4 day,305,13,5,No ChipData,ethinylestradiol,High,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+70513,ethinylestradiol,High,8 day,305,14,3,003017099025,ethinylestradiol,High,8 day,Liver,Necrosis,Hepatocyte,minimal,true
+46290,ethionamide,Control,4 day,585,1,1,No ChipData,ethionamide,Control,4 day,Liver,Necrosis,Subserosa,minimal,true
+46326,ethionamide,Low,4 day,585,5,3,003017554002,ethionamide,Low,4 day,Liver,Necrosis,Subserosa,minimal,true
+46340,ethionamide,Low,15 day,585,7,1,No ChipData,ethionamide,Low,15 day,Liver,Necrosis,Subserosa,minimal,true
+46403,ethionamide,High,4 day,585,13,5,003017554007,ethionamide,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+27756,ethionine,Control,8 day,126,2,3,No ChipData,ethionine,Control,8 day,Liver,Necrosis,,slight,true
+27791,ethionine,Middle,8 day,126,10,5,003017655021,ethionine,Middle,8 day,Liver,Necrosis,,minimal,true
+27855,ethionine,Control,29 day,126,4,3,No ChipData,ethionine,Control,29 day,Liver,Necrosis,,slight,true
+29813,gemfibrozil,Control,4 day,184,1,1,No ChipData,gemfibrozil,Control,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+29847,gemfibrozil,Control,29 day,184,4,1,003017724019,gemfibrozil,Control,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+29884,gemfibrozil,Low,15 day,184,7,2,003017724010,gemfibrozil,Low,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29915,gemfibrozil,Middle,4 day,184,9,5,No ChipData,gemfibrozil,Middle,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+29937,gemfibrozil,Middle,15 day,184,11,5,003017724015,gemfibrozil,Middle,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29945,gemfibrozil,Middle,29 day,184,12,4,003017724027,gemfibrozil,Middle,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+29971,gemfibrozil,High,15 day,184,15,2,003017724017,gemfibrozil,High,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29973,gemfibrozil,High,15 day,184,15,3,No ChipData,gemfibrozil,High,15 day,Liver,Necrosis,Hepatocyte,minimal,true
+29986,gemfibrozil,High,29 day,184,16,5,003017724030,gemfibrozil,High,29 day,Liver,Necrosis,Hepatocyte,minimal,true
+32200,lomustine,Control,4 day,311,1,1,003017104002,lomustine,Control,4 day,Liver,Necrosis,Subserosa,minimal,true
+32327,lomustine,Middle,15 day,311,11,3,003017105003,lomustine,Middle,15 day,Liver,Necrosis,Midlobular,minimal,false
+32372,lomustine,High,15 day,311,15,2,003017105006,lomustine,High,15 day,Liver,Necrosis,Midlobular,minimal,false
+32381,lomustine,High,29 day,311,16,1,003017105017,lomustine,High,29 day,Liver,Necrosis,Midlobular,minimal,false
+32384,lomustine,High,29 day,311,16,2,003017105018,lomustine,High,29 day,Liver,Necrosis,Midlobular,slight,false
+32389,lomustine,High,29 day,311,16,4,No ChipData,lomustine,High,29 day,Liver,Necrosis,Midlobular,slight,false
+32392,lomustine,High,29 day,311,16,5,No ChipData,lomustine,High,29 day,Liver,Necrosis,Midlobular,moderate,false
+45380,lornoxicam,Middle,4 day,538,9,5,003017430029,lornoxicam,Middle,4 day,Liver,Necrosis,,slight,true
+45508,lornoxicam,Control,29 day,538,4,2,No ChipData,lornoxicam,Control,29 day,Liver,Necrosis,,minimal,true
+45532,lornoxicam,Middle,29 day,538,12,3,003017440025,lornoxicam,Middle,29 day,Liver,Necrosis,,minimal,true
+20378,mefenamic acid,Control,15 day,378,3,3,003017197027,mefenamic acid,Control,15 day,Liver,Necrosis,,minimal,true
+20470,mefenamic acid,Middle,29 day,378,12,5,No ChipData,mefenamic acid,Middle,29 day,Liver,Necrosis,,minimal,true
+20483,mefenamic acid,High,29 day,378,16,4,003017200007,mefenamic acid,High,29 day,Liver,Necrosis,,minimal,true
+63672,methylene dianiline,Middle,4 day,686,9,3,003017875030,methylene dianiline,Middle,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63676,methylene dianiline,Middle,4 day,686,9,4,No ChipData,methylene dianiline,Middle,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63684,methylene dianiline,High,4 day,686,13,1,No ChipData,methylene dianiline,High,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63687,methylene dianiline,High,4 day,686,13,2,003017876002,methylene dianiline,High,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63687,methylene dianiline,High,4 day,686,13,2,003017876002,methylene dianiline,High,4 day,Liver,Necrosis,Periportal,minimal,false
+63691,methylene dianiline,High,4 day,686,13,3,003017876003,methylene dianiline,High,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63698,methylene dianiline,High,4 day,686,13,5,No ChipData,methylene dianiline,High,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+63760,methylene dianiline,High,8 day,686,14,1,003017876014,methylene dianiline,High,8 day,Liver,Necrosis,Bile duct cell,minimal,false
+63763,methylene dianiline,High,8 day,686,14,2,No ChipData,methylene dianiline,High,8 day,Liver,Necrosis,Bile duct cell,minimal,false
+63768,methylene dianiline,High,8 day,686,14,3,003017876015,methylene dianiline,High,8 day,Liver,Necrosis,Bile duct cell,minimal,false
+63772,methylene dianiline,High,8 day,686,14,4,No ChipData,methylene dianiline,High,8 day,Liver,Necrosis,Bile duct cell,minimal,false
+63777,methylene dianiline,High,8 day,686,14,5,003017876016,methylene dianiline,High,8 day,Liver,Necrosis,Bile duct cell,minimal,false
+63777,methylene dianiline,High,8 day,686,14,5,003017876016,methylene dianiline,High,8 day,Liver,Necrosis,Periportal,minimal,false
+63855,methylene dianiline,High,15 day,686,15,1,003017875008,methylene dianiline,High,15 day,Liver,Necrosis,Bile duct cell,minimal,false
+63860,methylene dianiline,High,15 day,686,15,2,No ChipData,methylene dianiline,High,15 day,Liver,Necrosis,Bile duct cell,minimal,false
+63865,methylene dianiline,High,15 day,686,15,3,003017875009,methylene dianiline,High,15 day,Liver,Necrosis,Bile duct cell,minimal,false
+63875,methylene dianiline,High,15 day,686,15,5,No ChipData,methylene dianiline,High,15 day,Liver,Necrosis,Bile duct cell,minimal,false
+63875,methylene dianiline,High,15 day,686,15,5,No ChipData,methylene dianiline,High,15 day,Liver,Necrosis,Periportal,minimal,false
+70929,methylene dianiline,High,4 day,686,13,4,003017876004,methylene dianiline,High,4 day,Liver,Necrosis,Bile duct cell,minimal,false
+70929,methylene dianiline,High,4 day,686,13,4,003017876004,methylene dianiline,High,4 day,Liver,Necrosis,Periportal,minimal,false
+71285,methylene dianiline,High,15 day,686,15,4,003017875010,methylene dianiline,High,15 day,Liver,Necrosis,Bile duct cell,minimal,false
+34012,monocrotaline,High,4 day,280,13,2,003017095010,monocrotaline,High,4 day,Liver,Necrosis,Hepatocyte,slight,false
+34078,monocrotaline,High,8 day,280,14,5,003017095024,monocrotaline,High,8 day,Liver,Necrosis,Hepatocyte,slight,false
+34085,monocrotaline,High,15 day,280,15,2,003017093029,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,moderate,false
+70554,monocrotaline,Middle,29 day,280,12,2,003017095026,monocrotaline,Middle,29 day,Liver,Necrosis,Hepatocyte,slight,false
+70558,monocrotaline,High,8 day,280,14,1,003017095022,monocrotaline,High,8 day,Liver,Necrosis,Hepatocyte,slight,false
+70561,monocrotaline,High,15 day,280,15,5,No ChipData,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,moderate,false
+70562,monocrotaline,High,15 day,280,16,3,003017093030,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,slight,false
+70562,monocrotaline,High,15 day,280,16,3,003017093030,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,moderate,false
+70564,monocrotaline,High,15 day,280,16,4,003017094025,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,moderate,false
+70564,monocrotaline,High,15 day,280,16,4,003017094025,monocrotaline,High,15 day,Liver,Necrosis,Hepatocyte,severe,false
+25325,naphthyl isothiocyanate,High,8 day,101,14,3,003017713026,naphthyl isothiocyanate,High,8 day,Liver,Necrosis,,minimal,false
+25330,naphthyl isothiocyanate,High,8 day,101,14,4,No ChipData,naphthyl isothiocyanate,High,8 day,Liver,Necrosis,,minimal,false
+25370,naphthyl isothiocyanate,High,15 day,101,15,1,003017714007,naphthyl isothiocyanate,High,15 day,Liver,Necrosis,,minimal,false
+25371,naphthyl isothiocyanate,High,15 day,101,15,2,003017714008,naphthyl isothiocyanate,High,15 day,Liver,Necrosis,,minimal,false
+25375,naphthyl isothiocyanate,High,15 day,101,15,4,No ChipData,naphthyl isothiocyanate,High,15 day,Liver,Necrosis,,minimal,false
+25382,naphthyl isothiocyanate,Control,29 day,101,4,1,No ChipData,naphthyl isothiocyanate,Control,29 day,Liver,Necrosis,,minimal,true
+25384,naphthyl isothiocyanate,Control,29 day,101,4,2,003017714010,naphthyl isothiocyanate,Control,29 day,Liver,Necrosis,,minimal,true
+25426,naphthyl isothiocyanate,High,29 day,101,16,2,003017714020,naphthyl isothiocyanate,High,29 day,Liver,Necrosis,,minimal,false
+25429,naphthyl isothiocyanate,High,29 day,101,16,3,No ChipData,naphthyl isothiocyanate,High,29 day,Liver,Necrosis,,minimal,false
+25431,naphthyl isothiocyanate,High,29 day,101,16,4,No ChipData,naphthyl isothiocyanate,High,29 day,Liver,Necrosis,,minimal,false
+25434,naphthyl isothiocyanate,High,29 day,101,16,5,003017714021,naphthyl isothiocyanate,High,29 day,Liver,Necrosis,,minimal,false
+34792,naproxen,High,4 day,348,13,2,003017166011,naproxen,High,4 day,Liver,Necrosis,Hepatocyte,slight,false
+52679,nitrosodiethylamine,High,4 day,571,13,1,No ChipData,nitrosodiethylamine,High,4 day,Liver,Necrosis,Centrilobular,slight,false
+52681,nitrosodiethylamine,High,4 day,571,13,2,No ChipData,nitrosodiethylamine,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+52684,nitrosodiethylamine,High,4 day,571,13,3,003017532023,nitrosodiethylamine,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+52689,nitrosodiethylamine,High,4 day,571,13,5,003017532025,nitrosodiethylamine,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+52728,nitrosodiethylamine,Middle,8 day,571,10,1,003017533002,nitrosodiethylamine,Middle,8 day,Liver,Necrosis,Centrilobular,minimal,false
+52731,nitrosodiethylamine,Middle,8 day,571,10,2,No ChipData,nitrosodiethylamine,Middle,8 day,Liver,Necrosis,Centrilobular,minimal,false
+52735,nitrosodiethylamine,Middle,8 day,571,10,3,003017533003,nitrosodiethylamine,Middle,8 day,Liver,Necrosis,Centrilobular,minimal,false
+52738,nitrosodiethylamine,Middle,8 day,571,10,4,No ChipData,nitrosodiethylamine,Middle,8 day,Liver,Necrosis,Centrilobular,minimal,false
+52741,nitrosodiethylamine,Middle,8 day,571,10,5,003017533004,nitrosodiethylamine,Middle,8 day,Liver,Necrosis,Centrilobular,minimal,false
+52745,nitrosodiethylamine,High,8 day,571,14,1,No ChipData,nitrosodiethylamine,High,8 day,Liver,Necrosis,Centrilobular,slight,false
+52748,nitrosodiethylamine,High,8 day,571,14,2,003017533005,nitrosodiethylamine,High,8 day,Liver,Necrosis,Centrilobular,slight,false
+52750,nitrosodiethylamine,High,8 day,571,14,3,003017533006,nitrosodiethylamine,High,8 day,Liver,Necrosis,Centrilobular,slight,false
+52753,nitrosodiethylamine,High,8 day,571,14,4,No ChipData,nitrosodiethylamine,High,8 day,Liver,Necrosis,Centrilobular,slight,false
+52756,nitrosodiethylamine,High,8 day,571,14,5,003017533007,nitrosodiethylamine,High,8 day,Liver,Necrosis,Centrilobular,slight,false
+52795,nitrosodiethylamine,Middle,15 day,571,11,1,No ChipData,nitrosodiethylamine,Middle,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52798,nitrosodiethylamine,Middle,15 day,571,11,2,003017534024,nitrosodiethylamine,Middle,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52802,nitrosodiethylamine,Middle,15 day,571,11,3,No ChipData,nitrosodiethylamine,Middle,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52805,nitrosodiethylamine,Middle,15 day,571,11,4,003017534025,nitrosodiethylamine,Middle,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52808,nitrosodiethylamine,Middle,15 day,571,11,5,003017534026,nitrosodiethylamine,Middle,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52812,nitrosodiethylamine,High,15 day,571,15,5,003017534027,nitrosodiethylamine,High,15 day,Liver,Necrosis,Centrilobular,minimal,false
+52833,nitrosodiethylamine,Low,29 day,571,8,1,No ChipData,nitrosodiethylamine,Low,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52837,nitrosodiethylamine,Low,29 day,571,8,2,No ChipData,nitrosodiethylamine,Low,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52840,nitrosodiethylamine,Low,29 day,571,8,3,003017535023,nitrosodiethylamine,Low,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52842,nitrosodiethylamine,Low,29 day,571,8,4,003017535024,nitrosodiethylamine,Low,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52844,nitrosodiethylamine,Low,29 day,571,8,5,003017535025,nitrosodiethylamine,Low,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52848,nitrosodiethylamine,Middle,29 day,571,12,1,003017535026,nitrosodiethylamine,Middle,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52849,nitrosodiethylamine,Middle,29 day,571,12,2,No ChipData,nitrosodiethylamine,Middle,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52850,nitrosodiethylamine,Middle,29 day,571,12,3,003017535027,nitrosodiethylamine,Middle,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52851,nitrosodiethylamine,Middle,29 day,571,12,4,No ChipData,nitrosodiethylamine,Middle,29 day,Liver,Necrosis,Centrilobular,minimal,false
+52853,nitrosodiethylamine,Middle,29 day,571,12,5,003017535028,nitrosodiethylamine,Middle,29 day,Liver,Necrosis,Centrilobular,minimal,false
+53645,nitrosodiethylamine,High,4 day,571,13,4,003017532024,nitrosodiethylamine,High,4 day,Liver,Necrosis,Centrilobular,minimal,false
+48721,promethazine,Low,4 day,494,5,3,003017428012,promethazine,Low,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+48910,promethazine,High,4 day,494,13,2,003017428019,promethazine,High,4 day,Liver,Necrosis,Hepatocyte,minimal,true
+53379,ticlopidine,Middle,4 day,573,9,3,No ChipData,ticlopidine,Middle,4 day,Liver,Necrosis,,minimal,true
+53490,ticlopidine,Low,29 day,573,8,2,003017539001,ticlopidine,Low,29 day,Liver,Necrosis,,slight,true

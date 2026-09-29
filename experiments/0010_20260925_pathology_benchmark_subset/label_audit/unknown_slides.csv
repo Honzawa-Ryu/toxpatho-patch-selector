@@ -1,0 +1,81 @@
+slide_id,svs_path,sacrifice_period,compound_name,dose,dose_unit,dose_level,exp_id,group_id,individual_id,sex_type,strain_type,n_findings,max_grade_ord,n_findings_treatment_related,has_finding,max_grade,individual_metadata_matched,label_evaluation_eligible,duplicate_animal_image,pathology_label_status
+26444,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/26444.svs,4 day,carbon tetrachloride,10,mg/kg,,67,5,1,,,0,,0,False,,False,False,False,unknown
+26446,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/26446.svs,4 day,carbon tetrachloride,10,mg/kg,,67,5,2,,,0,,0,False,,False,False,False,unknown
+26449,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/26449.svs,4 day,carbon tetrachloride,10,mg/kg,,67,5,3,,,0,,0,False,,False,False,False,unknown
+26451,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/26451.svs,4 day,carbon tetrachloride,10,mg/kg,,67,5,4,,,0,,0,False,,False,False,False,unknown
+26454,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/26454.svs,4 day,carbon tetrachloride,10,mg/kg,,67,5,5,,,0,,0,False,,False,False,False,unknown
+26497,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/26497.svs,8 day,carbon tetrachloride,10,mg/kg,,67,6,1,,,0,,0,False,,False,False,False,unknown
+26499,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/26499.svs,8 day,carbon tetrachloride,10,mg/kg,,67,6,2,,,0,,0,False,,False,False,False,unknown
+26501,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/26501.svs,8 day,carbon tetrachloride,10,mg/kg,,67,6,3,,,0,,0,False,,False,False,False,unknown
+26503,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/26503.svs,8 day,carbon tetrachloride,10,mg/kg,,67,6,4,,,0,,0,False,,False,False,False,unknown
+26505,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/26505.svs,8 day,carbon tetrachloride,10,mg/kg,,67,6,5,,,0,,0,False,,False,False,False,unknown
+26546,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/26546.svs,15 day,carbon tetrachloride,10,mg/kg,,67,7,1,,,0,,0,False,,False,False,False,unknown
+26548,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/26548.svs,15 day,carbon tetrachloride,10,mg/kg,,67,7,2,,,0,,0,False,,False,False,False,unknown
+26550,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/26550.svs,15 day,carbon tetrachloride,10,mg/kg,,67,7,3,,,0,,0,False,,False,False,False,unknown
+26552,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/26552.svs,15 day,carbon tetrachloride,10,mg/kg,,67,7,4,,,0,,0,False,,False,False,False,unknown
+26554,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/26554.svs,15 day,carbon tetrachloride,10,mg/kg,,67,7,5,,,0,,0,False,,False,False,False,unknown
+26596,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/26596.svs,29 day,carbon tetrachloride,10,mg/kg,,67,8,1,,,0,,0,False,,False,False,False,unknown
+26598,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/26598.svs,29 day,carbon tetrachloride,10,mg/kg,,67,8,2,,,0,,0,False,,False,False,False,unknown
+26601,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/26601.svs,29 day,carbon tetrachloride,10,mg/kg,,67,8,3,,,0,,0,False,,False,False,False,unknown
+26604,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/26604.svs,29 day,carbon tetrachloride,10,mg/kg,,67,8,4,,,0,,0,False,,False,False,False,unknown
+26606,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/26606.svs,29 day,carbon tetrachloride,10,mg/kg,,67,8,5,,,0,,0,False,,False,False,False,unknown
+27889,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/27889.svs,4 day,acetaminophen,50,mg/kg,,42,5,1,,,0,,0,False,,False,False,False,unknown
+27892,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/27892.svs,4 day,acetaminophen,50,mg/kg,,42,5,2,,,0,,0,False,,False,False,False,unknown
+27896,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/27896.svs,4 day,acetaminophen,50,mg/kg,,42,5,3,,,0,,0,False,,False,False,False,unknown
+27899,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/27899.svs,4 day,acetaminophen,50,mg/kg,,42,5,4,,,0,,0,False,,False,False,False,unknown
+27902,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/27902.svs,4 day,acetaminophen,50,mg/kg,,42,5,5,,,0,,0,False,,False,False,False,unknown
+27907,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/27907.svs,8 day,acetaminophen,50,mg/kg,,42,6,1,,,0,,0,False,,False,False,False,unknown
+27912,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/27912.svs,8 day,acetaminophen,50,mg/kg,,42,6,2,,,0,,0,False,,False,False,False,unknown
+27916,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/27916.svs,8 day,acetaminophen,50,mg/kg,,42,6,3,,,0,,0,False,,False,False,False,unknown
+27921,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/27921.svs,8 day,acetaminophen,50,mg/kg,,42,6,4,,,0,,0,False,,False,False,False,unknown
+27926,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/27926.svs,8 day,acetaminophen,50,mg/kg,,42,6,5,,,0,,0,False,,False,False,False,unknown
+27931,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27931.svs,15 day,acetaminophen,50,mg/kg,,42,7,1,,,0,,0,False,,False,False,False,unknown
+27937,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27937.svs,15 day,acetaminophen,50,mg/kg,,42,7,2,,,0,,0,False,,False,False,False,unknown
+27941,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27941.svs,15 day,acetaminophen,50,mg/kg,,42,7,3,,,0,,0,False,,False,False,False,unknown
+27946,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27946.svs,15 day,acetaminophen,50,mg/kg,,42,7,4,,,0,,0,False,,False,False,False,unknown
+27950,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27950.svs,15 day,acetaminophen,50,mg/kg,,42,7,5,,,0,,0,False,,False,False,False,unknown
+27952,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/27952.svs,15 day,acetaminophen,50,mg/kg,,42,7,5,,,0,,0,False,,False,False,True,unknown
+27957,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/27957.svs,29 day,acetaminophen,50,mg/kg,,42,8,1,,,0,,0,False,,False,False,False,unknown
+27962,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/27962.svs,29 day,acetaminophen,50,mg/kg,,42,8,2,,,0,,0,False,,False,False,False,unknown
+27967,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/27967.svs,29 day,acetaminophen,50,mg/kg,,42,8,3,,,0,,0,False,,False,False,False,unknown
+27972,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/27972.svs,29 day,acetaminophen,50,mg/kg,,42,8,4,,,0,,0,False,,False,False,False,unknown
+27976,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/27976.svs,29 day,acetaminophen,50,mg/kg,,42,8,5,,,0,,0,False,,False,False,False,unknown
+68802,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68802.svs,4 day,acetaminophen,0,mg/kg,,707,1,1,,,0,,0,False,,False,False,False,unknown
+68805,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68805.svs,4 day,acetaminophen,0,mg/kg,,707,1,2,,,0,,0,False,,False,False,False,unknown
+68809,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68809.svs,4 day,acetaminophen,0,mg/kg,,707,1,3,,,0,,0,False,,False,False,False,unknown
+68813,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68813.svs,4 day,acetaminophen,0,mg/kg,,707,1,4,,,0,,0,False,,False,False,False,unknown
+68817,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68817.svs,4 day,acetaminophen,0,mg/kg,,707,1,5,,,0,,0,False,,False,False,False,unknown
+68821,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68821.svs,8 day,acetaminophen,0,mg/kg,,707,2,1,,,0,,0,False,,False,False,False,unknown
+68825,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68825.svs,8 day,acetaminophen,0,mg/kg,,707,2,2,,,0,,0,False,,False,False,False,unknown
+68829,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68829.svs,8 day,acetaminophen,0,mg/kg,,707,2,3,,,0,,0,False,,False,False,False,unknown
+68833,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68833.svs,8 day,acetaminophen,0,mg/kg,,707,2,4,,,0,,0,False,,False,False,False,unknown
+68837,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68837.svs,8 day,acetaminophen,0,mg/kg,,707,2,5,,,0,,0,False,,False,False,False,unknown
+68841,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68841.svs,15 day,acetaminophen,0,mg/kg,,707,3,1,,,0,,0,False,,False,False,False,unknown
+68845,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68845.svs,15 day,acetaminophen,0,mg/kg,,707,3,2,,,0,,0,False,,False,False,False,unknown
+68849,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68849.svs,15 day,acetaminophen,0,mg/kg,,707,3,3,,,0,,0,False,,False,False,False,unknown
+68853,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68853.svs,15 day,acetaminophen,0,mg/kg,,707,3,4,,,0,,0,False,,False,False,False,unknown
+68857,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68857.svs,15 day,acetaminophen,0,mg/kg,,707,3,5,,,0,,0,False,,False,False,False,unknown
+68861,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68861.svs,29 day,acetaminophen,0,mg/kg,,707,4,1,,,0,,0,False,,False,False,False,unknown
+68865,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68865.svs,29 day,acetaminophen,0,mg/kg,,707,4,2,,,0,,0,False,,False,False,False,unknown
+68869,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68869.svs,29 day,acetaminophen,0,mg/kg,,707,4,3,,,0,,0,False,,False,False,False,unknown
+68873,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68873.svs,29 day,acetaminophen,0,mg/kg,,707,4,4,,,0,,0,False,,False,False,False,unknown
+68877,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68877.svs,29 day,acetaminophen,0,mg/kg,,707,4,5,,,0,,0,False,,False,False,False,unknown
+68908,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68908.svs,4 day,acetaminophen,100,mg/kg,,707,5,1,,,0,,0,False,,False,False,False,unknown
+68912,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68912.svs,4 day,acetaminophen,100,mg/kg,,707,5,2,,,0,,0,False,,False,False,False,unknown
+68915,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68915.svs,4 day,acetaminophen,100,mg/kg,,707,5,3,,,0,,0,False,,False,False,False,unknown
+68919,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68919.svs,4 day,acetaminophen,100,mg/kg,,707,5,4,,,0,,0,False,,False,False,False,unknown
+68923,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/4_day/68923.svs,4 day,acetaminophen,100,mg/kg,,707,5,5,,,0,,0,False,,False,False,False,unknown
+68927,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68927.svs,8 day,acetaminophen,100,mg/kg,,707,6,1,,,0,,0,False,,False,False,False,unknown
+68930,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68930.svs,8 day,acetaminophen,100,mg/kg,,707,6,2,,,0,,0,False,,False,False,False,unknown
+68934,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68934.svs,8 day,acetaminophen,100,mg/kg,,707,6,3,,,0,,0,False,,False,False,False,unknown
+68938,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68938.svs,8 day,acetaminophen,100,mg/kg,,707,6,4,,,0,,0,False,,False,False,False,unknown
+68941,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/8_day/68941.svs,8 day,acetaminophen,100,mg/kg,,707,6,5,,,0,,0,False,,False,False,False,unknown
+68945,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68945.svs,15 day,acetaminophen,100,mg/kg,,707,7,1,,,0,,0,False,,False,False,False,unknown
+68949,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68949.svs,15 day,acetaminophen,100,mg/kg,,707,7,2,,,0,,0,False,,False,False,False,unknown
+68953,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68953.svs,15 day,acetaminophen,100,mg/kg,,707,7,3,,,0,,0,False,,False,False,False,unknown
+68956,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68956.svs,15 day,acetaminophen,100,mg/kg,,707,7,4,,,0,,0,False,,False,False,False,unknown
+68960,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/15_day/68960.svs,15 day,acetaminophen,100,mg/kg,,707,7,5,,,0,,0,False,,False,False,False,unknown
+68964,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68964.svs,29 day,acetaminophen,100,mg/kg,,707,8,1,,,0,,0,False,,False,False,False,unknown
+68968,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68968.svs,29 day,acetaminophen,100,mg/kg,,707,8,2,,,0,,0,False,,False,False,False,unknown
+68972,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68972.svs,29 day,acetaminophen,100,mg/kg,,707,8,3,,,0,,0,False,,False,False,False,unknown
+68976,/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector/data/TGGATEs/WSI/Liver/29_day/68976.svs,29 day,acetaminophen,100,mg/kg,,707,8,4,,,0,,0,False,,False,False,False,unknown

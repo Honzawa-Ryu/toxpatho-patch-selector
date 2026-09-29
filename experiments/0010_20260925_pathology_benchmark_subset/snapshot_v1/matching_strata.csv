@@ -1,0 +1,179 @@
+compound_name,exp_id,sacrifice_period,positive,treated_negative,control,triplet_capacity
+1% cholesterol + 0.25% sodium cholate,698,15 day,0,5,5,0
+1% cholesterol + 0.25% sodium cholate,698,29 day,0,5,5,0
+1% cholesterol + 0.25% sodium cholate,698,4 day,0,5,5,0
+1% cholesterol + 0.25% sodium cholate,698,8 day,0,5,5,0
+WY-14643,182,15 day,15,0,5,0
+WY-14643,182,29 day,15,0,5,0
+WY-14643,182,4 day,15,0,5,0
+WY-14643,182,8 day,15,0,5,0
+acetamide,713,15 day,0,15,5,0
+acetamide,713,29 day,0,15,5,0
+acetamide,713,4 day,0,15,5,0
+acetamide,713,8 day,0,15,5,0
+acetamidofluorene,569,15 day,0,15,5,0
+acetamidofluorene,569,29 day,0,15,5,0
+acetamidofluorene,569,4 day,0,15,5,0
+acetamidofluorene,569,8 day,0,15,5,0
+acetaminophen,42,15 day,0,15,5,0
+acetaminophen,42,29 day,0,15,5,0
+acetaminophen,42,4 day,0,15,5,0
+acetaminophen,42,8 day,0,15,5,0
+acetaminophen,707,15 day,0,0,0,0
+acetaminophen,707,29 day,0,0,0,0
+acetaminophen,707,4 day,0,0,0,0
+acetaminophen,707,8 day,0,0,0,0
+allyl alcohol,103,15 day,0,15,5,0
+allyl alcohol,103,29 day,0,15,5,0
+allyl alcohol,103,4 day,0,15,5,0
+allyl alcohol,103,8 day,0,15,5,0
+amitriptyline,368,15 day,0,15,5,0
+amitriptyline,368,29 day,0,14,5,0
+amitriptyline,368,4 day,0,15,5,0
+amitriptyline,368,8 day,0,15,5,0
+aspirin,128,15 day,0,15,5,0
+aspirin,128,29 day,0,15,5,0
+aspirin,128,4 day,0,15,5,0
+aspirin,128,8 day,0,15,5,0
+benzbromarone,155,15 day,0,15,5,0
+benzbromarone,155,29 day,0,14,5,0
+benzbromarone,155,4 day,0,14,5,0
+benzbromarone,155,8 day,0,13,5,0
+bucetin,596,15 day,0,15,5,0
+bucetin,596,29 day,0,15,5,0
+bucetin,596,4 day,0,15,5,0
+bucetin,596,8 day,0,15,5,0
+carbon tetrachloride,67,15 day,0,15,5,0
+carbon tetrachloride,67,29 day,0,15,5,0
+carbon tetrachloride,67,4 day,0,15,5,0
+carbon tetrachloride,67,8 day,0,15,5,0
+clofibrate,99,15 day,0,10,5,0
+clofibrate,99,29 day,0,6,5,0
+clofibrate,99,4 day,0,15,5,0
+clofibrate,99,8 day,0,9,5,0
+diltiazem,413,15 day,0,15,5,0
+diltiazem,413,29 day,0,14,5,0
+diltiazem,413,4 day,0,15,5,0
+diltiazem,413,8 day,0,15,5,0
+disopyramide,463,15 day,0,15,5,0
+disopyramide,463,29 day,0,14,5,0
+disopyramide,463,4 day,0,15,5,0
+disopyramide,463,8 day,0,15,5,0
+ethambutol,391,15 day,0,15,5,0
+ethambutol,391,29 day,0,13,5,0
+ethambutol,391,4 day,0,15,5,0
+ethambutol,391,8 day,0,15,5,0
+ethinylestradiol,305,15 day,0,15,5,0
+ethinylestradiol,305,29 day,0,15,5,0
+ethinylestradiol,305,4 day,0,15,5,0
+ethinylestradiol,305,8 day,0,15,5,0
+ethionamide,585,15 day,0,14,5,0
+ethionamide,585,29 day,0,10,5,0
+ethionamide,585,4 day,0,15,5,0
+ethionamide,585,8 day,0,13,5,0
+ethionine,126,15 day,0,15,5,0
+ethionine,126,29 day,0,15,5,0
+ethionine,126,4 day,0,15,5,0
+ethionine,126,8 day,0,15,5,0
+fenofibrate,434,15 day,11,4,5,4
+fenofibrate,434,29 day,15,0,5,0
+fenofibrate,434,4 day,10,5,5,5
+fenofibrate,434,8 day,10,5,5,5
+gemfibrozil,184,15 day,11,4,5,4
+gemfibrozil,184,29 day,14,1,5,1
+gemfibrozil,184,4 day,0,15,5,0
+gemfibrozil,184,8 day,5,10,5,5
+hexachlorobenzene,157,15 day,0,15,5,0
+hexachlorobenzene,157,29 day,0,15,5,0
+hexachlorobenzene,157,4 day,0,15,5,0
+hexachlorobenzene,157,8 day,0,15,5,0
+ibuprofen,346,15 day,0,14,5,0
+ibuprofen,346,29 day,0,14,5,0
+ibuprofen,346,4 day,0,15,5,0
+ibuprofen,346,8 day,0,15,5,0
+iproniazid,319,15 day,0,15,5,0
+iproniazid,319,29 day,0,15,5,0
+iproniazid,319,4 day,0,15,5,0
+iproniazid,319,8 day,0,15,5,0
+lomustine,311,15 day,5,10,5,5
+lomustine,311,29 day,5,10,5,5
+lomustine,311,4 day,0,15,5,0
+lomustine,311,8 day,0,14,5,0
+lornoxicam,538,15 day,0,14,5,0
+lornoxicam,538,29 day,0,9,5,0
+lornoxicam,538,4 day,0,15,5,0
+lornoxicam,538,8 day,0,13,5,0
+mefenamic acid,378,15 day,0,14,5,0
+mefenamic acid,378,29 day,0,14,5,0
+mefenamic acid,378,4 day,0,15,5,0
+mefenamic acid,378,8 day,0,15,5,0
+methapyrilene,174,15 day,0,15,5,0
+methapyrilene,174,29 day,0,14,5,0
+methapyrilene,174,4 day,0,15,5,0
+methapyrilene,174,8 day,0,15,5,0
+methylene dianiline,686,15 day,0,15,5,0
+methylene dianiline,686,29 day,0,15,5,0
+methylene dianiline,686,4 day,0,15,5,0
+methylene dianiline,686,8 day,0,15,5,0
+monocrotaline,280,15 day,0,14,5,0
+monocrotaline,280,29 day,0,10,5,0
+monocrotaline,280,4 day,0,15,5,0
+monocrotaline,280,8 day,0,15,5,0
+naphthyl isothiocyanate,101,15 day,0,15,5,0
+naphthyl isothiocyanate,101,29 day,0,15,5,0
+naphthyl isothiocyanate,101,4 day,0,15,5,0
+naphthyl isothiocyanate,101,8 day,0,15,5,0
+naproxen,348,15 day,0,14,5,0
+naproxen,348,29 day,0,10,5,0
+naproxen,348,4 day,0,15,5,0
+naproxen,348,8 day,0,14,5,0
+nitrosodiethylamine,571,15 day,0,11,5,0
+nitrosodiethylamine,571,29 day,0,10,5,0
+nitrosodiethylamine,571,4 day,0,15,5,0
+nitrosodiethylamine,571,8 day,0,15,5,0
+papaverine,432,15 day,0,15,5,0
+papaverine,432,29 day,0,14,5,0
+papaverine,432,4 day,0,15,5,0
+papaverine,432,8 day,0,15,5,0
+phalloidin,481,4 day,0,5,5,0
+phalloidin,481,8 day,0,5,5,0
+phenacetin,594,15 day,0,15,5,0
+phenacetin,594,29 day,0,15,5,0
+phenacetin,594,4 day,0,15,5,0
+phenacetin,594,8 day,0,15,5,0
+phenobarbital,93,15 day,0,15,5,0
+phenobarbital,93,29 day,0,15,5,0
+phenobarbital,93,4 day,0,15,5,0
+phenobarbital,93,8 day,0,15,5,0
+phenytoin,176,15 day,0,15,5,0
+phenytoin,176,29 day,0,15,5,0
+phenytoin,176,4 day,0,15,5,0
+phenytoin,176,8 day,0,15,5,0
+promethazine,494,15 day,0,15,5,0
+promethazine,494,29 day,0,15,5,0
+promethazine,494,4 day,0,15,5,0
+promethazine,494,8 day,0,15,5,0
+rosiglitazone maleate,666,15 day,0,15,5,0
+rosiglitazone maleate,666,29 day,0,15,5,0
+rosiglitazone maleate,666,4 day,0,15,5,0
+rosiglitazone maleate,666,8 day,0,15,5,0
+sulfasalazine,211,15 day,0,15,5,0
+sulfasalazine,211,29 day,0,15,5,0
+sulfasalazine,211,4 day,0,15,5,0
+sulfasalazine,211,8 day,0,15,5,0
+theophylline,428,15 day,0,14,5,0
+theophylline,428,29 day,0,12,5,0
+theophylline,428,4 day,0,14,5,0
+theophylline,428,8 day,0,15,5,0
+thioacetamide,117,15 day,0,5,5,0
+thioacetamide,117,29 day,0,3,5,0
+thioacetamide,117,4 day,0,10,5,0
+thioacetamide,117,8 day,0,5,5,0
+ticlopidine,573,15 day,0,15,5,0
+ticlopidine,573,29 day,0,15,5,0
+ticlopidine,573,4 day,0,15,5,0
+ticlopidine,573,8 day,0,15,5,0
+vitamin A,282,15 day,0,15,5,0
+vitamin A,282,29 day,0,13,5,0
+vitamin A,282,4 day,0,15,5,0
+vitamin A,282,8 day,0,15,5,0

@@ -1,0 +1,4 @@
+arm,slides,candidates,pooled_any_finding_auroc,macro_any_finding_auroc,evaluable_compounds
+legacy_all,3441,329,0.8706701325085726,0.8706119670297592,44
+known_labels,3361,331,0.8586345616239541,0.867984515540481,44
+known_unique_animals,3357,330,0.858724930464061,0.8678541610698486,44

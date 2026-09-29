@@ -1,0 +1,39 @@
+arm,cluster_id,n_carrying,best_finding,n_both,slide_precision,slide_recall,n_sig_findings,n_findings_precision_ge_08,dominant_compound,dominant_compound_share,finding_prevalence_within_dominant_compound,other_significant_findings
+historical_319,0,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+historical_319,4,77,"Degeneration, fatty",60,0.7792207792207793,0.8571428571428571,4,0,carbon tetrachloride,0.974025974025974,0.6,"Cellular infiltration=0.675; Degeneration, hydropic=0.455; Fibrosis=0.286"
+historical_319,5,59,"Degeneration, fatty",55,0.9322033898305084,0.7857142857142857,4,2,carbon tetrachloride,1.0,0.6,"Cellular infiltration=0.881; Degeneration, hydropic=0.593; Fibrosis=0.373"
+historical_319,14,78,"Degeneration, fatty",60,0.7692307692307693,0.8571428571428571,4,0,carbon tetrachloride,1.0,0.6,"Cellular infiltration=0.667; Degeneration, hydropic=0.449; Fibrosis=0.282"
+historical_319,21,10,"Degeneration, granular, eosinophilic",10,1.0,0.5,2,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.900
+historical_319,25,18,Hypertrophy,16,0.8888888888888888,0.43243243243243246,3,2,WY-14643,0.8333333333333334,0.37142857142857144,"Degeneration, granular, eosinophilic=0.833; Increased mitosis=0.278"
+historical_319,29,9,"Change, eosinophilic",5,0.5555555555555556,1.0,3,0,ethambutol,0.6666666666666666,0.2,"Single cell necrosis=0.556; Alteration, nuclear=0.556"
+historical_319,42,10,"Degeneration, fatty",9,0.9,0.12857142857142856,2,1,1% cholesterol + 0.25% sodium cholate,0.9,0.3333333333333333,Necrosis=0.300
+historical_319,52,86,"Degeneration, fatty",60,0.6976744186046512,0.8571428571428571,4,0,carbon tetrachloride,0.9767441860465116,0.6,"Cellular infiltration=0.605; Degeneration, hydropic=0.407; Fibrosis=0.256"
+historical_319,53,11,"Degeneration, fatty",10,0.9090909090909091,0.14285714285714285,2,1,1% cholesterol + 0.25% sodium cholate,0.9090909090909091,0.3333333333333333,Necrosis=0.364
+historical_319,54,10,Hypertrophy,10,1.0,0.2702702702702703,5,1,thioacetamide,0.5,0.2,"Degeneration, granular, eosinophilic=0.600; Alteration, nuclear=0.500; Fibrosis=0.500; Ground glass appearance=0.400"
+historical_319,55,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+historical_319,62,77,"Degeneration, fatty",60,0.7792207792207793,0.8571428571428571,4,0,carbon tetrachloride,0.987012987012987,0.6,"Cellular infiltration=0.675; Degeneration, hydropic=0.455; Fibrosis=0.286"
+historical_319,63,7,"Alteration, nuclear",6,0.8571428571428571,0.6,4,3,thioacetamide,0.7142857142857143,0.2,"Degeneration, granular, eosinophilic=0.857; Hypertrophy=0.857; Fibrosis=0.714"
+historical_319,65,9,"Degeneration, granular, eosinophilic",9,1.0,0.45,3,1,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.778; Increased mitosis=0.333
+historical_319,67,74,"Degeneration, fatty",60,0.8108108108108109,0.8571428571428571,4,1,carbon tetrachloride,0.972972972972973,0.6,"Cellular infiltration=0.703; Degeneration, hydropic=0.473; Fibrosis=0.297"
+historical_319,77,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+historical_319,81,9,"Change, acidophilic",8,0.8888888888888888,1.0,5,4,monocrotaline,0.8888888888888888,0.27586206896551724,Hemorrhage=0.889; Fibrosis=0.889; Cellular infiltration=0.889; Necrosis=0.667
+historical_319,93,10,"Degeneration, granular, eosinophilic",8,0.8,0.4,3,1,WY-14643,0.8,0.42857142857142855,Hypertrophy=0.700; Increased mitosis=0.300
+known_labels_299,0,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+known_labels_299,4,63,"Degeneration, fatty",60,0.9523809523809523,0.8571428571428571,4,2,carbon tetrachloride,0.9682539682539683,0.75,"Cellular infiltration=0.825; Degeneration, hydropic=0.556; Fibrosis=0.349"
+known_labels_299,5,55,"Degeneration, fatty",55,1.0,0.7857142857142857,4,2,carbon tetrachloride,1.0,0.75,"Cellular infiltration=0.945; Degeneration, hydropic=0.636; Fibrosis=0.400"
+known_labels_299,14,62,"Degeneration, fatty",60,0.967741935483871,0.8571428571428571,4,2,carbon tetrachloride,1.0,0.75,"Cellular infiltration=0.839; Degeneration, hydropic=0.565; Fibrosis=0.355"
+known_labels_299,21,10,"Degeneration, granular, eosinophilic",10,1.0,0.5,2,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.900
+known_labels_299,25,18,Hypertrophy,16,0.8888888888888888,0.43243243243243246,3,2,WY-14643,0.8333333333333334,0.37142857142857144,"Degeneration, granular, eosinophilic=0.833; Increased mitosis=0.278"
+known_labels_299,29,9,"Change, eosinophilic",5,0.5555555555555556,1.0,3,0,ethambutol,0.6666666666666666,0.2,"Single cell necrosis=0.556; Alteration, nuclear=0.556"
+known_labels_299,42,10,"Degeneration, fatty",9,0.9,0.12857142857142856,2,1,1% cholesterol + 0.25% sodium cholate,0.9,0.3333333333333333,Necrosis=0.300
+known_labels_299,52,68,"Degeneration, fatty",60,0.8823529411764706,0.8571428571428571,4,1,carbon tetrachloride,0.9705882352941176,0.75,"Cellular infiltration=0.765; Degeneration, hydropic=0.515; Fibrosis=0.324"
+known_labels_299,53,11,"Degeneration, fatty",10,0.9090909090909091,0.14285714285714285,2,1,1% cholesterol + 0.25% sodium cholate,0.9090909090909091,0.3333333333333333,Necrosis=0.364
+known_labels_299,54,10,Hypertrophy,10,1.0,0.2702702702702703,5,1,thioacetamide,0.5,0.2,"Degeneration, granular, eosinophilic=0.600; Alteration, nuclear=0.500; Fibrosis=0.500; Ground glass appearance=0.400"
+known_labels_299,55,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+known_labels_299,62,63,"Degeneration, fatty",60,0.9523809523809523,0.8571428571428571,4,2,carbon tetrachloride,0.9841269841269841,0.75,"Cellular infiltration=0.825; Degeneration, hydropic=0.556; Fibrosis=0.349"
+known_labels_299,63,7,"Alteration, nuclear",6,0.8571428571428571,0.6,4,3,thioacetamide,0.7142857142857143,0.2,"Degeneration, granular, eosinophilic=0.857; Hypertrophy=0.857; Fibrosis=0.714"
+known_labels_299,65,9,"Degeneration, granular, eosinophilic",9,1.0,0.45,3,1,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.778; Increased mitosis=0.333
+known_labels_299,67,63,"Degeneration, fatty",60,0.9523809523809523,0.8571428571428571,4,2,carbon tetrachloride,0.9682539682539683,0.75,"Cellular infiltration=0.825; Degeneration, hydropic=0.556; Fibrosis=0.349"
+known_labels_299,77,15,"Degeneration, granular, eosinophilic",15,1.0,0.75,3,2,WY-14643,1.0,0.42857142857142855,Hypertrophy=0.867; Increased mitosis=0.267
+known_labels_299,81,9,"Change, acidophilic",8,0.8888888888888888,1.0,5,4,monocrotaline,0.8888888888888888,0.27586206896551724,Hemorrhage=0.889; Fibrosis=0.889; Cellular infiltration=0.889; Necrosis=0.667
+known_labels_299,93,10,"Degeneration, granular, eosinophilic",8,0.8,0.4,3,1,WY-14643,0.8,0.42857142857142855,Hypertrophy=0.700; Increased mitosis=0.300

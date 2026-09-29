@@ -179,7 +179,7 @@ def main() -> None:
     tissue = pd.DataFrame(tis)
 
     # ── まとめ ────────────────────────────────────────────────────────────
-    grade_path = ROOT / "grade_response.csv"
+    grade_path = ROOT / f"grade_response_k{K}.csv"
     df = div.merge(tissue, on="cluster_id").merge(
         stats[["cluster_id", "n_experiments"]], on="cluster_id"
     )
@@ -189,9 +189,12 @@ def main() -> None:
     df["n_findings"] = df["cluster_id"].map(sig.groupby("cluster_id")["finding_type"].nunique())
     if grade_path.exists():
         gr = pd.read_csv(grade_path)
+        if "k" not in gr or not gr["k"].eq(K).all():
+            raise ValueError("Grade metrics must match the requested k")
         ok = gr[(gr["rho"] > 0) & (gr["rho_q"] < 0.05)]
         df["grade_passed"] = df["cluster_id"].isin(ok["cluster_id"]).astype(int)
         df["best_rho"] = df["cluster_id"].map(gr.groupby("cluster_id")["rho"].max())
+    df.insert(0, "k", K)
     df.to_csv(ROOT / f"cluster_quality_metrics_k{K}.csv", index=False)
 
     print("\n=== 候補158クラスタの指標分布 ===")

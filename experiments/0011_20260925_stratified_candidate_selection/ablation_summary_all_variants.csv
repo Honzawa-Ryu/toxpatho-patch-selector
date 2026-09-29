@@ -1,0 +1,7 @@
+method,tissue_filter,candidates,median_best_slide_precision,recovered_fatty_anchors,retained_background_anchors
+A_global,False,330,0.700098814229249,0,2
+A_global,True,312,0.6952837140751658,0,0
+B1_local_control,False,337,0.6534536891679749,4,1
+B1_local_control,True,303,0.6666666666666666,4,0
+B2_global_control,False,414,0.580952380952381,4,1
+B2_global_control,True,382,0.5929064657878217,4,0

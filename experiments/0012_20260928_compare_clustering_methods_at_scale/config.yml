@@ -1,0 +1,92 @@
+# ============================================================
+# Experiment Configuration — 0012: 大規模版でのクラスタリング手法・粒度・seed比較
+# ============================================================
+# 目的: 0009の採用設定（MiniBatchKMeans k=2000）を、手法（MiniBatch / 全点Lloyd /
+# Leiden / Ward / コンセンサス）・粒度（k=250〜10000）・seed（初期値のみ／部分集合も）で
+# 振って比べる。候補選定は analysis_protocol.json の採用条件（方式A）で固定し、
+# 変えるのはクラスタリングだけ。
+#
+# 段（--stage）ごとに1タスク=1原子単位。タスク一覧はexperiment.pyが下の定義から
+# 決定的に展開する（手法ごとにパラメータの形が違い、直積にならないため）。
+# ============================================================
+
+seed: 42
+
+# --- 入力 ---
+# クラスタリングは0009のembedding cache（3,441枚・PCA64・L2正規化済み）をそのまま使う。
+# 評価（候補選定・所見対応・LOCO）はunknown/個体重複を除いた3,357枚のみ。
+cache_manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
+embedding_cache_dir: "outputs/0009_20260919_tier1_corpus_clustering/embedding_cache"
+eval_manifest_parquet: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet"
+
+# 既存の採用クラスタ（比較の基準線。再計算しない）
+reference_labelings:
+  adopted_mb_k2000:
+    parquet: "outputs/0009_20260919_tier1_corpus_clustering/kmeans_k_sweep_part3/cluster_assignments.parquet"
+    column: "cluster_kmeans_k2000"
+
+# 319枚パイロットの旧候補patch（座標で照合済み）。移動先が候補に残るかを見る。
+anchors:
+  matched_patches: "outputs/0010_20260925_pathology_benchmark_subset/scale_trace/matched_patches.parquet"
+  old_cluster_stats: "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/cluster_stats.parquet"
+  families:
+    cholesterol_fatty: [42, 53]
+    ccl4_composite: [4, 5, 14, 52, 62, 67]
+    wy14643_composite: [0, 21, 25, 55, 65, 77, 93]
+
+# --- 部分集合（クラスタ学習用）と全patchからのkNN ---
+# 部分集合ごとに全55M patchの最近傍15点を1回だけ計算して保存し、
+# 同じ部分集合を使う全runで伝播（多数決）に使い回す。
+subsamples:
+  S0: {size: 200000, seed: 0, graph: true}   # 主部分集合。Leiden/コンセンサスもここ
+  S1: {size: 200000, seed: 1}
+  S2: {size: 200000, seed: 2}
+  S3: {size: 200000, seed: 3}
+  S4: {size: 200000, seed: 4}
+  L0: {size: 1000000, seed: 0}               # k>=5000 と Ward の微小クラスタ用
+propagate_k: 15
+knn_k: 15              # 部分集合内kNNグラフ（Leiden・コンセンサス）
+knn_chunk: 1024
+propagate_chunk: 4096
+
+# --- クラスタリングのグリッド ---
+# 各行は method × subsample × param × init_seed の直積に展開される。
+grid:
+  - {method: minibatch, subsample: [S0], k: [250, 500, 1000, 2000, 3000, 5000], init_seed: [0, 1, 2, 3, 4]}
+  - {method: lloyd,     subsample: [S0], k: [250, 500, 1000, 2000, 3000, 5000], init_seed: [0, 1, 2, 3, 4]}
+  - {method: minibatch, subsample: [S1, S2, S3, S4], k: [1000, 2000, 5000], init_seed: [0]}
+  - {method: minibatch, subsample: [L0], k: [5000, 10000], init_seed: [0, 1, 2]}
+  - {method: lloyd,     subsample: [L0], k: [5000, 10000], init_seed: [0, 1, 2]}
+  - {method: leiden,    subsample: [S0], resolution: [1, 4, 16, 64, 256], init_seed: [0, 1, 2]}
+  # 2026-09-29追加: 5000〜10000クラスタ帯（r=256で約3300、約4倍ごとに約3.8倍）
+  - {method: leiden,    subsample: [S0], resolution: [512, 1024], init_seed: [0, 1, 2]}
+
+minibatch: {batch_size: 10000, n_init: 3, max_iter: 300}   # 0009と同一
+lloyd: {max_iter: 300, tol: 1.0e-4}
+
+# 微小クラスタ（L0上のLloyd）→ 重心のWard法 → 複数のkで切る
+ward:
+  subsample: L0
+  micro_k: 20000
+  seed: 0
+  cuts: [500, 1000, 2000, 3000, 5000, 10000]
+
+# コンセンサス: S0上のk-means全run（MiniBatch+Lloyd, 全k・全seed）を合議。
+# S0のkNNグラフの各辺に「同じクラスタに入ったrunの割合」を重みとして載せ、Leidenで切る。
+consensus:
+  subsample: S0
+  member_methods: [minibatch, lloyd]
+  resolutions: [1, 4, 16, 64, 256, 512, 1024]
+  seed: 0
+  pac_band: [0.1, 0.9]    # 辺単位のPAC: 共起割合がこの区間にある辺の割合（曖昧さ）
+
+# --- 評価（analysis_protocol.json の採用条件と同一）---
+presence_eps: 0.001
+min_treated_presence: 0.0
+q_threshold: 0.05
+min_compounds: 1
+max_finding_types: 36
+precision_threshold: 0.8
+min_carrier_slides: 20
+stability_sample: 1000000      # ARI・内部指標用の固定patch標本（全runで共通）
+internal_index_sample: 20000   # silhouette用

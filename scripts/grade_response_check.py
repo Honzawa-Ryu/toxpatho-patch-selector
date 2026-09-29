@@ -122,7 +122,8 @@ def main() -> None:
     gr_df = pd.DataFrame(rows)
     from scipy.stats import false_discovery_control
     gr_df["rho_q"] = false_discovery_control(np.clip(gr_df["rho_p"].to_numpy(), 0, 1), method="bh")
-    gr_df.to_csv(ROOT / "grade_response.csv", index=False)
+    gr_df.insert(0, "k", K)
+    gr_df.to_csv(ROOT / f"grade_response_k{K}.csv", index=False)
 
     passed = gr_df[(gr_df["rho"] > 0) & (gr_df["rho_q"] < 0.05)]
     print("=== 等級との用量反応チェック ===")
@@ -148,7 +149,7 @@ def main() -> None:
             ["cluster_id", "finding_type", "odds_ratio", "n_slides_with_finding", "rho", "rho_q"]
         ].round(4).to_string(index=False))
 
-    print(f"\nwrote {ROOT / 'grade_response.csv'}")
+    print(f"\nwrote {ROOT / f'grade_response_k{K}.csv'}")
 
 
 if __name__ == "__main__":

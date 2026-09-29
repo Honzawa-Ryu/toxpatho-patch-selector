@@ -1,0 +1,10 @@
+{
+  "fixed_clustering": true,
+  "k": 2000,
+  "pathology_verified": false,
+  "sources": {
+    "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet": "154a3e96d42a2178a018ef056fe0a18a31dadd123be33873ddd6114861a40642",
+    "data/corrected/open_tggates_individual.csv": "4b9868115eee2a20c86a7015c4f5884769c08946caae4f3dbe0400b1649a3c1e",
+    "scripts/audit_tier1_labels.py": "903fd9be75059589f10adb2fe6d76aef7e4768a02660cfa71e34aae98add5013"
+  }
+}

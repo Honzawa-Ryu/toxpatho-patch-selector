@@ -1,0 +1,10 @@
+compound_name,exp_id,role,n_slides
+fenofibrate,434,control,10
+fenofibrate,434,positive,10
+fenofibrate,434,treated_negative,10
+gemfibrozil,184,control,10
+gemfibrozil,184,positive,10
+gemfibrozil,184,treated_negative,10
+lomustine,311,control,10
+lomustine,311,positive,10
+lomustine,311,treated_negative,10

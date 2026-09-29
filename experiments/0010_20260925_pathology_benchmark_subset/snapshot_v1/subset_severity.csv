@@ -1,0 +1,14 @@
+compound_name,role,target_grades,n_slides
+fenofibrate,control,,10
+fenofibrate,positive,minimal,5
+fenofibrate,positive,moderate,1
+fenofibrate,positive,slight,4
+fenofibrate,treated_negative,,10
+gemfibrozil,control,,10
+gemfibrozil,positive,minimal,8
+gemfibrozil,positive,slight,2
+gemfibrozil,treated_negative,,10
+lomustine,control,,10
+lomustine,positive,moderate,8
+lomustine,positive,slight,2
+lomustine,treated_negative,,10

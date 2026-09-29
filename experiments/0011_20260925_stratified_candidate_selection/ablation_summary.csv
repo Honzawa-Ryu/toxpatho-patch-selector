@@ -1,0 +1,5 @@
+method,tissue_filter,candidates,median_best_slide_precision,tissue_below_085,recovered_fatty_anchors,retained_morphology_anchors,retained_background_anchors
+global,False,330,0.700098814229249,18,0,6,2
+global,True,312,0.6952837140751658,0,0,6,0
+stratified,False,337,0.6534536891679749,34,4,6,1
+stratified,True,303,0.6666666666666666,0,4,6,0

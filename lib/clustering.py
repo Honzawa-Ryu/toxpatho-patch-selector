@@ -146,15 +146,104 @@ def leiden_clusters(
         weights = np.where(in_feat, 1.0, 0.0) + np.where(in_spatial, spatial_weight, 0.0)
         graph = ig.Graph(n=n, edges=[tuple(e) for e in all_pairs], directed=False)
 
+    return _leiden_partition(graph, weights, resolution, seed, n_iterations)
+
+
+def leiden_on_edges(
+    n: int, pairs: np.ndarray, weights: np.ndarray, resolution: float, seed: int, n_iterations: int = -1
+) -> np.ndarray:
+    """Leiden on an explicit weighted undirected edge list (i < j pairs).
+
+    コンセンサスクラスタリング用。kNNグラフの辺に「複数runで同じクラスタに入った
+    割合」を重みとして載せたグラフを切る。重み0の辺は呼び出し側で落とすこと。
+    """
+    import igraph as ig
+
+    graph = ig.Graph(n=n, edges=[tuple(e) for e in pairs], directed=False)
+    return _leiden_partition(graph, np.asarray(weights, dtype=float), resolution, seed, n_iterations)
+
+
+def _leiden_partition(graph, weights, resolution: float, seed: int, n_iterations: int) -> np.ndarray:
+    import leidenalg
+
     partition = leidenalg.find_partition(
         graph,
         leidenalg.RBConfigurationVertexPartition,
         resolution_parameter=resolution,
         seed=seed,
         n_iterations=n_iterations,
-        weights=weights,
+        weights=None if weights is None else list(weights),
     )
     return np.asarray(partition.membership, dtype=np.int64)
+
+
+def kmeans_lloyd(
+    features: np.ndarray,
+    k: int,
+    seed: int,
+    device: torch.device,
+    max_iter: int = 300,
+    tol: float = 1e-4,
+    chunk: int = 8192,
+) -> tuple[np.ndarray, np.ndarray, int]:
+    """Full-batch Lloyd k-means (k-means++ init) on GPU.
+
+    MiniBatchKMeansの揺れが「ミニバッチ近似」由来か「データに切れ目がない」由来かを
+    分けるための比較対照。初期化は全点を使うgreedy k-means++（sklearnと同じ方式）、
+    収束判定は重心の相対移動量（sklearnと同じくinertiaではなく重心シフト）。
+
+    Returns:
+        (labels (n,) int64, centers (k, d) float32, n_iterations run)
+    """
+    gen = torch.Generator(device=device).manual_seed(seed)
+    x = torch.from_numpy(np.ascontiguousarray(features, dtype=np.float32)).to(device)
+    n = len(x)
+
+    def nearest(centers: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        labels = torch.empty(n, dtype=torch.int64, device=device)
+        dmin = torch.empty(n, dtype=torch.float32, device=device)
+        for start in range(0, n, chunk):
+            d = torch.cdist(x[start:start + chunk], centers)
+            dmin[start:start + chunk], labels[start:start + chunk] = d.min(dim=1)
+        return labels, dmin
+
+    # greedy k-means++（sklearnと同じ: 各ステップで2+log(k)個の候補を引き、
+    # 総ポテンシャルが最も下がるものを採る）。素朴なk-means++だと分離の良い塊でも
+    # 1つの塊に2重心・2つの塊に1重心という初期値が残り、Lloydでは直らない。
+    n_trials = 2 + int(np.log(k))
+    centers = torch.empty((k, x.shape[1]), dtype=torch.float32, device=device)
+    centers[0] = x[torch.randint(n, (1,), generator=gen, device=device)]
+    d2 = ((x - centers[0]) ** 2).sum(dim=1)
+    for i in range(1, k):
+        trials = torch.multinomial(d2, n_trials, replacement=True, generator=gen)
+        cand = torch.minimum(d2[None, :], torch.cdist(x[trials], x) ** 2)
+        best = int(cand.sum(dim=1).argmin())
+        centers[i] = x[trials[best]]
+        d2 = cand[best]
+
+    scale = float(x.var(dim=0).mean())
+    for iteration in range(1, max_iter + 1):
+        labels, _ = nearest(centers)
+        sums = torch.zeros_like(centers).index_add_(0, labels, x)
+        counts = torch.bincount(labels, minlength=k).to(torch.float32)
+        empty = counts == 0
+        new_centers = torch.where(empty[:, None], centers, sums / counts.clamp(min=1)[:, None])
+        if empty.any():
+            # 空クラスタは現重心から最も遠い点で埋め直す（sklearnのLloydと同じ方針）。
+            _, dmin = nearest(new_centers)
+            far = dmin.topk(int(empty.sum())).indices
+            new_centers[empty] = x[far]
+        shift = float(((new_centers - centers) ** 2).sum())
+        centers = new_centers
+        if shift <= tol * scale:
+            break
+
+    labels, _ = nearest(centers)
+    out = labels.cpu().numpy(), centers.cpu().numpy(), iteration
+    del x
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+    return out
 
 
 def dbscan_clusters(features: np.ndarray, eps: float, min_samples: int) -> np.ndarray:
@@ -162,6 +251,52 @@ def dbscan_clusters(features: np.ndarray, eps: float, min_samples: int) -> np.nd
     from sklearn.cluster import DBSCAN
 
     return DBSCAN(eps=eps, min_samples=min_samples, n_jobs=-1).fit_predict(features)
+
+
+def knn_to_reference(
+    features: np.ndarray, reference: np.ndarray, k: int, device: torch.device, chunk: int = 4096
+) -> np.ndarray:
+    """Exact k nearest reference points for every query point, (n, k) int32.
+
+    同じ部分集合に対して何度も伝播するとき（同じ部分集合上でseed・手法だけを
+    変えるrun）、ここを1回だけ計算して保存しておけば、伝播はvote_labels()だけで済む。
+    """
+    ref = torch.from_numpy(np.ascontiguousarray(reference)).to(device)
+    out = np.empty((len(features), min(k, len(ref))), dtype=np.int32)
+    for start in range(0, len(features), chunk):
+        stop = min(start + chunk, len(features))
+        # featuresはmemmapでもよい（55M patchのキャッシュをRAMに載せずに読む）
+        block = torch.from_numpy(np.ascontiguousarray(features[start:stop])).to(device)
+        _, idx = torch.cdist(block, ref).topk(out.shape[1], largest=False)
+        out[start:stop] = idx.cpu().numpy()
+    del ref
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+    return out
+
+
+def vote_labels(
+    neighbor_idx: np.ndarray, reference_labels: np.ndarray, device: torch.device, chunk: int = 4096
+) -> np.ndarray:
+    """Majority label among each point's reference neighbours (ties -> smallest label).
+
+    reference_labels may contain -1 (DBSCAN noise); it is treated as a label of
+    its own, so a point surrounded by noise is also called noise.
+    """
+    offset = 1 if reference_labels.min() < 0 else 0
+    shifted = torch.from_numpy(np.asarray(reference_labels, dtype=np.int64) + offset).to(device)
+    big = int(shifted.max().item()) + 2
+    out = np.empty(len(neighbor_idx), dtype=np.int64)
+    for start in range(0, len(neighbor_idx), chunk):
+        stop = min(start + chunk, len(neighbor_idx))
+        idx = torch.from_numpy(np.asarray(neighbor_idx[start:stop], dtype=np.int64)).to(device)
+        votes = shifted[idx]
+        # ラベル数に依存しない多数決: 各近傍について同じラベルの近傍数を数える
+        # （k×kの比較）。同数なら小さいラベル（従来のscatter+argmaxと同じ規則）。
+        support = (votes[:, :, None] == votes[:, None, :]).sum(dim=2)
+        best = (support * big - votes).argmax(dim=1)
+        out[start:stop] = votes.gather(1, best[:, None]).squeeze(1).cpu().numpy()
+    return out - offset
 
 
 def propagate_labels(
@@ -177,29 +312,6 @@ def propagate_labels(
     Majority vote rather than nearest-centroid on purpose: Leiden and DBSCAN
     clusters can be elongated or non-convex, and collapsing them to a centroid
     would hand back exactly the shape assumption those methods avoid.
-
-    reference_labels may contain -1 (DBSCAN noise); it is treated as a label of
-    its own, so a point surrounded by noise is also called noise.
     """
-    offset = 1 if reference_labels.min() < 0 else 0
-    shifted = torch.from_numpy(reference_labels + offset).to(device)
-    n_labels = int(shifted.max().item()) + 1
-
-    ref = torch.from_numpy(reference).to(device)
-    query = torch.from_numpy(features)
-    out = np.empty(len(features), dtype=np.int64)
-
-    for start in range(0, len(features), chunk):
-        stop = min(start + chunk, len(features))
-        block = query[start:stop].to(device)
-        d = torch.cdist(block, ref)
-        _, idx = d.topk(min(k, len(ref)), largest=False)
-        votes = shifted[idx]
-        counts = torch.zeros(len(block), n_labels, device=device)
-        counts.scatter_add_(1, votes, torch.ones_like(votes, dtype=counts.dtype))
-        out[start:stop] = counts.argmax(dim=1).cpu().numpy()
-
-    del ref
-    if device.type == "cuda":
-        torch.cuda.empty_cache()
-    return out - offset
+    neighbor_idx = knn_to_reference(features, reference, k, device, chunk=chunk)
+    return vote_labels(neighbor_idx, reference_labels, device, chunk=chunk)

@@ -58,7 +58,11 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--dup-threshold", type=float, default=0.9,
                     help="この保有内率を複数所見で超えるクラスタにDUPフラグを立てる")
+    ap.add_argument("--secondary-min-precision", type=float, default=0.7)
     args = ap.parse_args()
+    out_root = ROOT / (args.out_name or f"exemplars_ranked_k{args.k}")
+    if out_root.exists():
+        raise SystemExit("Output exists; choose a new --out-name to preserve the previous review set")
 
     import pyarrow.parquet as pq
 
@@ -86,12 +90,16 @@ def main() -> int:
 
     # ── 組織割合フィルタ ──────────────────────────────────────────────────
     qm_path = ROOT / f"cluster_quality_metrics_k{args.k}.csv"
-    if not qm_path.exists():
-        qm_path = ROOT / "cluster_quality_metrics.csv"
+    if args.min_tissue_frac > 0 and not qm_path.exists():
+        raise FileNotFoundError(f"Missing k-specific quality table: {qm_path}")
     dropped = []
     if args.min_tissue_frac > 0 and qm_path.exists():
         qm = pd.read_csv(qm_path).set_index("cluster_id")
-        tf = qm["tissue_frac_cc"] if "tissue_frac_cc" in qm else qm["tissue_frac_mean"]
+        if "k" not in qm or not qm["k"].eq(args.k).all():
+            raise ValueError("Quality table must contain the matching k")
+        tf = qm["tissue_frac_cc"]
+        if not qm.index.is_unique or tf.reindex(cand).isna().any():
+            raise ValueError("Missing or duplicate candidate quality measurements")
         dropped = [int(c) for c in cand if tf.get(c, 1.0) < args.min_tissue_frac]
         cand = np.array([c for c in cand if tf.get(c, 1.0) >= args.min_tissue_frac])
         print(f"組織割合 >= {args.min_tissue_frac}: {len(cand)}クラスタ "
@@ -216,10 +224,13 @@ def main() -> int:
         if cid not in made:
             continue
         real = Path(made[cid])
-        for f in sig[sig["cluster_id"] == cid]["finding_type"]:
+        secondary = sig[(sig["cluster_id"] == cid) & (sig["保有内率"] >= args.secondary_min_precision)]
+        for assoc in secondary.to_dict("records"):
+            f = assoc["finding_type"]
             if f == row["primary_finding"]:
                 continue
-            link = out_root / _safe(f) / real.name
+            name = f"p{assoc['保有内率']:.2f}_n{int(assoc['n_carrying'])}_cluster_{cid:05d}.png"
+            link = out_root / _safe(f) / name
             link.parent.mkdir(parents=True, exist_ok=True)
             if not link.exists() and not link.is_symlink():
                 link.symlink_to(real)

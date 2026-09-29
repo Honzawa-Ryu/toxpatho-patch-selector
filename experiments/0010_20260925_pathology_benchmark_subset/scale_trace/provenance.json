@@ -1,0 +1,28 @@
+{
+  "source_old": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4",
+  "source_large": "outputs/0009_20260919_tier1_corpus_clustering",
+  "matched_key": [
+    "slide_id",
+    "x",
+    "y"
+  ],
+  "matched_patches": 5111952,
+  "evaluation_slides": 3357,
+  "seed": 20260925,
+  "sampling": "uniform without replacement within control/treated, preserving full corpus ratio; 30 replicates",
+  "fixed_vocabulary": true,
+  "source_script_sha256": "69de70355ce87374ff46ae93ae520b26d250365b6c99952e62a33a0a968bd12c",
+  "caution": "k, PCA, training sample and assignment method differ; correspondence is descriptive, not causal",
+  "correspondence_rule": "at least 100 shared patches and >=50% from the union of 19 old candidates",
+  "artifacts": {
+    "slide_count_sensitivity.csv": "93a9e7903238a72bac77ee2746e0522c3705c5faaad80ddfdf0523719b2b4bb2",
+    "destinations.csv": "8ddd601703d98f2bea58b5d5f417e107c38bd038004201b6424eb743f6c4d2d5",
+    "large_k100_stats.csv": "a038d226c3e26fbee49c7c3f9b5557a5a9a4e564528994065a93e5e5d5d097e1",
+    "large_k2000_stats.csv": "d3f4e6fb93bc27ecdf47c611e5b66780dabdd21fba8177225986e4bb5afbefff",
+    "candidate_profiles_k2000.csv": "3568a55a4d297a597a1d5d0a2ef9c1c06ee80eb829ff2023a10398203f14f0ae",
+    "large_k2000_associations.csv": "1845ab941f232c551d09e37d28e1fa8ad78296a908b08ef4ef10664a610281bd",
+    "old_cluster_retention.csv": "9bbccac64e7c7cb501f05ee6c58b9a8b013939603868a72d7826b63334f825b0",
+    "run_summary.csv": "b89970abb7b7071f856a23b964b1b0a35ba31f7474e959ed3fc29a38fc9282b1",
+    "large_k1000_stats.csv": "c81f003ee84487bf1a9810116bf3e195bf1b1787c19256cd338e7a988048ec38"
+  }
+}

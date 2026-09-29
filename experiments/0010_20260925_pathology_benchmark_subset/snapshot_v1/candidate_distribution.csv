@@ -1,0 +1,179 @@
+FINDING_TYPE,compound_name,exp_id,dose_level,sacrifice_period,TOPOGRAPHY_TYPE,GRADE_TYPE,n_slides
+"Degeneration, fatty",1% cholesterol + 0.25% sodium cholate,698,High,15 day,Peripheral,moderate,5
+"Degeneration, fatty",1% cholesterol + 0.25% sodium cholate,698,High,29 day,Peripheral,severe,5
+"Degeneration, fatty",1% cholesterol + 0.25% sodium cholate,698,High,4 day,Peripheral,slight,5
+"Degeneration, fatty",1% cholesterol + 0.25% sodium cholate,698,High,8 day,Peripheral,slight,5
+"Degeneration, fatty",carbon tetrachloride,67,High,15 day,Centrilobular,moderate,1
+"Degeneration, fatty",carbon tetrachloride,67,High,15 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,High,29 day,Centrilobular,moderate,2
+"Degeneration, fatty",carbon tetrachloride,67,High,29 day,Centrilobular,severe,1
+"Degeneration, fatty",carbon tetrachloride,67,High,29 day,Centrilobular,slight,2
+"Degeneration, fatty",carbon tetrachloride,67,High,4 day,Centrilobular,minimal,1
+"Degeneration, fatty",carbon tetrachloride,67,High,4 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,High,8 day,Centrilobular,moderate,1
+"Degeneration, fatty",carbon tetrachloride,67,High,8 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,Low,15 day,Centrilobular,minimal,1
+"Degeneration, fatty",carbon tetrachloride,67,Low,15 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,Low,29 day,Centrilobular,slight,5
+"Degeneration, fatty",carbon tetrachloride,67,Low,4 day,Centrilobular,minimal,4
+"Degeneration, fatty",carbon tetrachloride,67,Low,4 day,Centrilobular,slight,1
+"Degeneration, fatty",carbon tetrachloride,67,Low,8 day,Centrilobular,minimal,1
+"Degeneration, fatty",carbon tetrachloride,67,Low,8 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,Middle,15 day,Centrilobular,slight,5
+"Degeneration, fatty",carbon tetrachloride,67,Middle,29 day,Centrilobular,moderate,1
+"Degeneration, fatty",carbon tetrachloride,67,Middle,29 day,Centrilobular,slight,4
+"Degeneration, fatty",carbon tetrachloride,67,Middle,4 day,Centrilobular,slight,5
+"Degeneration, fatty",carbon tetrachloride,67,Middle,8 day,Centrilobular,slight,5
+"Degeneration, granular, eosinophilic",WY-14643,182,High,15 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,High,29 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,High,4 day,Hepatocyte,moderate,5
+"Degeneration, granular, eosinophilic",WY-14643,182,High,8 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Low,15 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Low,29 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Low,4 day,Hepatocyte,moderate,3
+"Degeneration, granular, eosinophilic",WY-14643,182,Low,4 day,Hepatocyte,slight,2
+"Degeneration, granular, eosinophilic",WY-14643,182,Low,8 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Middle,15 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Middle,29 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Middle,4 day,Hepatocyte,moderate,5
+"Degeneration, granular, eosinophilic",WY-14643,182,Middle,8 day,Hepatocyte,severe,5
+"Degeneration, granular, eosinophilic",clofibrate,99,High,15 day,Centrilobular,minimal,5
+"Degeneration, granular, eosinophilic",clofibrate,99,High,29 day,Centrilobular,slight,5
+"Degeneration, granular, eosinophilic",clofibrate,99,High,8 day,Centrilobular,minimal,5
+"Degeneration, granular, eosinophilic",clofibrate,99,Middle,29 day,Centrilobular,minimal,4
+"Degeneration, granular, eosinophilic",fenofibrate,434,High,15 day,Hepatocyte,moderate,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,High,29 day,Hepatocyte,moderate,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,High,4 day,Hepatocyte,minimal,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,High,8 day,Hepatocyte,slight,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,Low,15 day,Hepatocyte,minimal,1
+"Degeneration, granular, eosinophilic",fenofibrate,434,Low,29 day,Hepatocyte,minimal,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,15 day,Hepatocyte,slight,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,29 day,Hepatocyte,moderate,1
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,29 day,Hepatocyte,slight,4
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,4 day,Hepatocyte,minimal,5
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,8 day,Hepatocyte,minimal,1
+"Degeneration, granular, eosinophilic",fenofibrate,434,Middle,8 day,Hepatocyte,slight,4
+"Degeneration, granular, eosinophilic",gemfibrozil,184,High,15 day,Hepatocyte,slight,5
+"Degeneration, granular, eosinophilic",gemfibrozil,184,High,29 day,Hepatocyte,moderate,3
+"Degeneration, granular, eosinophilic",gemfibrozil,184,High,29 day,Hepatocyte,severe,2
+"Degeneration, granular, eosinophilic",gemfibrozil,184,High,8 day,Hepatocyte,minimal,5
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Low,15 day,Hepatocyte,minimal,1
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Low,29 day,Hepatocyte,minimal,4
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Middle,15 day,Hepatocyte,minimal,3
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Middle,15 day,Hepatocyte,slight,2
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Middle,29 day,Hepatocyte,moderate,1
+"Degeneration, granular, eosinophilic",gemfibrozil,184,Middle,29 day,Hepatocyte,slight,4
+"Degeneration, granular, eosinophilic",lomustine,311,High,15 day,Hepatocyte,moderate,3
+"Degeneration, granular, eosinophilic",lomustine,311,High,15 day,Hepatocyte,slight,2
+"Degeneration, granular, eosinophilic",lomustine,311,High,29 day,Hepatocyte,moderate,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,High,15 day,,moderate,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,High,29 day,,severe,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,High,4 day,,slight,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,High,8 day,,moderate,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,Low,29 day,,minimal,2
+"Degeneration, granular, eosinophilic",thioacetamide,117,Middle,15 day,,slight,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,Middle,29 day,,slight,5
+"Degeneration, granular, eosinophilic",thioacetamide,117,Middle,8 day,,slight,5
+Necrosis,1% cholesterol + 0.25% sodium cholate,698,High,15 day,Hepatocyte,slight,3
+Necrosis,1% cholesterol + 0.25% sodium cholate,698,High,29 day,Hepatocyte,slight,1
+Necrosis,1% cholesterol + 0.25% sodium cholate,698,High,8 day,Hepatocyte,slight,1
+Necrosis,WY-14643,182,Control,29 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,High,15 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,High,29 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,High,4 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,High,8 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,Low,15 day,Hepatocyte,minimal,1
+Necrosis,WY-14643,182,Low,29 day,Hepatocyte,minimal,2
+Necrosis,WY-14643,182,Low,8 day,Hepatocyte,minimal,2
+Necrosis,WY-14643,182,Middle,15 day,Hepatocyte,minimal,2
+Necrosis,WY-14643,182,Middle,29 day,Hepatocyte,slight,1
+Necrosis,acetamidofluorene,569,High,4 day,,minimal,1
+Necrosis,acetamidofluorene,569,Low,8 day,,minimal,1
+Necrosis,acetaminophen,42,High,29 day,Centrilobular,minimal,1
+Necrosis,acetaminophen,42,High,4 day,Centrilobular,minimal,3
+Necrosis,acetaminophen,42,High,8 day,Centrilobular,minimal,1
+Necrosis,acetaminophen,42,Middle,4 day,Centrilobular,minimal,1
+Necrosis,allyl alcohol,103,High,15 day,Periportal,minimal,1
+Necrosis,allyl alcohol,103,High,15 day,Periportal,slight,2
+Necrosis,allyl alcohol,103,High,4 day,Periportal,minimal,2
+Necrosis,allyl alcohol,103,High,4 day,,minimal,1
+Necrosis,allyl alcohol,103,High,8 day,Periportal,minimal,1
+Necrosis,allyl alcohol,103,High,8 day,Periportal,slight,3
+Necrosis,allyl alcohol,103,Middle,15 day,,minimal,1
+Necrosis,amitriptyline,368,Low,4 day,Hepatocyte,minimal,1
+Necrosis,amitriptyline,368,Low,8 day,Hepatocyte,minimal,1
+Necrosis,amitriptyline,368,Middle,8 day,Hepatocyte,minimal,1
+Necrosis,aspirin,128,Control,8 day,,minimal,1
+Necrosis,aspirin,128,High,15 day,,minimal,2
+Necrosis,aspirin,128,Low,15 day,,minimal,1
+Necrosis,aspirin,128,Low,8 day,,minimal,1
+Necrosis,clofibrate,99,Control,4 day,,minimal,1
+Necrosis,clofibrate,99,High,8 day,,minimal,1
+Necrosis,diltiazem,413,Control,8 day,,minimal,1
+Necrosis,diltiazem,413,High,15 day,,minimal,1
+Necrosis,ethinylestradiol,305,Control,15 day,Hepatocyte,slight,1
+Necrosis,ethinylestradiol,305,Control,8 day,Hepatocyte,minimal,1
+Necrosis,ethinylestradiol,305,High,4 day,Hepatocyte,minimal,1
+Necrosis,ethinylestradiol,305,High,8 day,Hepatocyte,minimal,1
+Necrosis,ethinylestradiol,305,Low,15 day,Hepatocyte,minimal,1
+Necrosis,ethinylestradiol,305,Low,29 day,Hepatocyte,minimal,2
+Necrosis,ethinylestradiol,305,Low,4 day,Hepatocyte,minimal,1
+Necrosis,ethinylestradiol,305,Middle,4 day,Hepatocyte,minimal,2
+Necrosis,ethinylestradiol,305,Middle,8 day,Hepatocyte,minimal,1
+Necrosis,ethionamide,585,Control,4 day,Subserosa,minimal,1
+Necrosis,ethionamide,585,High,4 day,Centrilobular,minimal,1
+Necrosis,ethionamide,585,Low,15 day,Subserosa,minimal,1
+Necrosis,ethionamide,585,Low,4 day,Subserosa,minimal,1
+Necrosis,ethionine,126,Control,29 day,,slight,1
+Necrosis,ethionine,126,Control,8 day,,slight,1
+Necrosis,ethionine,126,Middle,8 day,,minimal,1
+Necrosis,gemfibrozil,184,Control,29 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,Control,4 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,High,15 day,Hepatocyte,minimal,2
+Necrosis,gemfibrozil,184,High,29 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,Low,15 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,Middle,15 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,Middle,29 day,Hepatocyte,minimal,1
+Necrosis,gemfibrozil,184,Middle,4 day,Hepatocyte,minimal,1
+Necrosis,lomustine,311,Control,4 day,Subserosa,minimal,1
+Necrosis,lomustine,311,High,15 day,Midlobular,minimal,1
+Necrosis,lomustine,311,High,29 day,Midlobular,minimal,1
+Necrosis,lomustine,311,High,29 day,Midlobular,moderate,1
+Necrosis,lomustine,311,High,29 day,Midlobular,slight,2
+Necrosis,lomustine,311,Middle,15 day,Midlobular,minimal,1
+Necrosis,lornoxicam,538,Control,29 day,,minimal,1
+Necrosis,lornoxicam,538,Middle,29 day,,minimal,1
+Necrosis,lornoxicam,538,Middle,4 day,,slight,1
+Necrosis,mefenamic acid,378,Control,15 day,,minimal,1
+Necrosis,mefenamic acid,378,High,29 day,,minimal,1
+Necrosis,mefenamic acid,378,Middle,29 day,,minimal,1
+Necrosis,methylene dianiline,686,High,15 day,Bile duct cell,minimal,5
+Necrosis,methylene dianiline,686,High,15 day,Periportal,minimal,1
+Necrosis,methylene dianiline,686,High,4 day,Bile duct cell,minimal,5
+Necrosis,methylene dianiline,686,High,4 day,Periportal,minimal,2
+Necrosis,methylene dianiline,686,High,8 day,Bile duct cell,minimal,5
+Necrosis,methylene dianiline,686,High,8 day,Periportal,minimal,1
+Necrosis,methylene dianiline,686,Middle,4 day,Bile duct cell,minimal,2
+Necrosis,monocrotaline,280,High,15 day,Hepatocyte,moderate,4
+Necrosis,monocrotaline,280,High,15 day,Hepatocyte,severe,1
+Necrosis,monocrotaline,280,High,15 day,Hepatocyte,slight,1
+Necrosis,monocrotaline,280,High,4 day,Hepatocyte,slight,1
+Necrosis,monocrotaline,280,High,8 day,Hepatocyte,slight,2
+Necrosis,monocrotaline,280,Middle,29 day,Hepatocyte,slight,1
+Necrosis,naphthyl isothiocyanate,101,Control,29 day,,minimal,2
+Necrosis,naphthyl isothiocyanate,101,High,15 day,,minimal,3
+Necrosis,naphthyl isothiocyanate,101,High,29 day,,minimal,4
+Necrosis,naphthyl isothiocyanate,101,High,8 day,,minimal,2
+Necrosis,naproxen,348,High,4 day,Hepatocyte,slight,1
+Necrosis,nitrosodiethylamine,571,High,15 day,Centrilobular,minimal,1
+Necrosis,nitrosodiethylamine,571,High,4 day,Centrilobular,minimal,4
+Necrosis,nitrosodiethylamine,571,High,4 day,Centrilobular,slight,1
+Necrosis,nitrosodiethylamine,571,High,8 day,Centrilobular,slight,5
+Necrosis,nitrosodiethylamine,571,Low,29 day,Centrilobular,minimal,5
+Necrosis,nitrosodiethylamine,571,Middle,15 day,Centrilobular,minimal,5
+Necrosis,nitrosodiethylamine,571,Middle,29 day,Centrilobular,minimal,5
+Necrosis,nitrosodiethylamine,571,Middle,8 day,Centrilobular,minimal,5
+Necrosis,promethazine,494,High,4 day,Hepatocyte,minimal,1
+Necrosis,promethazine,494,Low,4 day,Hepatocyte,minimal,1
+Necrosis,ticlopidine,573,Low,29 day,,slight,1
+Necrosis,ticlopidine,573,Middle,4 day,,minimal,1

@@ -1,0 +1,4 @@
+finding,n_compounds,n_experiments,n_positive_slides,largest_compound,largest_compound_fraction,largest_experiment_fraction,n_known_facilities,facility_unknown_fraction,concern,decision
+Necrosis,23,23,160,nitrosodiethylamine,0.19375,0.19375,0,1.0,Different target cells/locations; minimal grades frequent; requires anatomical restriction,defer
+"Degeneration, fatty",2,2,80,carbon tetrachloride,0.75,0.75,0,1.0,Only two compounds; compound and topography are perfectly associated,defer
+"Degeneration, granular, eosinophilic",6,6,202,WY-14643,0.297029702970297,0.297029702970297,0,1.0,"Restrict to Hepatocyte; cofindings, dose and facility remain to audit",provisional_selection

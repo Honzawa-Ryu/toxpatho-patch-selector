@@ -1,0 +1,441 @@
+finding,topography,compound,same_dose_time_pairs
+Necrosis,Bile duct cell,1% cholesterol + 0.25% sodium cholate,0
+Necrosis,Bile duct cell,WY-14643,0
+Necrosis,Bile duct cell,acetamide,0
+Necrosis,Bile duct cell,acetamidofluorene,0
+Necrosis,Bile duct cell,acetaminophen,0
+Necrosis,Bile duct cell,allyl alcohol,0
+Necrosis,Bile duct cell,amitriptyline,0
+Necrosis,Bile duct cell,aspirin,0
+Necrosis,Bile duct cell,benzbromarone,0
+Necrosis,Bile duct cell,bucetin,0
+Necrosis,Bile duct cell,carbon tetrachloride,0
+Necrosis,Bile duct cell,clofibrate,0
+Necrosis,Bile duct cell,diltiazem,0
+Necrosis,Bile duct cell,disopyramide,0
+Necrosis,Bile duct cell,ethambutol,0
+Necrosis,Bile duct cell,ethinylestradiol,0
+Necrosis,Bile duct cell,ethionamide,0
+Necrosis,Bile duct cell,ethionine,0
+Necrosis,Bile duct cell,fenofibrate,0
+Necrosis,Bile duct cell,gemfibrozil,0
+Necrosis,Bile duct cell,hexachlorobenzene,0
+Necrosis,Bile duct cell,ibuprofen,0
+Necrosis,Bile duct cell,iproniazid,0
+Necrosis,Bile duct cell,lomustine,0
+Necrosis,Bile duct cell,lornoxicam,0
+Necrosis,Bile duct cell,mefenamic acid,0
+Necrosis,Bile duct cell,methapyrilene,0
+Necrosis,Bile duct cell,methylene dianiline,2
+Necrosis,Bile duct cell,monocrotaline,0
+Necrosis,Bile duct cell,naphthyl isothiocyanate,0
+Necrosis,Bile duct cell,naproxen,0
+Necrosis,Bile duct cell,nitrosodiethylamine,0
+Necrosis,Bile duct cell,papaverine,0
+Necrosis,Bile duct cell,phalloidin,0
+Necrosis,Bile duct cell,phenacetin,0
+Necrosis,Bile duct cell,phenobarbital,0
+Necrosis,Bile duct cell,phenytoin,0
+Necrosis,Bile duct cell,promethazine,0
+Necrosis,Bile duct cell,rosiglitazone maleate,0
+Necrosis,Bile duct cell,sulfasalazine,0
+Necrosis,Bile duct cell,theophylline,0
+Necrosis,Bile duct cell,thioacetamide,0
+Necrosis,Bile duct cell,ticlopidine,0
+Necrosis,Bile duct cell,vitamin A,0
+Necrosis,Centrilobular,1% cholesterol + 0.25% sodium cholate,0
+Necrosis,Centrilobular,WY-14643,0
+Necrosis,Centrilobular,acetamide,0
+Necrosis,Centrilobular,acetamidofluorene,0
+Necrosis,Centrilobular,acetaminophen,5
+Necrosis,Centrilobular,allyl alcohol,0
+Necrosis,Centrilobular,amitriptyline,0
+Necrosis,Centrilobular,aspirin,0
+Necrosis,Centrilobular,benzbromarone,0
+Necrosis,Centrilobular,bucetin,0
+Necrosis,Centrilobular,carbon tetrachloride,0
+Necrosis,Centrilobular,clofibrate,0
+Necrosis,Centrilobular,diltiazem,0
+Necrosis,Centrilobular,disopyramide,0
+Necrosis,Centrilobular,ethambutol,0
+Necrosis,Centrilobular,ethinylestradiol,0
+Necrosis,Centrilobular,ethionamide,1
+Necrosis,Centrilobular,ethionine,0
+Necrosis,Centrilobular,fenofibrate,0
+Necrosis,Centrilobular,gemfibrozil,0
+Necrosis,Centrilobular,hexachlorobenzene,0
+Necrosis,Centrilobular,ibuprofen,0
+Necrosis,Centrilobular,iproniazid,0
+Necrosis,Centrilobular,lomustine,0
+Necrosis,Centrilobular,lornoxicam,0
+Necrosis,Centrilobular,mefenamic acid,0
+Necrosis,Centrilobular,methapyrilene,0
+Necrosis,Centrilobular,methylene dianiline,0
+Necrosis,Centrilobular,monocrotaline,0
+Necrosis,Centrilobular,naphthyl isothiocyanate,0
+Necrosis,Centrilobular,naproxen,0
+Necrosis,Centrilobular,nitrosodiethylamine,0
+Necrosis,Centrilobular,papaverine,0
+Necrosis,Centrilobular,phalloidin,0
+Necrosis,Centrilobular,phenacetin,0
+Necrosis,Centrilobular,phenobarbital,0
+Necrosis,Centrilobular,phenytoin,0
+Necrosis,Centrilobular,promethazine,0
+Necrosis,Centrilobular,rosiglitazone maleate,0
+Necrosis,Centrilobular,sulfasalazine,0
+Necrosis,Centrilobular,theophylline,0
+Necrosis,Centrilobular,thioacetamide,0
+Necrosis,Centrilobular,ticlopidine,0
+Necrosis,Centrilobular,vitamin A,0
+Necrosis,Hepatocyte,1% cholesterol + 0.25% sodium cholate,4
+Necrosis,Hepatocyte,WY-14643,12
+Necrosis,Hepatocyte,acetamide,0
+Necrosis,Hepatocyte,acetamidofluorene,0
+Necrosis,Hepatocyte,acetaminophen,0
+Necrosis,Hepatocyte,allyl alcohol,0
+Necrosis,Hepatocyte,amitriptyline,3
+Necrosis,Hepatocyte,aspirin,0
+Necrosis,Hepatocyte,benzbromarone,0
+Necrosis,Hepatocyte,bucetin,0
+Necrosis,Hepatocyte,carbon tetrachloride,0
+Necrosis,Hepatocyte,clofibrate,0
+Necrosis,Hepatocyte,diltiazem,0
+Necrosis,Hepatocyte,disopyramide,0
+Necrosis,Hepatocyte,ethambutol,0
+Necrosis,Hepatocyte,ethinylestradiol,9
+Necrosis,Hepatocyte,ethionamide,0
+Necrosis,Hepatocyte,ethionine,0
+Necrosis,Hepatocyte,fenofibrate,0
+Necrosis,Hepatocyte,gemfibrozil,7
+Necrosis,Hepatocyte,hexachlorobenzene,0
+Necrosis,Hepatocyte,ibuprofen,0
+Necrosis,Hepatocyte,iproniazid,0
+Necrosis,Hepatocyte,lomustine,0
+Necrosis,Hepatocyte,lornoxicam,0
+Necrosis,Hepatocyte,mefenamic acid,0
+Necrosis,Hepatocyte,methapyrilene,0
+Necrosis,Hepatocyte,methylene dianiline,0
+Necrosis,Hepatocyte,monocrotaline,4
+Necrosis,Hepatocyte,naphthyl isothiocyanate,0
+Necrosis,Hepatocyte,naproxen,1
+Necrosis,Hepatocyte,nitrosodiethylamine,0
+Necrosis,Hepatocyte,papaverine,0
+Necrosis,Hepatocyte,phalloidin,0
+Necrosis,Hepatocyte,phenacetin,0
+Necrosis,Hepatocyte,phenobarbital,0
+Necrosis,Hepatocyte,phenytoin,0
+Necrosis,Hepatocyte,promethazine,2
+Necrosis,Hepatocyte,rosiglitazone maleate,0
+Necrosis,Hepatocyte,sulfasalazine,0
+Necrosis,Hepatocyte,theophylline,0
+Necrosis,Hepatocyte,thioacetamide,0
+Necrosis,Hepatocyte,ticlopidine,0
+Necrosis,Hepatocyte,vitamin A,0
+Necrosis,Midlobular,1% cholesterol + 0.25% sodium cholate,0
+Necrosis,Midlobular,WY-14643,0
+Necrosis,Midlobular,acetamide,0
+Necrosis,Midlobular,acetamidofluorene,0
+Necrosis,Midlobular,acetaminophen,0
+Necrosis,Midlobular,allyl alcohol,0
+Necrosis,Midlobular,amitriptyline,0
+Necrosis,Midlobular,aspirin,0
+Necrosis,Midlobular,benzbromarone,0
+Necrosis,Midlobular,bucetin,0
+Necrosis,Midlobular,carbon tetrachloride,0
+Necrosis,Midlobular,clofibrate,0
+Necrosis,Midlobular,diltiazem,0
+Necrosis,Midlobular,disopyramide,0
+Necrosis,Midlobular,ethambutol,0
+Necrosis,Midlobular,ethinylestradiol,0
+Necrosis,Midlobular,ethionamide,0
+Necrosis,Midlobular,ethionine,0
+Necrosis,Midlobular,fenofibrate,0
+Necrosis,Midlobular,gemfibrozil,0
+Necrosis,Midlobular,hexachlorobenzene,0
+Necrosis,Midlobular,ibuprofen,0
+Necrosis,Midlobular,iproniazid,0
+Necrosis,Midlobular,lomustine,3
+Necrosis,Midlobular,lornoxicam,0
+Necrosis,Midlobular,mefenamic acid,0
+Necrosis,Midlobular,methapyrilene,0
+Necrosis,Midlobular,methylene dianiline,0
+Necrosis,Midlobular,monocrotaline,0
+Necrosis,Midlobular,naphthyl isothiocyanate,0
+Necrosis,Midlobular,naproxen,0
+Necrosis,Midlobular,nitrosodiethylamine,0
+Necrosis,Midlobular,papaverine,0
+Necrosis,Midlobular,phalloidin,0
+Necrosis,Midlobular,phenacetin,0
+Necrosis,Midlobular,phenobarbital,0
+Necrosis,Midlobular,phenytoin,0
+Necrosis,Midlobular,promethazine,0
+Necrosis,Midlobular,rosiglitazone maleate,0
+Necrosis,Midlobular,sulfasalazine,0
+Necrosis,Midlobular,theophylline,0
+Necrosis,Midlobular,thioacetamide,0
+Necrosis,Midlobular,ticlopidine,0
+Necrosis,Midlobular,vitamin A,0
+Necrosis,Periportal,1% cholesterol + 0.25% sodium cholate,0
+Necrosis,Periportal,WY-14643,0
+Necrosis,Periportal,acetamide,0
+Necrosis,Periportal,acetamidofluorene,0
+Necrosis,Periportal,acetaminophen,0
+Necrosis,Periportal,allyl alcohol,5
+Necrosis,Periportal,amitriptyline,0
+Necrosis,Periportal,aspirin,0
+Necrosis,Periportal,benzbromarone,0
+Necrosis,Periportal,bucetin,0
+Necrosis,Periportal,carbon tetrachloride,0
+Necrosis,Periportal,clofibrate,0
+Necrosis,Periportal,diltiazem,0
+Necrosis,Periportal,disopyramide,0
+Necrosis,Periportal,ethambutol,0
+Necrosis,Periportal,ethinylestradiol,0
+Necrosis,Periportal,ethionamide,0
+Necrosis,Periportal,ethionine,0
+Necrosis,Periportal,fenofibrate,0
+Necrosis,Periportal,gemfibrozil,0
+Necrosis,Periportal,hexachlorobenzene,0
+Necrosis,Periportal,ibuprofen,0
+Necrosis,Periportal,iproniazid,0
+Necrosis,Periportal,lomustine,0
+Necrosis,Periportal,lornoxicam,0
+Necrosis,Periportal,mefenamic acid,0
+Necrosis,Periportal,methapyrilene,0
+Necrosis,Periportal,methylene dianiline,0
+Necrosis,Periportal,monocrotaline,0
+Necrosis,Periportal,naphthyl isothiocyanate,0
+Necrosis,Periportal,naproxen,0
+Necrosis,Periportal,nitrosodiethylamine,0
+Necrosis,Periportal,papaverine,0
+Necrosis,Periportal,phalloidin,0
+Necrosis,Periportal,phenacetin,0
+Necrosis,Periportal,phenobarbital,0
+Necrosis,Periportal,phenytoin,0
+Necrosis,Periportal,promethazine,0
+Necrosis,Periportal,rosiglitazone maleate,0
+Necrosis,Periportal,sulfasalazine,0
+Necrosis,Periportal,theophylline,0
+Necrosis,Periportal,thioacetamide,0
+Necrosis,Periportal,ticlopidine,0
+Necrosis,Periportal,vitamin A,0
+Necrosis,Subserosa,1% cholesterol + 0.25% sodium cholate,0
+Necrosis,Subserosa,WY-14643,0
+Necrosis,Subserosa,acetamide,0
+Necrosis,Subserosa,acetamidofluorene,0
+Necrosis,Subserosa,acetaminophen,0
+Necrosis,Subserosa,allyl alcohol,0
+Necrosis,Subserosa,amitriptyline,0
+Necrosis,Subserosa,aspirin,0
+Necrosis,Subserosa,benzbromarone,0
+Necrosis,Subserosa,bucetin,0
+Necrosis,Subserosa,carbon tetrachloride,0
+Necrosis,Subserosa,clofibrate,0
+Necrosis,Subserosa,diltiazem,0
+Necrosis,Subserosa,disopyramide,0
+Necrosis,Subserosa,ethambutol,0
+Necrosis,Subserosa,ethinylestradiol,0
+Necrosis,Subserosa,ethionamide,2
+Necrosis,Subserosa,ethionine,0
+Necrosis,Subserosa,fenofibrate,0
+Necrosis,Subserosa,gemfibrozil,0
+Necrosis,Subserosa,hexachlorobenzene,0
+Necrosis,Subserosa,ibuprofen,0
+Necrosis,Subserosa,iproniazid,0
+Necrosis,Subserosa,lomustine,0
+Necrosis,Subserosa,lornoxicam,0
+Necrosis,Subserosa,mefenamic acid,0
+Necrosis,Subserosa,methapyrilene,0
+Necrosis,Subserosa,methylene dianiline,0
+Necrosis,Subserosa,monocrotaline,0
+Necrosis,Subserosa,naphthyl isothiocyanate,0
+Necrosis,Subserosa,naproxen,0
+Necrosis,Subserosa,nitrosodiethylamine,0
+Necrosis,Subserosa,papaverine,0
+Necrosis,Subserosa,phalloidin,0
+Necrosis,Subserosa,phenacetin,0
+Necrosis,Subserosa,phenobarbital,0
+Necrosis,Subserosa,phenytoin,0
+Necrosis,Subserosa,promethazine,0
+Necrosis,Subserosa,rosiglitazone maleate,0
+Necrosis,Subserosa,sulfasalazine,0
+Necrosis,Subserosa,theophylline,0
+Necrosis,Subserosa,thioacetamide,0
+Necrosis,Subserosa,ticlopidine,0
+Necrosis,Subserosa,vitamin A,0
+"Degeneration, fatty",Centrilobular,1% cholesterol + 0.25% sodium cholate,0
+"Degeneration, fatty",Centrilobular,WY-14643,0
+"Degeneration, fatty",Centrilobular,acetamide,0
+"Degeneration, fatty",Centrilobular,acetamidofluorene,0
+"Degeneration, fatty",Centrilobular,acetaminophen,0
+"Degeneration, fatty",Centrilobular,allyl alcohol,0
+"Degeneration, fatty",Centrilobular,amitriptyline,0
+"Degeneration, fatty",Centrilobular,aspirin,0
+"Degeneration, fatty",Centrilobular,benzbromarone,0
+"Degeneration, fatty",Centrilobular,bucetin,0
+"Degeneration, fatty",Centrilobular,carbon tetrachloride,0
+"Degeneration, fatty",Centrilobular,clofibrate,0
+"Degeneration, fatty",Centrilobular,diltiazem,0
+"Degeneration, fatty",Centrilobular,disopyramide,0
+"Degeneration, fatty",Centrilobular,ethambutol,0
+"Degeneration, fatty",Centrilobular,ethinylestradiol,0
+"Degeneration, fatty",Centrilobular,ethionamide,0
+"Degeneration, fatty",Centrilobular,ethionine,0
+"Degeneration, fatty",Centrilobular,fenofibrate,0
+"Degeneration, fatty",Centrilobular,gemfibrozil,0
+"Degeneration, fatty",Centrilobular,hexachlorobenzene,0
+"Degeneration, fatty",Centrilobular,ibuprofen,0
+"Degeneration, fatty",Centrilobular,iproniazid,0
+"Degeneration, fatty",Centrilobular,lomustine,0
+"Degeneration, fatty",Centrilobular,lornoxicam,0
+"Degeneration, fatty",Centrilobular,mefenamic acid,0
+"Degeneration, fatty",Centrilobular,methapyrilene,0
+"Degeneration, fatty",Centrilobular,methylene dianiline,0
+"Degeneration, fatty",Centrilobular,monocrotaline,0
+"Degeneration, fatty",Centrilobular,naphthyl isothiocyanate,0
+"Degeneration, fatty",Centrilobular,naproxen,0
+"Degeneration, fatty",Centrilobular,nitrosodiethylamine,0
+"Degeneration, fatty",Centrilobular,papaverine,0
+"Degeneration, fatty",Centrilobular,phalloidin,0
+"Degeneration, fatty",Centrilobular,phenacetin,0
+"Degeneration, fatty",Centrilobular,phenobarbital,0
+"Degeneration, fatty",Centrilobular,phenytoin,0
+"Degeneration, fatty",Centrilobular,promethazine,0
+"Degeneration, fatty",Centrilobular,rosiglitazone maleate,0
+"Degeneration, fatty",Centrilobular,sulfasalazine,0
+"Degeneration, fatty",Centrilobular,theophylline,0
+"Degeneration, fatty",Centrilobular,thioacetamide,0
+"Degeneration, fatty",Centrilobular,ticlopidine,0
+"Degeneration, fatty",Centrilobular,vitamin A,0
+"Degeneration, fatty",Peripheral,1% cholesterol + 0.25% sodium cholate,0
+"Degeneration, fatty",Peripheral,WY-14643,0
+"Degeneration, fatty",Peripheral,acetamide,0
+"Degeneration, fatty",Peripheral,acetamidofluorene,0
+"Degeneration, fatty",Peripheral,acetaminophen,0
+"Degeneration, fatty",Peripheral,allyl alcohol,0
+"Degeneration, fatty",Peripheral,amitriptyline,0
+"Degeneration, fatty",Peripheral,aspirin,0
+"Degeneration, fatty",Peripheral,benzbromarone,0
+"Degeneration, fatty",Peripheral,bucetin,0
+"Degeneration, fatty",Peripheral,carbon tetrachloride,0
+"Degeneration, fatty",Peripheral,clofibrate,0
+"Degeneration, fatty",Peripheral,diltiazem,0
+"Degeneration, fatty",Peripheral,disopyramide,0
+"Degeneration, fatty",Peripheral,ethambutol,0
+"Degeneration, fatty",Peripheral,ethinylestradiol,0
+"Degeneration, fatty",Peripheral,ethionamide,0
+"Degeneration, fatty",Peripheral,ethionine,0
+"Degeneration, fatty",Peripheral,fenofibrate,0
+"Degeneration, fatty",Peripheral,gemfibrozil,0
+"Degeneration, fatty",Peripheral,hexachlorobenzene,0
+"Degeneration, fatty",Peripheral,ibuprofen,0
+"Degeneration, fatty",Peripheral,iproniazid,0
+"Degeneration, fatty",Peripheral,lomustine,0
+"Degeneration, fatty",Peripheral,lornoxicam,0
+"Degeneration, fatty",Peripheral,mefenamic acid,0
+"Degeneration, fatty",Peripheral,methapyrilene,0
+"Degeneration, fatty",Peripheral,methylene dianiline,0
+"Degeneration, fatty",Peripheral,monocrotaline,0
+"Degeneration, fatty",Peripheral,naphthyl isothiocyanate,0
+"Degeneration, fatty",Peripheral,naproxen,0
+"Degeneration, fatty",Peripheral,nitrosodiethylamine,0
+"Degeneration, fatty",Peripheral,papaverine,0
+"Degeneration, fatty",Peripheral,phalloidin,0
+"Degeneration, fatty",Peripheral,phenacetin,0
+"Degeneration, fatty",Peripheral,phenobarbital,0
+"Degeneration, fatty",Peripheral,phenytoin,0
+"Degeneration, fatty",Peripheral,promethazine,0
+"Degeneration, fatty",Peripheral,rosiglitazone maleate,0
+"Degeneration, fatty",Peripheral,sulfasalazine,0
+"Degeneration, fatty",Peripheral,theophylline,0
+"Degeneration, fatty",Peripheral,thioacetamide,0
+"Degeneration, fatty",Peripheral,ticlopidine,0
+"Degeneration, fatty",Peripheral,vitamin A,0
+"Degeneration, granular, eosinophilic",Centrilobular,1% cholesterol + 0.25% sodium cholate,0
+"Degeneration, granular, eosinophilic",Centrilobular,WY-14643,0
+"Degeneration, granular, eosinophilic",Centrilobular,acetamide,0
+"Degeneration, granular, eosinophilic",Centrilobular,acetamidofluorene,0
+"Degeneration, granular, eosinophilic",Centrilobular,acetaminophen,0
+"Degeneration, granular, eosinophilic",Centrilobular,allyl alcohol,0
+"Degeneration, granular, eosinophilic",Centrilobular,amitriptyline,0
+"Degeneration, granular, eosinophilic",Centrilobular,aspirin,0
+"Degeneration, granular, eosinophilic",Centrilobular,benzbromarone,0
+"Degeneration, granular, eosinophilic",Centrilobular,bucetin,0
+"Degeneration, granular, eosinophilic",Centrilobular,carbon tetrachloride,0
+"Degeneration, granular, eosinophilic",Centrilobular,clofibrate,1
+"Degeneration, granular, eosinophilic",Centrilobular,diltiazem,0
+"Degeneration, granular, eosinophilic",Centrilobular,disopyramide,0
+"Degeneration, granular, eosinophilic",Centrilobular,ethambutol,0
+"Degeneration, granular, eosinophilic",Centrilobular,ethinylestradiol,0
+"Degeneration, granular, eosinophilic",Centrilobular,ethionamide,0
+"Degeneration, granular, eosinophilic",Centrilobular,ethionine,0
+"Degeneration, granular, eosinophilic",Centrilobular,fenofibrate,0
+"Degeneration, granular, eosinophilic",Centrilobular,gemfibrozil,0
+"Degeneration, granular, eosinophilic",Centrilobular,hexachlorobenzene,0
+"Degeneration, granular, eosinophilic",Centrilobular,ibuprofen,0
+"Degeneration, granular, eosinophilic",Centrilobular,iproniazid,0
+"Degeneration, granular, eosinophilic",Centrilobular,lomustine,0
+"Degeneration, granular, eosinophilic",Centrilobular,lornoxicam,0
+"Degeneration, granular, eosinophilic",Centrilobular,mefenamic acid,0
+"Degeneration, granular, eosinophilic",Centrilobular,methapyrilene,0
+"Degeneration, granular, eosinophilic",Centrilobular,methylene dianiline,0
+"Degeneration, granular, eosinophilic",Centrilobular,monocrotaline,0
+"Degeneration, granular, eosinophilic",Centrilobular,naphthyl isothiocyanate,0
+"Degeneration, granular, eosinophilic",Centrilobular,naproxen,0
+"Degeneration, granular, eosinophilic",Centrilobular,nitrosodiethylamine,0
+"Degeneration, granular, eosinophilic",Centrilobular,papaverine,0
+"Degeneration, granular, eosinophilic",Centrilobular,phalloidin,0
+"Degeneration, granular, eosinophilic",Centrilobular,phenacetin,0
+"Degeneration, granular, eosinophilic",Centrilobular,phenobarbital,0
+"Degeneration, granular, eosinophilic",Centrilobular,phenytoin,0
+"Degeneration, granular, eosinophilic",Centrilobular,promethazine,0
+"Degeneration, granular, eosinophilic",Centrilobular,rosiglitazone maleate,0
+"Degeneration, granular, eosinophilic",Centrilobular,sulfasalazine,0
+"Degeneration, granular, eosinophilic",Centrilobular,theophylline,0
+"Degeneration, granular, eosinophilic",Centrilobular,thioacetamide,0
+"Degeneration, granular, eosinophilic",Centrilobular,ticlopidine,0
+"Degeneration, granular, eosinophilic",Centrilobular,vitamin A,0
+"Degeneration, granular, eosinophilic",Hepatocyte,1% cholesterol + 0.25% sodium cholate,0
+"Degeneration, granular, eosinophilic",Hepatocyte,WY-14643,0
+"Degeneration, granular, eosinophilic",Hepatocyte,acetamide,0
+"Degeneration, granular, eosinophilic",Hepatocyte,acetamidofluorene,0
+"Degeneration, granular, eosinophilic",Hepatocyte,acetaminophen,0
+"Degeneration, granular, eosinophilic",Hepatocyte,allyl alcohol,0
+"Degeneration, granular, eosinophilic",Hepatocyte,amitriptyline,0
+"Degeneration, granular, eosinophilic",Hepatocyte,aspirin,0
+"Degeneration, granular, eosinophilic",Hepatocyte,benzbromarone,0
+"Degeneration, granular, eosinophilic",Hepatocyte,bucetin,0
+"Degeneration, granular, eosinophilic",Hepatocyte,carbon tetrachloride,0
+"Degeneration, granular, eosinophilic",Hepatocyte,clofibrate,0
+"Degeneration, granular, eosinophilic",Hepatocyte,diltiazem,0
+"Degeneration, granular, eosinophilic",Hepatocyte,disopyramide,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ethambutol,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ethinylestradiol,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ethionamide,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ethionine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,fenofibrate,1
+"Degeneration, granular, eosinophilic",Hepatocyte,gemfibrozil,2
+"Degeneration, granular, eosinophilic",Hepatocyte,hexachlorobenzene,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ibuprofen,0
+"Degeneration, granular, eosinophilic",Hepatocyte,iproniazid,0
+"Degeneration, granular, eosinophilic",Hepatocyte,lomustine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,lornoxicam,0
+"Degeneration, granular, eosinophilic",Hepatocyte,mefenamic acid,0
+"Degeneration, granular, eosinophilic",Hepatocyte,methapyrilene,0
+"Degeneration, granular, eosinophilic",Hepatocyte,methylene dianiline,0
+"Degeneration, granular, eosinophilic",Hepatocyte,monocrotaline,0
+"Degeneration, granular, eosinophilic",Hepatocyte,naphthyl isothiocyanate,0
+"Degeneration, granular, eosinophilic",Hepatocyte,naproxen,0
+"Degeneration, granular, eosinophilic",Hepatocyte,nitrosodiethylamine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,papaverine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,phalloidin,0
+"Degeneration, granular, eosinophilic",Hepatocyte,phenacetin,0
+"Degeneration, granular, eosinophilic",Hepatocyte,phenobarbital,0
+"Degeneration, granular, eosinophilic",Hepatocyte,phenytoin,0
+"Degeneration, granular, eosinophilic",Hepatocyte,promethazine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,rosiglitazone maleate,0
+"Degeneration, granular, eosinophilic",Hepatocyte,sulfasalazine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,theophylline,0
+"Degeneration, granular, eosinophilic",Hepatocyte,thioacetamide,0
+"Degeneration, granular, eosinophilic",Hepatocyte,ticlopidine,0
+"Degeneration, granular, eosinophilic",Hepatocyte,vitamin A,0

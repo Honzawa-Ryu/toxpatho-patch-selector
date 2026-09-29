@@ -1,5 +1,14 @@
 # EXPERIMENT_NOTES.md
 
+## 2026-09-25: 評価前に参照する監査
+
+0009の元manifestにはindividual metadata未対応80枚があり、旧解析で投与群・所見なしに
+含まれていた。新しい評価はunknownと重複個体を除いた3,357枚を参照する。
+保存済みクラスタでの候補選定LOCOは0.8707→0.8587（何らかの所見ありのpooled AUROC）。
+k2000品質表のgrade_passed/best_rhoはk1000からの誤結合だったため、原本退避後に除去済み。
+詳細・参照manifest・採用条件は `experiments/0010_20260925_pathology_benchmark_subset/FOLLOWUP.md`
+と `analysis_protocol.json`。旧計画の性能値は当時の条件であり、所見別精度として引用しない。
+
 実験固有の注意事項をIDごとに記録する。plan-next-experimentでplan.mdを書く際、
 review-expで結果を集約する際、debug-experimentで調査する際は、対象実験のIDに
 該当する節があればまず読むこと。
@@ -108,3 +117,21 @@ review-expで結果を集約する際、debug-experimentで調査する際は、
   （`lib/clustering.knn_graph`）しているので faiss/pynndescent は入れていない。
 - Leidenは20万点・約250万エッジで6〜17分かかる。326万patch全体には適用できないため、
   部分集合でクラスタを決めてkNN多数決で全体に伝播する構成にしてある。
+
+
+## 0011_20260925_stratified_candidate_selection
+
+- k=2000を固定し、全体投与対Control（A）、実験・時点内比較＋化合物内Control希少性（B1）、同じ比較＋従来の全体Control希少性（B2）を比較。
+- 組織割合フィルタありの候補数はA312/B1 303/B2 382。脂肪変性関連の旧候補につながる1356/846/703/535はB1/B2で回収できた。
+- B2でも旧29・81由来のパッチ保持が低下。所見保有内率中央値も改善せず、従来設定の全面置換はしない。背景候補が戻るため組織割合フィルタは維持する方針。
+- 3方式の和集合489クラスタ×24枚=11,736パッチの比較一覧を作成。`outputs/0011_20260925_stratified_candidate_selection/gallery/index.html`。座標・メタデータ・判定記入用CSVあり、切り出しエラー0。
+- 探索的比較であり、施設調整・独立評価・全画像の所見確定は未実施。条件と結果は `experiments/0011_20260925_stratified_candidate_selection/README.md`。
+
+## 0012_20260928_compare_clustering_methods_at_scale
+
+- 候補選定（方式A）を固定し、クラスタリングだけを振った（MiniBatch / Lloyd / Leiden / Ward / コンセンサス、k=250〜10000、seed・部分集合）。
+- **個々の候補クラスタはseed間で再現しない**（k=2000で最良対応Jaccardの中央値0.25〜0.33）。候補patchの集合全体はJaccard約0.72で保たれる。クラスタIDはrun固有のものとして扱い、seedをまたいで同じIDを比べないこと。
+- MiniBatchはLloydより不安定だが、タスク指標はほぼ同じ。Leiden・コンセンサスは同じ粒度で安定性が高い（約3000クラスタでARI約0.5）。
+- kを上げたときの保有内率の上昇は、単一化合物への偏りと連動している。最適なkを決める指標はない。旧42/53の脂肪変性patchは、どの設定でも候補にほぼ入らない。
+- このクラスタは job_submit/lua が全ジョブに gpu:1 を付ける。`--gres=none` は効かない。
+- 詳細は `experiments/0012_20260928_compare_clustering_methods_at_scale/README.md`。

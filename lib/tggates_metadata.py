@@ -103,7 +103,10 @@ def build_liver_slide_manifest(
         ],
         on=["EXP_ID", "GROUP_ID", "INDIVIDUAL_ID"],
         how="left",
+        validate="many_to_one",
+        indicator="individual_join",
     )
+    manifest["individual_metadata_matched"] = manifest["individual_join"].eq("both")
 
     manifest = manifest.rename(
         columns={
@@ -133,6 +136,7 @@ def build_liver_slide_manifest(
         "individual_id",
         "sex_type",
         "strain_type",
+        "individual_metadata_matched",
     ]
     manifest = manifest[columns].sort_values("slide_id").reset_index(drop=True)
 
@@ -188,10 +192,12 @@ def attach_pathology_findings(
             n_findings_treatment_related: findings with SP_FLG != true
 
     Note:
-        An animal with no row in the pathology table is a genuine negative
-        (no finding recorded), not a join failure — unlike the manifest join
-        in build_liver_slide_manifest(), a missing match here is expected and
-        is filled with 0 / False / [] rather than raising.
+        No pathology row means "no finding recorded" only for animals covered
+        by the individual metadata and with a known dose level. Other animals
+        receive pathology_label_status="unknown" and nullable counts/labels.
+        This is source-annotation coverage, not visual confirmation of normality.
+        Legacy manifests without individual_metadata_matched are checked against
+        open_tggates_individual.csv alongside pathology_csv.
     """
     key = ["exp_id", "group_id", "individual_id"]
 
@@ -237,5 +243,27 @@ def attach_pathology_findings(
 
     ord_to_grade = {v: k for k, v in GRADE_ORDER.items()}
     out["max_grade"] = out["max_grade_ord"].map(ord_to_grade)
+
+    # An absent pathology row is only an operational negative when the animal
+    # exists in the individual metadata. Missing coverage must remain unknown.
+    if "individual_metadata_matched" not in out:
+        individual_path = pathology_csv.parent / "open_tggates_individual.csv"
+        individuals = pd.read_csv(individual_path, usecols=[c.upper() for c in key])
+        individuals.columns = key
+        for col in key:
+            individuals[col] = _as_int_key(individuals[col])
+        coverage = out[key].merge(individuals.drop_duplicates(), on=key, how="left", indicator=True)
+        out["individual_metadata_matched"] = coverage["_merge"].eq("both").to_numpy()
+    known = out["individual_metadata_matched"].fillna(False) & out["dose_level"].isin(
+        ["Control", "Low", "Middle", "High"]
+    )
+    out["pathology_label_status"] = "unknown"
+    out.loc[known & out["has_finding"], "pathology_label_status"] = "recorded_finding"
+    out.loc[known & ~out["has_finding"], "pathology_label_status"] = "no_finding_recorded"
+    out["has_finding"] = out["has_finding"].astype("boolean")
+    out.loc[~known, "has_finding"] = pd.NA
+    for col in ["n_findings", "n_findings_treatment_related"]:
+        out[col] = out[col].astype("Int64")
+        out.loc[~known, col] = pd.NA
 
     return out

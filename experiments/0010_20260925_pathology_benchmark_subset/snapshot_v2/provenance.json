@@ -1,0 +1,27 @@
+{
+  "target": "Necrosis @ Hepatocyte (including source-annotated spontaneous lesions)",
+  "purpose": "exploratory morphology review, not a validated benchmark",
+  "facility_verified": false,
+  "labels_visually_verified": false,
+  "positive_negative_matching": [
+    "compound",
+    "experiment",
+    "timepoint",
+    "dose_level"
+  ],
+  "compound_cap": 3,
+  "cofindings": "greedy minimum symmetric difference",
+  "sources": {
+    "scripts/build_matched_benchmark_v2.py": "349c34aa9743b18c23a1dfa240f1e456f27c59ccba35ff0266b0da9cd7c2f636",
+    "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet": "4101f634a4f2749689d3959db0ab3e02b4fa66a8e19d5d141942e29c7efcdc04",
+    "data/corrected/open_tggates_pathology.csv": "c20dd94839d9a8968059b91b871203000780ca7b5b31778d2d27d5e99bdd637f"
+  },
+  "artifacts": {
+    "treated_negative_slide_ids.txt": "da48e22bda14de9bbd50957aec93da85e074750f90e4de72e8f120633d1607e9",
+    "positive_slide_ids.txt": "2f1526ff2dd496cfa82dd09d73036f2c9f1e35e0a57e86d401512d1de58130ed",
+    "control_slide_ids.txt": "c326b295bf9ab1939850ae69313f652f496389563e1499db4f98fad5fd106019",
+    "slides.csv": "41c4e2c4efd53860cceee5a38b81713a5b607fbcb617706a662a40bd52d150c5",
+    "candidate_matching_capacity.csv": "3a267910e59f02800b083555acc9a794bafa8686368bf16715f064118c91a39e",
+    "distribution.csv": "5a406f1462e66eb416406dd192b2a3f59945454b4d32dac27af41ca03cc49d96"
+  }
+}

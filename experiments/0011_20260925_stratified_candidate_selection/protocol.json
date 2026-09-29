@@ -1,0 +1,36 @@
+{
+  "k": 2000,
+  "slides": 3357,
+  "compounds": 44,
+  "strata": [
+    "experiment",
+    "timepoint"
+  ],
+  "comparison": "all treated dose levels vs Control within stratum",
+  "statistic": "sum w*(U-E[U]); w=1/(n+1); tie-corrected sum w^2 Var(U); normal upper tail",
+  "multiplicity": "BH over all compound x cluster p-values",
+  "tests": 88000,
+  "q_threshold": 0.05,
+  "presence_eps": 0.001,
+  "local_control_q95_max": 0.001,
+  "effect_rule": "rank by largest significant within-compound presence difference, then rank effect; no effect cutoff",
+  "image_tissue_threshold": 0.85,
+  "image_probe_patches": 24,
+  "image_seed": 20260925,
+  "anchors": [
+    1356,
+    846,
+    703,
+    535,
+    1625,
+    147,
+    697,
+    271,
+    801,
+    209,
+    95,
+    1425
+  ],
+  "source_script_sha256": "c66d3800aa619a7147d52197575cdd906b22a8253b74e7935549e4ded968b373",
+  "limitation": "post-hoc exploratory comparison; no unseen test cohort or facility adjustment"
+}

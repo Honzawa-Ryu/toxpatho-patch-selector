@@ -1,0 +1,19 @@
+role,compound_name,FINDING_TYPE,n_slides
+control,gemfibrozil,Necrosis,1
+control,gemfibrozil,"Proliferation, Kupffer cell",1
+positive,fenofibrate,"Degeneration, granular, eosinophilic",10
+positive,fenofibrate,Increased mitosis,3
+positive,gemfibrozil,"Degeneration, granular, eosinophilic",10
+positive,gemfibrozil,Granuloma,1
+positive,lomustine,"Cellular infiltration, mononuclear cell",6
+positive,lomustine,"Degeneration, granular, eosinophilic",10
+positive,lomustine,"Deposit, pigment",3
+positive,lomustine,Fibrosis,4
+positive,lomustine,Hypertrophy,5
+positive,lomustine,Necrosis,5
+positive,lomustine,"Proliferation, Kupffer cell",10
+positive,lomustine,"Proliferation, bile duct",4
+positive,lomustine,Single cell necrosis,6
+positive,lomustine,"Vacuolization, cytoplasmic",1
+treated_negative,gemfibrozil,Granuloma,1
+treated_negative,gemfibrozil,Necrosis,1
