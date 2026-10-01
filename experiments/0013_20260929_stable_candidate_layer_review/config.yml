@@ -1,0 +1,33 @@
+# 0013: run横断の投票で層分けした候補patchを、所見ごとの画像シートで目視確認する。
+seed: 42
+
+# 0012の成果物（投票に使う全run。summary.csvのreference以外を用いる）
+cluster_exp_dir: "outputs/0012_20260928_compare_clustering_methods_at_scale"
+embedding_cache_dir: "outputs/0009_20260919_tier1_corpus_clustering/embedding_cache"
+feature_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"
+manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
+eval_manifest_parquet: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet"
+
+# 層 = 「同じ所見の候補クラスタに入ったrunの割合」の区間 [lo, hi)。厳しい層から順に見る。
+layers:
+  L1: [0.9, 1.01]
+  L2: [0.5, 0.9]
+  L3: [0.05, 0.5]
+
+min_patches_per_finding: 100   # 標本（100万patch）内でこの数未満の所見はシートを作らない
+tiles_per_finding: 24
+max_per_slide: 2
+table_thresholds: [0.9, 0.7, 0.5, 0.3, 0.1]   # finding_threshold_table.csv に出す投票率の閾値
+
+# --analysis q_vote: 投票率と候補クラスタのq値（run間中央値）の関係
+q_vote:
+  min_vote_corr: 0.05          # 相関をとるpatchの投票率下限（L1〜L3全体）
+  vote_bins: [0.05, 0.1, 0.3, 0.5, 0.7, 0.9, 1.01]
+  min_vote_sheet: 0.5          # シートに並べるpatchの投票率下限（L1+L2）
+  tiles_per_side: 12           # 低q側・高q側それぞれの枚数
+
+# --analysis vote_steps: 所見ごとに投票率を0.1刻みの区間に分けて並べ、所見ごとの閾値を目視で決める
+vote_steps:
+  edges: [0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.01]
+  tiles_per_bin: 12
+  min_vote_for_finding: 0.1    # 投票率0.1以上でmin_patches_per_finding以上ある所見だけシートを作る
