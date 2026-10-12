@@ -1,0 +1,13 @@
+# 0014: 試験（化合物×時点）ごとにクラスタリングし、同じ試験のControl・所見ラベルとだけ比べる（パイロット）
+seed: 42
+
+embedding_cache_dir: "outputs/0009_20260919_tier1_corpus_clustering/embedding_cache"   # PCA64、全3441枚
+feature_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"     # patch_size_level0の取得用
+eval_manifest_parquet: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet"
+
+compounds: ["carbon tetrachloride", "WY-14643", "thioacetamide", "ethionamide"]   # 各4時点＝16試験
+ks: [10, 20, 30, 50, 100]
+
+presence_eps: 0.001   # 占有率がこれを超えたら、そのスライドにクラスタが「ある」とみなす（表示用）
+max_rows: 30          # シートに並べるクラスタ数の上限（Control比較のpが小さい順）
+max_per_slide: 1      # 1行6枚のうち同じスライドから取る上限（足りなければ6枚未満）
