@@ -1,0 +1,13 @@
+{
+  "source": "outputs/0013_20260929_stable_candidate_layer_review/vote_steps/vote_step_table.csv",
+  "source_sha256": "285b8275f85eaee7d93063fc4c2d0b16ec0516d051115d4fdebca5cc06c7d844",
+  "script_sha256": "9a1716ec608044ae7b16f4e17a5268757fde6acb1d47091ca779e4838bb5a720",
+  "n_runs": 110,
+  "n_findings": 17,
+  "n_displayed_patches": 198742,
+  "definition": "Maximum votes for one finding / 110; finding = argmax of finding-specific votes",
+  "scope": "Fixed 1M patch reference sample; audited eligible slides; V>=0.05; findings with >=100 patches at V>=0.1",
+  "endpoint": "Saved final bin [0.9,1.01) displayed as [0.9,1.0], including 1.0",
+  "checks": "Every finding's bin counts agree with saved cumulative counts; pooled and per-finding totals agree",
+  "limitations": "110 runs mix methods and k. VoteFraction is neither diagnostic confidence nor repeatability under one condition."
+}
