@@ -18,3 +18,23 @@ sheet_rows: 20                # 偏りの強い順に並べるクラスタ数
 sheet_cols: 6
 max_per_slide: 1
 sheet_seed: 0
+
+# 特徴量の入力（--variantで選ぶ）。mainは2026-10-13の初回run（染色正規化なし・全3,441枚で学習したPCA）。
+# s219_*は0005の219枚に含まれる無所見Ctrlに限り、正規化の有無だけを変えて比べる（PCAは両者とも対象slideで学習）。
+variants:
+  main:
+    source: cache
+  s219_raw:
+    source: h5
+    features_dir: "outputs/0001_20260907_extract_wsi_embeddings/trident_job/20x_256px_0px_overlap/features_uni_v2"
+    restrict_to_dir: "outputs/0005_20260913_stain_normalized_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"
+    pca_components: 64
+    pca_patches_per_slide: 512
+    pca_seed: 0
+  s219_macenko:
+    source: h5
+    features_dir: "outputs/0005_20260913_stain_normalized_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"
+    restrict_to_dir: "outputs/0005_20260913_stain_normalized_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"
+    pca_components: 64
+    pca_patches_per_slide: 512
+    pca_seed: 0

@@ -58,6 +58,7 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")  # run_slurm.shが渡す。読むのは常に実験ディレクトリのconfig.yml
+    parser.add_argument("--variant", default="main")       # config.ymlのvariantsのキー
     return parser.parse_args()
 
 
@@ -217,6 +218,52 @@ def cluster_bias(occ: np.ndarray, exp: np.ndarray, scanner: np.ndarray, sizes: n
     return df
 
 
+def load_from_cache(cache: Path, slide_ids: pd.Series) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """0009のPCA64キャッシュ（全3,441枚で学習、染色正規化なし）から対象slideの行を取り出す。"""
+    cache_ids = np.load(cache / "slide_ids.npy", allow_pickle=False).astype(str)
+    slide_index = np.load(cache / "slide_index.npy", mmap_mode="r")
+    embeddings = np.load(cache / "embeddings.npy", mmap_mode="r")
+    xy_all = np.load(cache / "xy.npy", mmap_mode="r")
+    starts = np.searchsorted(slide_index, np.arange(len(cache_ids) + 1))  # slide_indexは昇順（スライドごとに連続）
+    pos = {s: i for i, s in enumerate(cache_ids)}
+    missing = sorted(set(slide_ids) - set(pos))
+    if missing:
+        raise ValueError(f"{len(missing)} target slides missing from embedding cache: {missing[:5]}")
+    ranges = [(starts[pos[s]], starts[pos[s] + 1]) for s in slide_ids]
+    feats = np.concatenate([embeddings[a:b] for a, b in ranges])
+    xy = np.concatenate([xy_all[a:b] for a, b in ranges])
+    return feats, xy, np.array([b - a for a, b in ranges])
+
+
+def load_from_h5(feature_dir: Path, slide_ids: pd.Series, vcfg: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """TRIDENTのh5（1536次元）を読み、L2正規化 → 対象slideで学習したPCAに落とす（0009と同じ前処理）。
+
+    正規化あり/なしのvariantで、PCAの学習patchの抽出（seed・枚数）を揃える。
+    """
+    from sklearn.decomposition import PCA
+
+    def read(sid):
+        with h5py.File(feature_dir / f"{sid}.h5", "r") as h:
+            f = h["features"][:].astype(np.float32)
+            c = h["coords"][:].astype(np.float32)
+        return f / np.linalg.norm(f, axis=1, keepdims=True), c
+
+    rng = np.random.default_rng(vcfg["pca_seed"])
+    sample = []
+    for sid in slide_ids:
+        f, _ = read(sid)
+        sample.append(f[rng.choice(len(f), size=min(vcfg["pca_patches_per_slide"], len(f)), replace=False)])
+    pca = PCA(n_components=vcfg["pca_components"], svd_solver="randomized", random_state=vcfg["pca_seed"])
+    pca.fit(np.concatenate(sample))
+    feats, xy, counts = [], [], []
+    for sid in slide_ids:
+        f, c = read(sid)
+        feats.append(pca.transform(f).astype(np.float32))
+        xy.append(c)
+        counts.append(len(f))
+    return np.concatenate(feats), np.concatenate(xy), np.array(counts), float(pca.explained_variance_ratio_.sum())
+
+
 def main() -> None:
     project_root = _get_project_root()
     sys.path.insert(0, str(project_root))
@@ -224,34 +271,27 @@ def main() -> None:
     from lib.clustering import kmeans_lloyd
     from lib.output_utils import complete_run, get_run_dir, write_run_metadata
 
-    parse_args()
+    args = parse_args()
     exp_name = os.environ["EXP_NAME"]
     config = load_config(Path(__file__).parent)
-    variant_key = "main"
+    variant_key = args.variant
+    vcfg = config["variants"][variant_key]
     run_dir = get_run_dir(project_root, __file__, variant_key, output_root=os.environ.get("OUTPUT_ROOT"))
     logger = setup_logger(run_dir, exp_name)
-    write_run_metadata(run_dir, exp_name=exp_name, variant_key=variant_key, ks=config["ks"],
+    write_run_metadata(run_dir, exp_name=exp_name, variant_key=variant_key, variant=vcfg, ks=config["ks"],
                        sample_seeds=config["sample_seeds"], init_seeds=config["init_seeds"],
                        patches_per_slide=config["patches_per_slide"])
-    logger.info(f"Starting: {exp_name} / {variant_key}")
+    logger.info(f"Starting: {exp_name} / {variant_key} {vcfg}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     n_perm = config["n_perm"]
 
-    # --- 対象: Controlかつ記録上無所見 ---
-    cache = project_root / config["embedding_cache_dir"]
-    cache_ids = np.load(cache / "slide_ids.npy", allow_pickle=False).astype(str)
-    slide_index = np.load(cache / "slide_index.npy", mmap_mode="r")
-    embeddings = np.load(cache / "embeddings.npy", mmap_mode="r")
-    xy_all = np.load(cache / "xy.npy", mmap_mode="r")
-    starts = np.searchsorted(slide_index, np.arange(len(cache_ids) + 1))  # slide_indexは昇順（スライドごとに連続）
-    cache_pos = {s: i for i, s in enumerate(cache_ids)}
-
+    # --- 対象: Controlかつ記録上無所見（variantによっては特定の特徴量ディレクトリにあるslideに限る） ---
     manifest = pd.read_parquet(project_root / config["eval_manifest_parquet"])
     manifest["slide_id"] = manifest["slide_id"].astype(str)
     target = manifest[(manifest.dose_level == "Control") & ~manifest.has_finding]
-    missing = sorted(set(target.slide_id) - set(cache_pos))
-    if missing:
-        raise ValueError(f"{len(missing)} target slides missing from embedding cache: {missing[:5]}")
+    if "restrict_to_dir" in vcfg:
+        have = {p.stem for p in (project_root / vcfg["restrict_to_dir"]).glob("*.h5")}
+        target = target[target.slide_id.isin(have)]
     scan = pd.read_csv(project_root / config["scanner_csv"], dtype={"slide_id": str})
     target = target.merge(scan[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"}),
                           on="slide_id", how="left", validate="one_to_one")
@@ -265,12 +305,15 @@ def main() -> None:
     scanner = target.scanner.to_numpy()
     compound_of = dict(zip(target.exp_id, target.compound_name))
 
-    ranges = [(starts[cache_pos[s]], starts[cache_pos[s] + 1]) for s in target.slide_id]
-    counts = np.array([b - a for a, b in ranges])
-    slide_of = np.repeat(np.arange(len(target)), counts)
     t0 = time.time()
-    feats = np.concatenate([embeddings[a:b] for a, b in ranges])
-    xy = np.concatenate([xy_all[a:b] for a, b in ranges])
+    if vcfg["source"] == "cache":
+        feats, xy, counts = load_from_cache(project_root / config["embedding_cache_dir"], target.slide_id)
+        feature_dir = project_root / config["feature_dir"]
+    else:
+        feature_dir = project_root / vcfg["features_dir"]
+        feats, xy, counts, explained = load_from_h5(feature_dir, target.slide_id, vcfg)
+        logger.info(f"PCA{vcfg['pca_components']} fit on {variant_key}: explained variance {explained:.3f}")
+    slide_of = np.repeat(np.arange(len(target)), counts)
     target.assign(n_patches=counts).drop(columns=["finding_types", "finding_sites"]).to_csv(run_dir / "slides.csv", index=False)
     logger.info(f"{len(target)} slides, {target.exp_id.nunique()} exp, {target.group.nunique()} groups, "
                 f"{len(feats):,} patches (min {counts.min()}/slide), loaded in {time.time() - t0:.0f}s")
@@ -358,7 +401,6 @@ def main() -> None:
     agree.to_csv(run_dir / "outlier_rank_agreement.csv", index=False)
 
     # --- c. 画像シート（各kの代表run） ---
-    feature_dir = project_root / config["feature_dir"]
     rng_sheet = np.random.default_rng(config["sheet_seed"])
     wsis, sizes = {}, {}
     for k, labels in rep_labels.items():

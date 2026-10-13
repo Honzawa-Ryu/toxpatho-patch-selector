@@ -51,8 +51,8 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 # Single run（デフォルト）
 # =====================================================
 
-RUN_MODE="single"
-RUN_COMMAND="python ${PYTHON_PATH} --config config.yml"
+# RUN_MODE="single"
+# RUN_COMMAND="python ${PYTHON_PATH} --config config.yml"
 
 # =====================================================
 # Array run にしたい場合
@@ -87,14 +87,14 @@ RUN_COMMAND="python ${PYTHON_PATH} --config config.yml"
 # こちらは #SBATCH --array は不要（1ジョブでループするため）。
 # =====================================================
 
-# RUN_MODE="seq"
-# BASE_COMMAND="python ${PYTHON_PATH}"
-# GRID_ARGS=(
-#     "--model"
-# )
-# GRID_VALUES=(
-#     "bert roberta"
-# )
+RUN_MODE="seq"
+BASE_COMMAND="python ${PYTHON_PATH}"
+GRID_ARGS=(
+    "--variant"
+)
+GRID_VALUES=(
+    "s219_raw s219_macenko"
+)
 
 # =====================================================
 # Entry point
