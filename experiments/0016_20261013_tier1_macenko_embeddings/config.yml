@@ -1,0 +1,30 @@
+# ============================================================
+# 0016: tier1コーパス全体（3,441枚）をMacenko正規化して埋め込み直す
+# ============================================================
+# 染色正規化は基本必須（2026-10-13ユーザー方針）。0005の手順（lib/stain.py、UNI2-h、
+# TRIDENTと同じ推論経路）をコーパス全体に広げる。座標は既存のTRIDENT出力を再利用する。
+# ============================================================
+
+seed: 42
+
+# --- 入力 ---
+manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
+coords_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"   # 0001/0007/0008のh5へのsymlink
+
+# --- 参照染色 ---
+# コーパス全体の平均的な染色を参照にする（2026-10-13ユーザー方針）。各実験のControlから一様に
+# slideを抽出し、patchを集めてMacenkoで推定する。seed固定なので全chunkで同じ参照になる。
+# 0005の参照（8実験のみ）とは異なるため、0005の219枚も作り直す。
+reference_slides_per_exp: 2
+reference_patches_per_slide: 20
+
+# --- 出力（0001と同じレイアウト）---
+features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko"
+
+# --- 染色推定・エンコーダ（0005と同一）---
+fit_patches_per_slide: 40
+patch_encoder: "uni_v2"
+batch_size: 64
+num_workers: 7
+
+n_chunks: 4                     # run_slurm.shの--array=0-3と一致させる
