@@ -1,25 +1,37 @@
 # ============================================================
-# 0016: tier1コーパス全体（3,441枚）をMacenko正規化して埋め込み直す
+# 0016: 反復投与Liverの全Control（143実験）と tier1投与群を Macenko正規化して埋め込み直す
 # ============================================================
 # 染色正規化は基本必須（2026-10-13ユーザー方針）。0005の手順（lib/stain.py、UNI2-h、
-# TRIDENTと同じ推論経路）をコーパス全体に広げる。座標は既存のTRIDENT出力を再利用する。
+# TRIDENTと同じ推論経路）を広げる。系列C（全反復投与Controlの大規模調査）を先に始められるよう、
+# phaseを分けて Control を先に処理する。
+#   coords  : 追加取得したControl（座標なし）にTRIDENTでseg+coordsだけ実行
+#   ctrl    : 全ControlをMacenko正規化して抽出
+#   treated : tier1コーパスの投与群をMacenko正規化して抽出
 # ============================================================
 
 seed: 42
 
 # --- 入力 ---
-manifest_parquet: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"
-coords_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"   # 0001/0007/0008のh5へのsymlink
+tier1_manifest: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"   # 3,441枚（44化合物）
+tier1_coords_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"          # 既存TRIDENT出力のsymlink
+added_ctrl_list: "outputs/target_slide_list/ctrl_repeat_missing.csv"                           # 追加Control 1,979枚（99化合物）
+wsi_dir: "data/TGGATEs/WSI/Liver"
 
 # --- 参照染色 ---
-# コーパス全体の平均的な染色を参照にする（2026-10-13ユーザー方針）。各実験のControlから一様に
-# slideを抽出し、patchを集めてMacenkoで推定する。seed固定なので全chunkで同じ参照になる。
-# 0005の参照（8実験のみ）とは異なるため、0005の219枚も作り直す。
+# 全Control（143実験）の平均的な染色。各実験のControlから一様にslideを抽出する（2026-10-13ユーザー方針）。
+# seed固定で、どのphase・chunkでも同じ参照になる。最初に計算したものを outputs/<exp>/reference.json に保存し、以後はそれを読む。
 reference_slides_per_exp: 2
 reference_patches_per_slide: 20
 
 # --- 出力（0001と同じレイアウト）---
 features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko"
+
+# --- TRIDENT（coords phase、0008と同一設定）---
+segmenter: "hest"
+reader_type: "openslide"
+mag: 20.0
+patch_size: 256
+overlap: 0
 
 # --- 染色推定・エンコーダ（0005と同一）---
 fit_patches_per_slide: 40

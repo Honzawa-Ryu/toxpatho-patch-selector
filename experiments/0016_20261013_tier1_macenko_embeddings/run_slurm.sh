@@ -57,10 +57,13 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 
 RUN_MODE="array"
 BASE_COMMAND="python ${PYTHON_PATH} --config config.yml"
+# phaseは順に coords → ctrl → treated。1段ずつ書き換えて投入する（ctrlの参照染色は全Controlの座標が要るため）。
 GRID_ARGS=(
+    "--phase"
     "--chunk"
 )
 GRID_VALUES=(
+    "coords"
     "0 1 2 3"
 )
 
