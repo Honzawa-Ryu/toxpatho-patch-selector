@@ -1,0 +1,20 @@
+# 0015: 無所見Ctrlをまとめてクラスタリングし、試験間差・scanner差を見る（plan.md）
+embedding_cache_dir: "outputs/0009_20260919_tier1_corpus_clustering/embedding_cache"   # PCA64、全3,441枚で学習
+feature_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"     # patch_size_level0の取得用
+eval_manifest_parquet: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet"
+scanner_csv: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_scanner_meta.csv"
+
+patches_per_slide: 512        # 学習patch（1枚あたり）
+ks: [50, 100]
+sample_seeds: [0, 1, 2, 3, 4] # 学習patch抽出のseed
+init_seeds: [0, 1, 2, 3]      # k-means++初期化のseed
+n_perm: 1000                  # 並べ替え検定の回数
+
+outlier_top: 5                # runごとに「外れ試験」とみなす上位数
+bias_share: 0.5               # 上位1試験の占有シェアがこれ以上のクラスタを「試験に偏る」とみなす
+
+# 画像シート（各kの代表run = sample_seed 0 / init_seed 0 のみ）
+sheet_rows: 20                # 偏りの強い順に並べるクラスタ数
+sheet_cols: 6
+max_per_slide: 1
+sheet_seed: 0
