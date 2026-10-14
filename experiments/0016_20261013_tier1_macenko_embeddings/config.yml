@@ -24,7 +24,11 @@ reference_slides_per_exp: 2
 reference_patches_per_slide: 20
 
 # --- 出力（0001と同じレイアウト）---
-features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko"
+features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko"          # treated: 全patch
+# ctrl phaseは系列Cの調査を早く回すため、1枚あたり無作為2,048 patchだけ抽出する（2026-10-14、方法はユーザー一任）。
+# 全patchが必要になったら、同じslideをfeatures_subdirに全patchで抽出し直す。
+ctrl_patches_per_slide: 2048
+ctrl_features_subdir: "20x_256px_0px_overlap/features_uni_v2_macenko_sub2048"
 
 # --- TRIDENT（coords phase、0008と同一設定）---
 segmenter: "hest"

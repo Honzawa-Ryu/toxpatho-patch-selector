@@ -21,7 +21,10 @@ Controlを先に処理する（2026-10-13ユーザー了承）。**準備のみ�
    出力は`outputs/0016.../trident_job_chunk{0-3}/20x_256px_0px_overlap/patches/<slide_id>_patches.h5`。
 2. `ctrl`: 参照染色を全Controlから推定（各実験のControlから2枚・各20 patch、seed固定）。最初に計算した値を
    `outputs/0016.../reference.json`に保存し、以後のchunk・phaseはそれを読む。各slideをMacenko正規化してUNI2-hで抽出。
-3. `treated`: 同じ参照で投与群を抽出。
+   **高速化（2026-10-14、方法はユーザー一任）**: ctrl phaseは1枚あたり無作為2,048 patchだけ抽出し、
+   `features_uni_v2_macenko_sub2048/`に保存する（h5に元のpatch数と抽出の有無を記録）。0015の占有率は2,048 patchでも十分推定できる。
+   全patchが必要になったら同じslideを`features_uni_v2_macenko/`へ抽出し直す。
+3. `treated`: 同じ参照で投与群を抽出（全patch）。
 
 - 座標は既存のTRIDENT出力を再利用（tier1分）。セグメンテーションとタイル分割はやり直さない。
 - 各slideの染色推定はslide内40 patch、乱数はslide IDから決める（chunk分割に依存しない）。

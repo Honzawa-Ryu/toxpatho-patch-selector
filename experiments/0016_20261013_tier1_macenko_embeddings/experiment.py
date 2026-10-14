@@ -190,7 +190,8 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     encoder = encoder_factory(config["patch_encoder"])
     encoder.to(device).eval()
-    features_dir = project_root / "outputs" / exp_name / config["features_subdir"]
+    sub_n = config["ctrl_patches_per_slide"] if args.phase == "ctrl" else 0
+    features_dir = project_root / "outputs" / exp_name / config["ctrl_features_subdir" if sub_n else "features_subdir"]
     features_dir.mkdir(parents=True, exist_ok=True)
 
     fit_rows, failed = [], []
@@ -202,6 +203,10 @@ def main() -> None:
             skipped += 1
             continue
         coords, attrs = exp0005.read_coords(coords_path(project_root, config, exp_name, sid))
+        n_total = len(coords)
+        if sub_n and n_total > sub_n:   # ctrl phase: slide固有の乱数で無作為抽出（座標順は保つ）
+            keep = np.sort(np.random.default_rng([config["seed"], int(sid), 1]).choice(n_total, size=sub_n, replace=False))
+            coords = coords[keep]
         patch_size = int(attrs.get("patch_size_level0", attrs.get("patch_size", 256)))
         rng = np.random.default_rng([config["seed"], int(sid)])   # chunk分割に依存しないslide固有の乱数
         try:
@@ -224,6 +229,8 @@ def main() -> None:
             fset.attrs["encoder"] = config["patch_encoder"]
             fset.attrs["name"] = sid
             fset.attrs["stain_normalization"] = "macenko"
+            fset.attrs["n_patches_total"] = n_total
+            fset.attrs["subsampled"] = bool(sub_n and n_total > sub_n)
             cset = h.create_dataset("coords", data=coords)
             for k, v in attrs.items():
                 cset.attrs[k] = v
