@@ -63,7 +63,7 @@ GRID_ARGS=(
     "--chunk"
 )
 GRID_VALUES=(
-    "coords"
+    "ctrl"
     "0 1 2 3"
 )
 
