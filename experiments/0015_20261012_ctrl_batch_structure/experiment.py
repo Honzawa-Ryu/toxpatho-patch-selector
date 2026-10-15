@@ -391,8 +391,9 @@ def main() -> None:
                                                             n_slides=("n_slides", "first"))
         o["frac_runs_outlier_top"] = top[top.k == k].groupby("exp_id").size().reindex(o.index, fill_value=0) / n_runs[k]
         b = biased[biased.k == k]
-        o["frac_runs_top1_of_biased"] = (b.groupby("top1_exp")[["sample_seed", "init_seed"]]
-                                         .apply(lambda g: len(g.drop_duplicates())).reindex(o.index, fill_value=0) / n_runs[k])
+        # 偏りクラスタが1つもないrunもあるので、空でもSeriesになる書き方にする
+        o["frac_runs_top1_of_biased"] = (b.drop_duplicates(["top1_exp", "sample_seed", "init_seed"]).groupby("top1_exp").size()
+                                         .reindex(o.index, fill_value=0) / n_runs[k])
         o["mean_n_biased_clusters"] = b.groupby("top1_exp").size().reindex(o.index, fill_value=0) / n_runs[k]
         stab.append(o.reset_index().assign(k=k, compound=lambda df: df.exp_id.map(compound_of)))
     pd.concat(stab).sort_values(["k", "mean_score"], ascending=[True, False]).to_csv(run_dir / "exp_stability.csv", index=False)
