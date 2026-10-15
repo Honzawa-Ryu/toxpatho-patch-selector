@@ -283,18 +283,27 @@ def main() -> None:
                        patches_per_slide=config["patches_per_slide"])
     logger.info(f"Starting: {exp_name} / {variant_key} {vcfg}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    n_perm = config["n_perm"]
+    n_perm = vcfg.get("n_perm", config["n_perm"])
 
     # --- 対象: Controlかつ記録上無所見（variantによっては特定の特徴量ディレクトリにあるslideに限る） ---
-    manifest = pd.read_parquet(project_root / config["eval_manifest_parquet"])
+    # 全Control調査（系列C）はmanifestを差し替える。label不明・同一個体の重複画像は除く（0010と同じ規則）。
+    manifest = pd.read_parquet(project_root / vcfg.get("manifest_parquet", config["eval_manifest_parquet"]))
     manifest["slide_id"] = manifest["slide_id"].astype(str)
-    target = manifest[(manifest.dose_level == "Control") & ~manifest.has_finding]
+    keep = manifest.dose_level == "Control"
+    if "pathology_label_status" in manifest:
+        keep &= manifest.pathology_label_status != "unknown"
+    if "duplicate_animal_image" in manifest:
+        keep &= ~manifest.duplicate_animal_image
+    if not vcfg.get("include_ctrl_with_findings", False):
+        keep &= manifest.has_finding == False  # noqa: E712（nullable boolのため）
+    target = manifest[keep]
     if "restrict_to_dir" in vcfg:
         have = {p.stem for p in (project_root / vcfg["restrict_to_dir"]).glob("*.h5")}
         target = target[target.slide_id.isin(have)]
-    scan = pd.read_csv(project_root / config["scanner_csv"], dtype={"slide_id": str})
-    target = target.merge(scan[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"}),
-                          on="slide_id", how="left", validate="one_to_one")
+    if "scanner" not in target:
+        scan = pd.read_csv(project_root / config["scanner_csv"], dtype={"slide_id": str})
+        target = target.merge(scan[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"}),
+                              on="slide_id", how="left", validate="one_to_one")
     if target.scanner.isna().any():
         raise ValueError("scanner missing for some target slides")
     target = target.sort_values(["exp_id", "sacrifice_period", "individual_id"]).reset_index(drop=True)
@@ -314,7 +323,7 @@ def main() -> None:
         feats, xy, counts, explained = load_from_h5(feature_dir, target.slide_id, vcfg)
         logger.info(f"PCA{vcfg['pca_components']} fit on {variant_key}: explained variance {explained:.3f}")
     slide_of = np.repeat(np.arange(len(target)), counts)
-    target.assign(n_patches=counts).drop(columns=["finding_types", "finding_sites"]).to_csv(run_dir / "slides.csv", index=False)
+    target.assign(n_patches=counts).drop(columns=["finding_types", "finding_sites"], errors="ignore").to_csv(run_dir / "slides.csv", index=False)
     logger.info(f"{len(target)} slides, {target.exp_id.nunique()} exp, {target.group.nunique()} groups, "
                 f"{len(feats):,} patches (min {counts.min()}/slide), loaded in {time.time() - t0:.0f}s")
     x_gpu = torch.from_numpy(np.ascontiguousarray(feats)).to(device)

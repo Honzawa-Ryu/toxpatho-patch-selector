@@ -38,3 +38,14 @@ variants:
     pca_components: 64
     pca_patches_per_slide: 512
     pca_seed: 0
+  # 系列C本番（Issue #2）: 反復投与の全Control（144試験）。0016 ctrl段の正規化済み特徴量（各2,048 patch）
+  allctrl_macenko:
+    source: h5
+    manifest_parquet: "experiments/0015_20261012_ctrl_batch_structure/ctrl_survey_manifest.parquet"   # scripts/build_ctrl_survey_manifest.py
+    features_dir: "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048"
+    restrict_to_dir: "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048"
+    include_ctrl_with_findings: false   # 未決（Issue #2）。まず無所見のみ
+    pca_components: 64
+    pca_patches_per_slide: 512
+    pca_seed: 0
+    n_perm: 200                         # slide対が約400万あるため回数を減らす（最小p=0.005）

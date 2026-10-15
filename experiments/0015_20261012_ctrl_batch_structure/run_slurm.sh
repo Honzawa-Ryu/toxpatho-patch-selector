@@ -14,7 +14,7 @@
 # 他の実験のジョブに依存させたい場合、有効化してjob_idを埋める
 # （job_idは outputs/{依存先exp}/latest_job_id.txt を参照。投入のたびに
 #  変わりうる値なので、都度手動で書き換えること）:
-# #SBATCH --dependency=afterok:<job_id>
+#SBATCH --dependency=afterok:14140:14204   # 0016 ctrl段と全Control manifestの完了待ち（2026-10-15）
 
 # Array run にする場合、上の3行の --output/--error/この直後の --array を
 # 以下の2行に置き換える（%j→%A_%a、--array=0-N を追加。Nの決め方は下記参照）:
@@ -93,7 +93,7 @@ GRID_ARGS=(
     "--variant"
 )
 GRID_VALUES=(
-    "s219_raw s219_macenko"
+    "allctrl_macenko"
 )
 
 # =====================================================
