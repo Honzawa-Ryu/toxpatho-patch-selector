@@ -38,7 +38,7 @@ DAY_COLORS = ["#a8cbf2", "#5b9be6", "#2a78d6", "#1f4f8f"]          # 時点: 単
 SCAN_COLORS = {"SS1601": "#2a78d6", "SS1598": "#eb6834", "SS1224": "#1baf7a"}
 EXP_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300", "#4a3aa7", "#e34948"]
 GREY = "#cfd3d8"
-TITLE = {"main": "no stain normalization, 830 slides", "s219_raw": "no stain normalization",
+TITLE = {"main": "no stain normalization, 830 slides, 44 experiments", "s219_raw": "no stain normalization",
          "s219_macenko": "Macenko stain normalization"}
 
 plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False,
@@ -248,6 +248,52 @@ def fig_mds(data, out):
     plt.close(fig)
 
 
+def fig_blocks(data, out):
+    """試験の塊（scripts/preview_exp_blocks.pyの結果）でt-SNE・MDSを色分けする。塊番号を重心に直接書く。"""
+    for v, d in data.items():
+        found = sorted(EXP.glob(f"exp_blocks_preview_{v}_*/exp_blocks.csv"))
+        if not found:
+            continue
+        block_of = pd.read_csv(found[-1]).set_index("exp_id").block
+        s = d["slides"]
+        slide_block = s.exp_id.map(block_of).to_numpy()
+        blocks = sorted(np.unique(slide_block))
+        colors = dict(zip(blocks, EXP_COLORS))
+        names = s.groupby("exp_id").compound_name.first()
+        dist = exp0015.js_distance_matrix(d["occ"])
+        mds = MDS(n_components=2, dissimilarity="precomputed", random_state=SEED, n_init=4,
+                  normalized_stress="auto").fit_transform(dist)
+        fig, axes = plt.subplots(1, 3, figsize=(22, 7.5), gridspec_kw={"width_ratios": [1, 1, .55]})
+        pb = slide_block[d["row"]]
+        order = np.random.default_rng(SEED).permutation(len(pb))
+        for ax, xy, b_of, size, title in [(axes[0], d["xy"], pb, 2, "patch t-SNE (40 patches / slide)"),
+                                          (axes[1], mds, slide_block, 16, "slide MDS (JS distance of occupancy)")]:
+            o = order if len(b_of) == len(order) else np.arange(len(b_of))
+            for b in blocks:
+                m = b_of[o] == b
+                ax.scatter(*xy[o][m].T, color=colors[b], s=size, alpha=.75, linewidths=0, rasterized=True)
+                cx, cy = np.median(xy[b_of == b], axis=0)
+                ax.text(cx, cy, str(b), fontsize=15, fontweight="bold", ha="center", va="center", color="black",
+                        bbox=dict(boxstyle="circle,pad=0.2", fc="white", ec=colors[b], lw=2))
+            ax.set_title(title, fontsize=12)
+            bare(ax)
+        axes[2].axis("off")
+        lines = []
+        for b in blocks:
+            ex = sorted(block_of[block_of == b].index)
+            sc = s[s.exp_id.isin(ex)].scanner.value_counts()
+            lines.append((b, f"block {b} ({len(ex)} exp; " + ", ".join(f"{k} {v}" for k, v in sc.items()) + ")",
+                          "\n".join("  " + names[e][:30] for e in ex)))
+        y = 1.0
+        for b, head, body in lines:
+            axes[2].text(0, y, head, color=colors[b], fontsize=10, fontweight="bold", va="top", transform=axes[2].transAxes)
+            axes[2].text(0, y - .025, body, fontsize=8, va="top", transform=axes[2].transAxes)
+            y -= .03 + .022 * (body.count("\n") + 1)
+        fig.suptitle(f"Experiment blocks ({found[-1].parent.name}) on the clustering layouts, {TITLE[v]}", fontsize=13, y=1.0)
+        fig.savefig(out / f"4_blocks_{v}.png")
+        plt.close(fig)
+
+
 def main():
     variants = sys.argv[1:] or ["s219_raw", "s219_macenko"]
     out = EXP / f"clustering_visualization_{date.today():%Y%m%d}"
@@ -261,6 +307,7 @@ def main():
     fig_tsne_by_exp(data, out)
     fig_heatmap(data, out)
     fig_mds(data, out)
+    fig_blocks(data, out)
     print(out)
 
 
