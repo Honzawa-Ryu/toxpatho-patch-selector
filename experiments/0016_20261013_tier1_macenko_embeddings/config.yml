@@ -44,3 +44,7 @@ batch_size: 64
 num_workers: 7
 
 n_chunks: 4                     # run_slurm.shの--array=0-3と一致させる
+
+# full phase（2026-10-16）: 系列Cの最大の塊（cut 0.72、44試験）のうち手元に投与群がある13試験の全slide（Control含む、1,020枚）を
+# 全patchで抽出する。patch分類につなげるため全patch（ユーザー判断）。出力はfeatures_subdir（treatedと同じ）。
+full_exp_ids: [182, 184, 305, 368, 413, 434, 538, 569, 571, 573, 594, 596, 686]

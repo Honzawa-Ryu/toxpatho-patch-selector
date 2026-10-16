@@ -50,3 +50,10 @@ Controlを先に処理する（2026-10-13ユーザー了承）。**準備のみ�
 
 - 参照の抽出をControlに限るか（現状はControlのみ）。
 - 追加Controlに単回投与・72時間など反復以外は含めない（2026-10-13決定: 反復投与のみ）。
+
+## 追加: full phase（2026-10-16）
+
+系列Cで反復投与の全Controlを塊に分けた（cut 0.72で6塊）。最大の塊（44試験）のうち、手元に投与群がある13試験
+（WY-14643, gemfibrozil, ethinylestradiol, amitriptyline, diltiazem, fenofibrate, lornoxicam, acetamidofluorene,
+nitrosodiethylamine, ticlopidine, phenacetin, bucetin, methylene dianiline）の全1,020枚（Control 260、投与群760）を、
+patch分類につなげるため全patchで抽出する（`features_uni_v2_macenko/`）。参照染色はctrl段と同じ`reference.json`。
