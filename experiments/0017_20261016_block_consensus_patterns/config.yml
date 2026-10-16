@@ -1,0 +1,37 @@
+# 0017: 塊内（系列C cut 0.72の最大塊のうち手元13試験）で、k-means複数runの共所属からpatchのコアを取り出す（plan.md）
+seed: 0
+
+manifest_parquet: "experiments/0010_20260925_pathology_benchmark_subset/label_audit/manifest_known_unique.parquet"
+features_dir: "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"   # 全patch、Macenko
+exp_ids: [182, 184, 305, 368, 413, 434, 538, 569, 571, 573, 594, 596, 686]
+
+# --- 前処理 ---
+pca_components: 64
+pca_patches_per_slide: 100      # PCA学習用。Controlと投与群を同数にそろえて学習する
+train_pool_per_slide: 400       # k-means学習用patchのプール。各抽出seedがここから200枚を選ぶ
+train_patches_per_slide: 200    # k-means学習用（1 runあたり計約20万）
+eval_patches_per_slide: 50      # 共所属を数える評価用（計約5.1万、固定）
+
+# --- 空白patchの除外（評価用patchのみ） ---
+# 1/4解像度（level 1相当）の64x64で、白に近くない画素の割合を組織割合とする
+tissue_level_downsample: 4
+tissue_white_threshold: 220     # RGB平均がこれ以上なら背景とみなす
+min_tissue_frac: 0.5
+
+# --- 複数run ---
+ks: [50, 100, 200]
+sample_seeds: [0, 1, 2, 3, 4]
+init_seeds: [0, 1, 2, 3]
+
+# --- 共所属グラフとコア ---
+knn: 30
+taus: [0.7, 0.8, 0.9]
+leiden_resolution: 1.0
+min_core_patches: 50
+min_core_slides: 3
+n_split_repeats: 3              # 60 runを半分ずつに分けてコアを作り直す回数
+
+# --- 画像シート（tau=sheet_tauのコア） ---
+sheet_tau: 0.8
+sheet_tiles: 24
+sheet_max_cores: 40

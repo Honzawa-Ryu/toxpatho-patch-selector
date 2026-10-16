@@ -1,0 +1,144 @@
+exp_id,compound,block,within_exp_dist,scanner,n_slides,nearest_exp,nearest_dist,nearest_coblock_rate
+502,colchicine,1,0.3189577342045609,{'SS1601': 15},15,simvastatin,0.311,1.0
+516,simvastatin,1,0.2679863575530325,{'SS1601': 13},13,colchicine,0.311,1.0
+520,dantrolene,1,0.3402222055191045,{'SS1601': 14},14,simvastatin,0.326,1.0
+551,bendazac,1,0.4177350702510772,{'SS1601': 18},18,simvastatin,0.369,1.0
+587,nimesulide,1,0.3699301319103051,{'SS1601': 13},13,ethanol,0.378,1.0
+589,ethanol,1,0.36894908266284626,{'SS1601': 14},14,nimesulide,0.378,1.0
+309,tetracycline,1,0.3486397902478072,{'SS1601': 20},20,simvastatin,0.381,1.0
+555,etoposide,1,0.43301202556891016,{'SS1601': 15},15,dantrolene,0.388,1.0
+518,ajmaline,1,0.35323505821978596,{'SS1601': 16},16,colchicine,0.392,1.0
+311,lomustine,1,0.44624502137562716,{'SS1601': 19},19,tetracycline,0.403,1.0
+553,benziodarone,1,0.42752718908675974,{'SS1601': 12},12,ethanol,0.403,1.0
+313,ciprofloxacin,1,0.36586140628077607,{'SS1598': 19},19,enalapril,0.406,1.0
+423,enalapril,1,0.4565907254237628,{'SS1598': 12},12,ciprofloxacin,0.406,1.0
+252,thioridazine,1,0.3856732615626947,{'SS1598': 20},20,tetracycline,0.411,1.0
+585,ethionamide,1,0.3908483783535548,{'SS1601': 10},10,etoposide,0.413,1.0
+670,rotenone,1,0.3859150110441378,"{'SS1598': 18, 'SS1601': 2}",20,enalapril,0.422,1.0
+274,fluphenazine,1,0.456727390341254,{'SS1598': 20},20,tetracycline,0.424,1.0
+693,desmopressin acetate,1,0.3434953835779903,{'SS1598': 17},17,etoposide,0.432,1.0
+673,"2,4-dinitrophenol",1,0.44763339061735474,"{'SS1598': 15, 'SS1601': 5}",20,rotenone,0.433,1.0
+419,tannic acid,1,0.39369226520911194,{'SS1598': 17},17,rotenone,0.435,1.0
+666,rosiglitazone maleate,1,0.46288823376364735,{'SS1601': 20},20,ethionamide,0.441,1.0
+421,captopril,1,0.42292916219950827,{'SS1601': 14},14,tetracycline,0.446,1.0
+684,fluoxetine hydrochloride,1,0.44486754234495807,"{'SS1598': 18, 'SS1601': 2}",20,rotenone,0.468,1.0
+197,coumarin,2,0.3168452039910555,{'SS1601': 20},20,haloperidol,0.333,1.0
+248,haloperidol,2,0.32954878171966195,{'SS1601': 20},20,coumarin,0.333,1.0
+42,acetaminophen,2,0.3199910914997733,{'SS1601': 19},19,coumarin,0.341,1.0
+155,benzbromarone,2,0.30749066669380276,{'SS1601': 20},20,coumarin,0.366,1.0
+159,diazepam,2,0.37700786232437716,{'SS1601': 20},20,haloperidol,0.368,1.0
+201,propylthiouracil,2,0.36924414487121526,{'SS1598': 20},20,coumarin,0.371,1.0
+199,allopurinol,2,0.36382880709937276,{'SS1601': 20},20,acetaminophen,0.381,1.0
+93,phenobarbital,2,0.3800219633480673,{'SS1601': 20},20,hexachlorobenzene,0.393,1.0
+157,hexachlorobenzene,2,0.30732058745912266,{'SS1601': 20},20,phenobarbital,0.393,1.0
+113,indomethacin,2,0.4346274703850301,{'SS1601': 19},19,phenobarbital,0.412,1.0
+95,rifampicin,2,0.44815141270513353,{'SS1601': 20},20,phenobarbital,0.413,1.0
+117,thioacetamide,2,0.3072879462272455,{'SS1601': 20},20,coumarin,0.413,1.0
+97,phenylbutazone,2,0.4521067077739245,{'SS1601': 20},20,phenobarbital,0.415,1.0
+115,chlorpromazine,2,0.4003374208801514,{'SS1601': 20},20,thioacetamide,0.427,1.0
+61,isoniazid,2,0.48525288468751365,{'SS1224': 20},20,propylthiouracil,0.503,1.0
+229,azathioprine,3,0.4401289906684266,{'SS1598': 20},20,mexiletine,0.429,1.0
+465,mexiletine,3,0.36245481429401893,"{'SS1598': 19, 'SS1601': 1}",20,azathioprine,0.429,1.0
+280,monocrotaline,3,0.4284660531871724,"{'SS1598': 19, 'SS1601': 1}",20,azathioprine,0.447,1.0
+317,moxisylyte,3,0.4345381788411009,{'SS1598': 20},20,azathioprine,0.461,1.0
+278,methimazole,3,0.3781144140156216,"{'SS1598': 18, 'SS1601': 2}",20,tacrine,0.472,1.0
+315,tacrine,3,0.5046872967868306,{'SS1598': 20},20,methimazole,0.472,1.0
+346,ibuprofen,3,0.42444521088066944,{'SS1598': 20},20,azathioprine,0.474,1.0
+172,cyclophosphamide,3,0.43811612838499425,{'SS1598': 8},8,ibuprofen,0.476,1.0
+319,iproniazid,3,0.43385327538121843,{'SS1598': 20},20,methimazole,0.479,1.0
+348,naproxen,3,0.4902879103046736,{'SS1601': 20},20,papaverine,0.485,1.0
+432,papaverine,3,0.48328112025693404,{'SS1601': 20},20,naproxen,0.485,1.0
+428,theophylline,3,0.47131153811565235,{'SS1601': 20},20,caffeine,0.492,1.0
+430,caffeine,3,0.47234431555556694,{'SS1601': 20},20,theophylline,0.492,1.0
+387,nicotinic acid,3,0.5031529604938101,{'SS1598': 20},20,ibuprofen,0.501,1.0
+389,erythromycin ethylsuccinate,3,0.44823493221085864,{'SS1601': 20},20,disopyramide,0.504,1.0
+463,disopyramide,3,0.4790267986239791,{'SS1601': 20},20,erythromycin ethylsuccinate,0.504,1.0
+176,phenytoin,3,0.40710538640057176,"{'SS1601': 15, 'SS1598': 5}",20,erythromycin ethylsuccinate,0.517,1.0
+391,ethambutol,3,0.5272361043922045,{'SS1598': 20},20,azathioprine,0.518,1.0
+174,methapyrilene,3,0.47366048483553164,{'SS1598': 20},20,phenytoin,0.52,1.0
+350,quinidine,3,0.47055966966881024,{'SS1601': 20},20,cyclophosphamide,0.521,1.0
+282,vitamin A,3,0.525960735551865,"{'SS1598': 19, 'SS1601': 1}",20,cyclophosphamide,0.526,1.0
+227,perhexiline,3,0.411747342783631,{'SS1601': 20},20,erythromycin ethylsuccinate,0.527,1.0
+231,ketoconazole,3,0.5671937110302414,"{'SS1598': 14, 'SS1601': 6}",20,methimazole,0.542,1.0
+575,cisplatin,4,0.4298412860500598,{'SS1598': 20},20,cyclosporine A,0.41,1.0
+605,cyclosporine A,4,0.3367666918549169,"{'SS1598': 19, 'SS1601': 1}",20,cisplatin,0.41,1.0
+494,promethazine,4,0.3976998571572675,{'SS1598': 20},20,chlormadinone,0.421,1.0
+543,chlormadinone,4,0.37801778810987696,{'SS1598': 20},20,promethazine,0.421,1.0
+577,carboplatin,4,0.4258546776391913,{'SS1598': 20},20,cyclosporine A,0.421,1.0
+492,disulfiram,4,0.36954006290314895,"{'SS1598': 18, 'SS1601': 2}",20,chlormadinone,0.423,0.98
+607,puromycin aminonucleoside,4,0.4126954377383619,"{'SS1598': 19, 'SS1601': 1}",20,cyclosporine A,0.424,1.0
+490,acetazolamide,4,0.3958036423843433,"{'SS1598': 19, 'SS1601': 1}",20,disulfiram,0.427,1.0
+579,bromoethylamine,4,0.4297494264744487,"{'SS1598': 19, 'SS1601': 1}",20,cyclosporine A,0.46,1.0
+545,danazol,4,0.4694378070110579,{'SS1224': 20},20,puromycin aminonucleoside,0.485,1.0
+481,phalloidin,4,0.4267416722349126,"{'SS1598': 8, 'SS1601': 2}",10,promethazine,0.49,0.55
+698,1% cholesterol + 0.25% sodium cholate,4,0.38870528038636637,"{'SS1601': 16, 'SS1224': 2}",18,cyclosporine A,0.49,1.0
+617,doxorubicin,4,0.4584061381131339,{'SS1598': 20},20,cyclosporine A,0.494,1.0
+636,cephalothin,4,0.4627928327299311,{'SS1601': 20},20,bromoethylamine,0.526,1.0
+467,tiopronin,4,0.4903819131343597,{'SS1598': 20},20,phalloidin,0.528,0.95
+713,acetamide,4,0.42219337476341,{'SS1601': 20},20,1% cholesterol + 0.25% sodium cholate,0.553,0.98
+613,gentamicin,4,0.5393486516468851,{'SS1601': 19},19,cyclosporine A,0.559,1.0
+719,propranolol,4,0.4700109096098587,{'SS1224': 20},20,acetamide,0.61,1.0
+147,carbamazepine,5,0.28758435167170027,{'SS1598': 17},17,mefenamic acid,0.321,1.0
+378,mefenamic acid,5,0.3002981231310725,{'SS1598': 19},19,carbamazepine,0.321,1.0
+67,carbon tetrachloride,5,0.32806855514317823,{'SS1598': 20},20,omeprazole,0.344,1.0
+124,omeprazole,5,0.3149315147745254,{'SS1598': 19},19,carbon tetrachloride,0.344,1.0
+99,clofibrate,5,0.28999447768010755,{'SS1598': 17},17,allyl alcohol,0.346,1.0
+103,allyl alcohol,5,0.33593285230270153,{'SS1598': 19},19,clofibrate,0.346,1.0
+101,naphthyl isothiocyanate,5,0.34857462228444164,{'SS1598': 18},18,omeprazole,0.352,1.0
+126,ethionine,5,0.4337263910568052,{'SS1598': 11},11,omeprazole,0.362,1.0
+151,nitrofurantoin,5,0.33236550216810934,{'SS1598': 12},12,mefenamic acid,0.38,1.0
+292,flutamide,5,0.32479157691471433,{'SS1598': 14},14,naphthyl isothiocyanate,0.38,1.0
+214,cimetidine,5,0.375521668488094,{'SS1598': 16},16,carbon tetrachloride,0.382,1.0
+235,glibenclamide,5,0.3217947252761183,{'SS1598': 16},16,carbamazepine,0.386,1.0
+380,famotidine,5,0.3321016373796691,{'SS1601': 20},20,ranitidine,0.386,1.0
+382,ranitidine,5,0.3676521588363896,{'SS1601': 20},20,famotidine,0.386,1.0
+209,amiodarone,5,0.40664677300171637,{'SS1598': 16},16,ranitidine,0.395,1.0
+91,valproic acid,5,0.3238778124726024,{'SS1224': 19},19,mefenamic acid,0.399,1.0
+149,diclofenac,5,0.34070120916606306,{'SS1598': 17},17,carbamazepine,0.405,1.0
+128,aspirin,5,0.42344855234099193,"{'SS1601': 18, 'SS1598': 1}",19,amiodarone,0.407,1.0
+211,sulfasalazine,5,0.38748295569953217,{'SS1598': 20},20,carbon tetrachloride,0.41,1.0
+290,griseofulvin,5,0.3993380870364655,{'SS1601': 15},15,naphthyl isothiocyanate,0.424,1.0
+441,penicillamine,6,0.33726514230972576,{'SS1598': 20},20,triamterene,0.401,1.0
+445,triamterene,6,0.2795410514317163,{'SS1598': 20},20,penicillamine,0.401,1.0
+434,fenofibrate,6,0.3343706917505343,{'SS1598': 20},20,chlorpropamide,0.405,1.0
+436,chlorpropamide,6,0.3095412909428675,{'SS1598': 20},20,fenofibrate,0.405,1.0
+409,chlorpheniramine,6,0.3801757167718188,{'SS1598': 20},20,sulpiride,0.418,1.0
+509,sulpiride,6,0.33049411460424627,{'SS1598': 20},20,chlorpheniramine,0.418,1.0
+411,nifedipine,6,0.4031116465408052,{'SS1598': 20},20,fenofibrate,0.425,1.0
+413,diltiazem,6,0.41179608513684585,{'SS1601': 19},19,triamterene,0.433,1.0
+596,bucetin,6,0.33698442488839414,{'SS1601': 20},20,diltiazem,0.44,1.0
+511,acarbose,6,0.4271341506432608,{'SS1598': 16},16,sulpiride,0.446,1.0
+507,tolbutamide,6,0.36454774824625796,{'SS1598': 20},20,triamterene,0.453,1.0
+368,amitriptyline,6,0.44329452269452385,{'SS1601': 20},20,furosemide,0.454,1.0
+393,furosemide,6,0.3845143216878045,{'SS1598': 16},16,amitriptyline,0.454,1.0
+529,trimethadione,6,0.45932672060576063,{'SS1598': 19},19,triamterene,0.462,1.0
+443,sulindac,6,0.4160244294389125,"{'SS1598': 18, 'SS1601': 2}",20,trimethadione,0.467,1.0
+186,bromobenzene,6,0.3638228233906037,{'SS1601': 20},20,adapin,0.469,1.0
+238,adapin,6,0.5193925175545978,{'SS1601': 20},20,bromobenzene,0.469,1.0
+525,triazolam,6,0.400439543297875,{'SS1598': 20},20,acarbose,0.471,1.0
+594,phenacetin,6,0.465910804421906,{'SS1601': 20},20,phenylanthranilic acid,0.482,1.0
+598,phenylanthranilic acid,6,0.3592988890654406,{'SS1601': 20},20,phenacetin,0.482,1.0
+240,labetalol,6,0.45062879339492856,{'SS1601': 20},20,methyltestosterone,0.486,1.0
+242,methyltestosterone,6,0.4456604816023839,{'SS1601': 20},20,labetalol,0.486,1.0
+527,clomipramine,6,0.45685564898382386,{'SS1598': 20},20,sulindac,0.488,1.0
+691,amphotericin B,6,0.4712758159559378,{'SS1601': 18},18,triamterene,0.49,1.0
+262,pemoline,6,0.46912815442933387,{'SS1601': 17},17,methyltestosterone,0.496,1.0
+326,nitrofurazone,6,0.43827716838731207,{'SS1601': 17},17,furosemide,0.496,1.0
+686,methylene dianiline,6,0.398139934744634,{'SS1601': 20},20,penicillamine,0.499,1.0
+688,butylated hydroxyanisole,6,0.48975305690156057,{'SS1601': 20},20,nitrofurazone,0.503,1.0
+573,ticlopidine,6,0.42310446376741934,{'SS1601': 20},20,sulindac,0.509,1.0
+370,hydroxyzine,6,0.4017322327101727,{'SS1601': 20},20,nitrofurazone,0.51,1.0
+266,metformin,6,0.46266878279112617,{'SS1601': 18},18,phenacetin,0.512,0.52
+569,acetamidofluorene,6,0.43931361083565373,{'SS1601': 19},19,sulindac,0.519,1.0
+184,gemfibrozil,6,0.4415046979474077,{'SS1601': 17},17,ethinylestradiol,0.521,1.0
+305,ethinylestradiol,6,0.3590156900483944,{'SS1601': 18},18,gemfibrozil,0.521,1.0
+297,tamoxifen,6,0.33015668645889495,{'SS1601': 20},20,ethinylestradiol,0.522,1.0
+182,WY-14643,6,0.45637713436908134,{'SS1601': 19},19,labetalol,0.524,1.0
+303,chlormezanone,6,0.43529325047411715,{'SS1598': 19},19,clofibrate,0.528,0.05
+324,chloramphenicol,6,0.5970232672165229,{'SS1601': 20},20,ethinylestradiol,0.528,1.0
+307,methyldopa,6,0.5046387896365901,{'SS1601': 18},18,labetalol,0.53,1.0
+538,lornoxicam,6,0.4333411729442325,{'SS1598': 19},19,ticlopidine,0.537,1.0
+536,meloxicam,6,0.5457303876309408,{'SS1598': 17},17,lornoxicam,0.545,1.0
+571,nitrosodiethylamine,6,0.47969289229083856,{'SS1601': 20},20,acetamidofluorene,0.564,1.0
+366,imipramine,6,0.5016496663718513,{'SS1601': 20},20,chlormezanone,0.565,1.0
+534,terbinafine,6,0.363884552746725,{'SS1598': 18},18,meloxicam,0.582,1.0
