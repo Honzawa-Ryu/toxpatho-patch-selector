@@ -64,3 +64,10 @@ PCAとrunはGPUで数十分。評価用patchの読み込みとkNNグラフで数
 - 空白patchの除外（2026-10-16ユーザー了承「時間次第でできれば」）: 評価用patchだけ、低解像度の層から読んで白に近くない画素の割合を出し、0.5未満を除く。
   k-meansの学習patchは除かない（全patchの画素を読むと時間がかかるため）。除いた数はresults.jsonに記録。
 - pattern登録の基準・保存形式（0017の結果を見てから）。
+
+## 追加: 塊3でのテスト（2026-10-17、ユーザー決定）
+
+cut 0.72の塊3（23試験）のうち手元に投与群がある11試験（853枚: methapyrilene, phenytoin, monocrotaline, vitamin A, iproniazid,
+ibuprofen, naproxen, ethambutol, theophylline, papaverine, disopyramide）で、pilotと同じ条件で回す（`--variant block3`）。
+特徴量は0016 full_block3段で全patchを抽出（参照染色は同じ`reference.json`）。最大の塊の転送分31試験の処理はこの後。
+所見名の付け方は2026-10-17修正版（30%以上に出る所見の中から倍率順）。

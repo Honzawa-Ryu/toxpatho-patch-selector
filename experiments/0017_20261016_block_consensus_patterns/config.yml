@@ -35,3 +35,10 @@ n_split_repeats: 3              # 60 runを半分ずつに分けてコアを作�
 sheet_tau: 0.8
 sheet_tiles: 24
 sheet_max_cores: 40
+
+# 対象の試験（--variantで選ぶ）。pilot = cut 0.72の最大の塊（block 6）の手元13試験。block3 = 塊3の手元11試験（2026-10-17）
+variants:
+  pilot:
+    exp_ids: [182, 184, 305, 368, 413, 434, 538, 569, 571, 573, 594, 596, 686]
+  block3:
+    exp_ids: [174, 176, 280, 282, 319, 346, 348, 391, 428, 432, 463]

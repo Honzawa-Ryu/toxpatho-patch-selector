@@ -57,6 +57,7 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")   # run_slurm.shが渡す。読むのは常に実験ディレクトリのconfig.yml
+    parser.add_argument("--variant", default="pilot")       # config.ymlのvariantsのキー（対象の試験）
     return parser.parse_args()
 
 
@@ -166,12 +167,15 @@ def core_table(core: np.ndarray, row: np.ndarray, slides: pd.DataFrame, centrali
         # 所見: 投与群のslideのうちその所見を持つ割合を、13試験の投与群全体の割合（base）と比べる
         if len(treated):
             f = treated.finding_types.explode().dropna().value_counts() / len(treated)
-            lift = (f / base_rate.reindex(f.index)).sort_values(ascending=False)
+            # 30%以上のslideに出ている所見の中から倍率の高い順に選ぶ（2026-10-17修正: 以前は倍率上位3つを先に取ってから
+            # 30%で絞っていたため、まれな所見が上位を占めると30%超の所見があっても表示されなかった）
+            common = f[f >= 0.3]
+            lift = (common / base_rate.reindex(common.index)).sort_values(ascending=False)
             top = f.sort_values(ascending=False).head(3)
             rec["treated_slides"] = len(treated)
             rec["treated_with_finding_frac"] = float(treated.has_finding.mean())
             rec["top_findings"] = "; ".join(f"{k} {v:.2f}" for k, v in top.items())
-            rec["top_lift_findings"] = "; ".join(f"{k} x{v:.1f}" for k, v in lift.head(3).items() if f[k] >= 0.3)
+            rec["top_lift_findings"] = "; ".join(f"{k} x{v:.1f}" for k, v in lift.head(3).items())
         recs.append(rec)
     return pd.DataFrame(recs)
 
@@ -223,10 +227,11 @@ def main() -> None:
     from lib.output_utils import complete_run, get_run_dir, write_run_metadata
     from sklearn.decomposition import PCA
 
-    parse_args()
+    args = parse_args()
     exp_name = os.environ["EXP_NAME"]
     cfg = load_config(Path(__file__).parent)
-    variant_key = "pilot"
+    variant_key = args.variant
+    cfg.update(cfg.get("variants", {}).get(variant_key, {}))   # 試験の組だけ差し替える
     run_dir = get_run_dir(project_root, __file__, variant_key, output_root=os.environ.get("OUTPUT_ROOT"))
     logger = setup_logger(run_dir, exp_name)
     write_run_metadata(run_dir, exp_name=exp_name, variant_key=variant_key, config=cfg)
