@@ -63,7 +63,7 @@ GRID_ARGS=(
     "--chunk"
 )
 GRID_VALUES=(
-    "full"
+    "full_block3"
     "0 1 2 3"
 )
 

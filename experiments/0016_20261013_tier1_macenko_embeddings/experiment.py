@@ -54,7 +54,7 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")
-    parser.add_argument("--phase", choices=["coords", "ctrl", "treated", "full"], required=True)
+    parser.add_argument("--phase", choices=["coords", "ctrl", "treated", "full", "full_block3"], required=True)
     parser.add_argument("--chunk", type=int, required=True)   # 0..n_chunks-1（array task）
     return parser.parse_args()
 
@@ -173,7 +173,8 @@ def main() -> None:
 
     slides = build_slides(project_root, config)
     target = {"coords": slides[slides.added], "ctrl": slides[slides.is_ctrl], "treated": slides[~slides.is_ctrl],
-              "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))]}[args.phase]
+              "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
+              "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))]}[args.phase]
     chunk = target.iloc[args.chunk::config["n_chunks"]]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 
