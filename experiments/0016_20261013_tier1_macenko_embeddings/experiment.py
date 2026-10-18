@@ -3,8 +3,11 @@ import importlib.util
 import json
 import logging
 import os
+import shutil
 import subprocess
 import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import yaml
@@ -54,7 +57,7 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")
-    parser.add_argument("--phase", choices=["coords", "ctrl", "treated", "full", "full_block3", "full_added_treated"], required=True)
+    parser.add_argument("--phase", choices=["coords", "coords_treated", "ctrl", "treated", "full", "full_block3", "full_added_treated"], required=True)
     parser.add_argument("--chunk", type=int, required=True)   # 0..n_chunks-1（array task）
     return parser.parse_args()
 
@@ -106,6 +109,20 @@ def coords_path(project_root: Path, config: dict, exp_name: str, sid: str) -> Pa
     raise FileNotFoundError(f"no coords for {sid}; run the coords phase first")
 
 
+def stage(src_paths: list[str], root: Path, rels: list[str]) -> list[Path]:
+    """svsをローカルSSDへ丸ごとコピーする（1回の連続読み）。既にあれば飛ばす。0008のstage_slides_locallyと同じ考え方。"""
+    out = []
+    for src, rel in zip(src_paths, rels):
+        dest = root / rel
+        if not dest.exists():
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            tmp = dest.with_suffix(dest.suffix + ".part")
+            shutil.copy2(src, tmp)
+            tmp.rename(dest)
+        out.append(dest)
+    return out
+
+
 def run_coords(project_root: Path, config: dict, exp_name: str, chunk: pd.DataFrame, chunk_id: int,
                run_dir: Path, logger) -> dict:
     """追加Controlに TRIDENT seg → coords（0008と同一設定、特徴量抽出はしない）。"""
@@ -113,17 +130,39 @@ def run_coords(project_root: Path, config: dict, exp_name: str, chunk: pd.DataFr
     if missing:
         raise FileNotFoundError(f"{len(missing)} added slides not transferred yet, e.g. {missing[:3]}")
     job_dir = project_root / "outputs" / exp_name / f"trident_job_chunk{chunk_id}"
-    custom = run_dir / "custom_list_of_wsis.csv"
-    pd.DataFrame({"wsi": [rel_path(p, s) for p, s in zip(chunk.sacrifice_period, chunk.slide_id)]}).to_csv(custom, index=False)
-    for task in ["seg", "coords"]:
-        argv = [sys.executable, str(project_root / "libraries" / "trident_run_batch_of_slides.py"),
-                "--task", task, "--wsi_dir", str(project_root / config["wsi_dir"]), "--search_nested",
-                "--custom_list_of_wsis", str(custom), "--job_dir", str(job_dir),
-                "--reader_type", config["reader_type"], "--segmenter", config["segmenter"],
-                "--mag", str(config["mag"]), "--patch_size", str(config["patch_size"]),
-                "--overlap", str(config["overlap"]), "--patch_encoder", config["patch_encoder"], "--gpus", "0"]
-        logger.info(f"TRIDENT {task}: {len(chunk)} slides -> {job_dir}")
-        subprocess.run(argv, check=True)
+    rels = [rel_path(p, s) for p, s in zip(chunk.sacrifice_period, chunk.slide_id)]
+    if not rels:
+        return {"n_slides": 0, "n_with_coords": 0, "job_dir": str(job_dir)}
+    staging = config.get("staging_root")
+    # ローカルSSDに置く場合はバッチごとにコピー → seg・coords → 削除。次バッチのコピーは裏で進める（2026-10-18）
+    bs = config.get("staging_batch_size", 30) if staging else len(rels)
+    batches = [list(range(i, min(i + bs, len(rels)))) for i in range(0, len(rels), bs)]
+    root = Path(staging) / f"coords_chunk{chunk_id}" if staging else project_root / config["wsi_dir"]
+    pool = ThreadPoolExecutor(max_workers=1)
+    fut = pool.submit(stage, [chunk.svs_path.iloc[j] for j in batches[0]], root, [rels[j] for j in batches[0]]) if staging else None
+    for bi, idx in enumerate(batches):
+        t0 = time.time()
+        staged = fut.result() if staging else []
+        t_copy = time.time() - t0
+        if staging and bi + 1 < len(batches):
+            nxt = batches[bi + 1]
+            fut = pool.submit(stage, [chunk.svs_path.iloc[j] for j in nxt], root, [rels[j] for j in nxt])
+        custom = run_dir / f"custom_list_of_wsis_batch{bi}.csv"
+        pd.DataFrame({"wsi": [rels[j] for j in idx]}).to_csv(custom, index=False)
+        t0 = time.time()
+        for task in ["seg", "coords"]:
+            argv = [sys.executable, str(project_root / "libraries" / "trident_run_batch_of_slides.py"),
+                    "--task", task, "--wsi_dir", str(root), "--search_nested",
+                    "--custom_list_of_wsis", str(custom), "--job_dir", str(job_dir),
+                    "--reader_type", config["reader_type"], "--segmenter", config["segmenter"],
+                    "--mag", str(config["mag"]), "--patch_size", str(config["patch_size"]),
+                    "--overlap", str(config["overlap"]), "--patch_encoder", config["patch_encoder"], "--gpus", "0"]
+            subprocess.run(argv, check=True)
+        logger.info(f"batch {bi + 1}/{len(batches)}: {len(idx)} slides, waited {t_copy:.0f}s for staging, "
+                    f"seg+coords {time.time() - t0:.0f}s ({(time.time() - t0) / len(idx):.1f}s/slide)")
+        for f in staged:
+            f.unlink(missing_ok=True)
+    pool.shutdown()
     pdir = trident_patches_dir(project_root, config, exp_name, chunk_id)
     n_ok = sum((pdir / f"{s}_patches.h5").exists() for s in chunk.slide_id)
     return {"n_slides": len(chunk), "n_with_coords": int(n_ok), "job_dir": str(job_dir)}
@@ -180,11 +219,11 @@ def main() -> None:
     logger.info(f"Starting: {exp_name} / {variant_key}")
 
     slides = build_slides(project_root, config)
-    target = {"coords": slides[slides.added], "ctrl": slides[slides.is_ctrl], "treated": slides[~slides.is_ctrl],
+    target = {"coords": slides[slides.added], "coords_treated": slides[slides.added & ~slides.is_ctrl], "ctrl": slides[slides.is_ctrl], "treated": slides[~slides.is_ctrl],
               "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
               "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
               "full_added_treated": slides[slides.added & ~slides.is_ctrl]}[args.phase]
-    if args.phase == "coords":   # 座標がまだないslideだけ（既にcoords段を通ったslideをchunk間で作り直さない）
+    if args.phase in ("coords", "coords_treated"):   # 座標がまだないslideだけ（既にcoords段を通ったslideをchunk間で作り直さない）
         def has_coords(sid):
             try:
                 coords_path(project_root, config, exp_name, sid)
@@ -195,7 +234,7 @@ def main() -> None:
     chunk = target.iloc[args.chunk::config["n_chunks"]]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 
-    if args.phase == "coords":
+    if args.phase in ("coords", "coords_treated"):
         res = run_coords(project_root, config, exp_name, chunk, args.chunk, run_dir, logger)
         (run_dir / "results.json").write_text(json.dumps(res, indent=2))
         if res["n_with_coords"] < res["n_slides"]:
@@ -215,12 +254,29 @@ def main() -> None:
 
     fit_rows, failed = [], []
     done = skipped = 0
-    for i, row in enumerate(chunk.itertuples(index=False), start=1):
+    # ローカルSSDに置く場合: 次のslideのコピーを裏で進め、処理し終えたslideは消す（2026-10-18）
+    staging = config.get("staging_root")
+    todo = [r for r in chunk.itertuples(index=False) if not (features_dir / f"{r.slide_id}.h5").exists()]
+    skipped = len(chunk) - len(todo)
+    sroot = Path(staging) / f"{args.phase}_chunk{args.chunk}" if staging else None
+    pool = ThreadPoolExecutor(max_workers=1) if staging else None
+    pending = {}
+
+    def prefetch(j):
+        if staging and j < len(todo) and j not in pending:
+            r = todo[j]
+            pending[j] = pool.submit(stage, [r.svs_path], sroot, [rel_path(r.sacrifice_period, r.slide_id)])
+
+    prefetch(0)
+    for i, row in enumerate(todo, start=1):
         sid = row.slide_id
         out_path = features_dir / f"{sid}.h5"
-        if out_path.exists():
-            skipped += 1
-            continue
+        t_slide = time.time()
+        if staging:
+            local = pending.pop(i - 1).result()[0]
+            prefetch(i)
+            row = row._replace(svs_path=str(local))
+        t_wait = time.time() - t_slide
         coords, attrs = exp0005.read_coords(coords_path(project_root, config, exp_name, sid))
         n_total = len(coords)
         if sub_n and n_total > sub_n:   # ctrl phase: slide固有の乱数で無作為抽出（座標順は保つ）
@@ -254,8 +310,10 @@ def main() -> None:
             for k, v in attrs.items():
                 cset.attrs[k] = v
         tmp_path.rename(out_path)  # 途中で落ちた.h5を完成品と誤認しないための原子的置換
+        if staging:
+            Path(row.svs_path).unlink(missing_ok=True)
         done += 1
-        logger.info(f"[{i}/{len(chunk)}] {sid}: {features.shape}")
+        logger.info(f"[{i}/{len(todo)}] {sid}: {features.shape} {time.time() - t_slide:.0f}s (staging wait {t_wait:.0f}s)")
         if done % 50 == 0:  # 長時間ジョブなので途中経過も残す
             pd.DataFrame(fit_rows).to_parquet(run_dir / "stain_fits.parquet", index=False)
 

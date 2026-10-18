@@ -51,3 +51,8 @@ n_chunks: 4                     # run_slurm.shの--array=0-3と一致させる
 full_exp_ids: [182, 184, 305, 368, 413, 434, 538, 569, 571, 573, 594, 596, 686]
 # full_block3 phase（2026-10-17）: cut 0.72の塊3（23試験）のうち手元に投与群がある11試験の全slide（853枚）を全patchで抽出（0017の塊3テスト用）
 full_exp_ids_block3: [174, 176, 280, 282, 319, 346, 348, 391, 428, 432, 463]
+
+# ローカルSSD（/scratch、NVMe）にsvsをコピーしてから読む（2026-10-18、ユーザー希望「早くなるならそっち」）。
+# coords段はバッチごと、抽出段は1枚ずつ先読みし、使い終わったら消す。外すと従来どおり/workspaceを直接読む。
+staging_root: "/scratch/honzawa/stage_0016"
+staging_batch_size: 30

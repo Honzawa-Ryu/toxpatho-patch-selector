@@ -63,3 +63,9 @@ patch分類につなげるため全patchで抽出する（`features_uni_v2_macen
 cut 0.72の最大の塊（44試験）のうち31試験の投与群1,828枚をpreproc01から転送（`outputs/target_slide_list/rsync_files_block_largest_cut072.txt`）。
 `added_treated_list`として対象に加え、`coords`段（座標がまだないslideだけ）→ `full_added_treated`段（全patch抽出）の順に流す。
 見込み: coords 約9〜10時間、抽出 約11時間（4本並列、他ジョブとの取り合いなし）。
+
+### 2026-10-18 修正とSSD
+- 2026-10-17に投入したcoords（14432）は、追加Control時の`coords_chunk*`の完了記録で「完了済み」と判定され何もしていなかった。
+  full_added_treated（14433）は座標がなくエラー終了。どちらもslurm_entry.shの不具合で「正常終了」と表示された。
+- 転送分用に`coords_treated`段（別の完了記録）を追加。
+- ローカルSSD（`/scratch/honzawa/stage_0016`）へのコピーを追加（`staging_root`）。coordsはバッチごと、抽出は1枚ずつ先読み。速くなるかは最初のバッチで確かめる。
