@@ -14,7 +14,8 @@ seed: 42
 # --- 入力 ---
 tier1_manifest: "outputs/0009_20260919_tier1_corpus_clustering/manifest_tier1_corpus.parquet"   # 3,441枚（44化合物）
 tier1_coords_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_corpus"          # 既存TRIDENT出力のsymlink
-added_ctrl_list: "outputs/target_slide_list/ctrl_repeat_missing.csv"                           # 追加Control 1,979枚（99化合物）
+added_ctrl_list: "outputs/target_slide_list/ctrl_repeat_missing.csv"
+added_treated_list: "outputs/target_slide_list/block_largest_cut072_missing.csv"   # 2026-10-17転送: 最大の塊の31試験の投与群1,828枚                           # 追加Control 1,979枚（99化合物）
 wsi_dir: "data/TGGATEs/WSI/Liver"
 
 # --- 参照染色 ---

@@ -54,7 +54,7 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")
-    parser.add_argument("--phase", choices=["coords", "ctrl", "treated", "full", "full_block3"], required=True)
+    parser.add_argument("--phase", choices=["coords", "ctrl", "treated", "full", "full_block3", "full_added_treated"], required=True)
     parser.add_argument("--chunk", type=int, required=True)   # 0..n_chunks-1（array task）
     return parser.parse_args()
 
@@ -74,8 +74,16 @@ def build_slides(project_root: Path, config: dict) -> pd.DataFrame:
     wsi = project_root / config["wsi_dir"]
     a["svs_path"] = [str(wsi / rel_path(p, s)) for p, s in zip(a.sacrifice_period, a.slide_id)]
     a["is_ctrl"], a["added"] = True, True
+    parts = [t, a]
+    # 追加で転送した投与群（2026-10-17: cut 0.72の最大の塊のうち31試験の投与群1,828枚）
+    if config.get("added_treated_list"):
+        a2 = pd.read_csv(project_root / config["added_treated_list"], dtype={"slide_id": str}).rename(
+            columns={"COMPOUND_NAME": "compound_name", "EXP_ID": "exp_id"})
+        a2["svs_path"] = [str(wsi / rel_path(p, s)) for p, s in zip(a2.sacrifice_period, a2.slide_id)]
+        a2["is_ctrl"], a2["added"] = False, True
+        parts.append(a2)
     cols = ["slide_id", "svs_path", "compound_name", "exp_id", "sacrifice_period", "is_ctrl", "added"]
-    slides = pd.concat([t[cols], a[cols]], ignore_index=True)
+    slides = pd.concat([p_[cols] for p_ in parts], ignore_index=True)
     if slides.slide_id.duplicated().any():
         raise ValueError("duplicated slide_id between tier1 manifest and added Ctrl list")
     return slides.sort_values("slide_id").reset_index(drop=True)
@@ -174,7 +182,16 @@ def main() -> None:
     slides = build_slides(project_root, config)
     target = {"coords": slides[slides.added], "ctrl": slides[slides.is_ctrl], "treated": slides[~slides.is_ctrl],
               "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
-              "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))]}[args.phase]
+              "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
+              "full_added_treated": slides[slides.added & ~slides.is_ctrl]}[args.phase]
+    if args.phase == "coords":   # 座標がまだないslideだけ（既にcoords段を通ったslideをchunk間で作り直さない）
+        def has_coords(sid):
+            try:
+                coords_path(project_root, config, exp_name, sid)
+                return True
+            except FileNotFoundError:
+                return False
+        target = target[~target.slide_id.map(has_coords)]
     chunk = target.iloc[args.chunk::config["n_chunks"]]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 

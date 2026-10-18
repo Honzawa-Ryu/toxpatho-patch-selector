@@ -57,3 +57,9 @@ Controlを先に処理する（2026-10-13ユーザー了承）。**準備のみ�
 （WY-14643, gemfibrozil, ethinylestradiol, amitriptyline, diltiazem, fenofibrate, lornoxicam, acetamidofluorene,
 nitrosodiethylamine, ticlopidine, phenacetin, bucetin, methylene dianiline）の全1,020枚（Control 260、投与群760）を、
 patch分類につなげるため全patchで抽出する（`features_uni_v2_macenko/`）。参照染色はctrl段と同じ`reference.json`。
+
+## 追加: 最大の塊の転送分（2026-10-17）
+
+cut 0.72の最大の塊（44試験）のうち31試験の投与群1,828枚をpreproc01から転送（`outputs/target_slide_list/rsync_files_block_largest_cut072.txt`）。
+`added_treated_list`として対象に加え、`coords`段（座標がまだないslideだけ）→ `full_added_treated`段（全patch抽出）の順に流す。
+見込み: coords 約9〜10時間、抽出 約11時間（4本並列、他ジョブとの取り合いなし）。
