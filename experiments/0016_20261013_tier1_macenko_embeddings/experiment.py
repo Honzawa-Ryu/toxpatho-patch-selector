@@ -223,15 +223,17 @@ def main() -> None:
               "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
               "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
               "full_added_treated": slides[slides.added & ~slides.is_ctrl]}[args.phase]
-    if args.phase in ("coords", "coords_treated"):   # 座標がまだないslideだけ（既にcoords段を通ったslideをchunk間で作り直さない）
+    chunk = target.iloc[args.chunk::config["n_chunks"]]
+    if args.phase in ("coords", "coords_treated"):   # 座標がまだないslideだけ
+        # 2026-10-19修正: 以前はchunkに分ける前に絞っていたため、他chunkの進み具合で割り振りがずれ、
+        # 遅れて始まったchunkで60枚が抜けた。分けてから絞る。
         def has_coords(sid):
             try:
                 coords_path(project_root, config, exp_name, sid)
                 return True
             except FileNotFoundError:
                 return False
-        target = target[~target.slide_id.map(has_coords)]
-    chunk = target.iloc[args.chunk::config["n_chunks"]]
+        chunk = chunk[~chunk.slide_id.map(has_coords)]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 
     if args.phase in ("coords", "coords_treated"):
