@@ -611,7 +611,9 @@ _run_single() {
                 ${cmd}
             " 1>&2 &
     else
-        echo "⚠️ Apptainer not found or SIF_PATH not set. Running command on host system."
+        # 2026-10-19: 標準出力に出すと、呼び出し側の code=$(_run_single ...) に混ざって終了コードが数値にならず、
+        # 失敗しても「正常終了」扱いになっていた。標準エラーに出す。
+        echo "⚠️ Apptainer not found or SIF_PATH not set. Running command on host system." >&2
         bash -c "
             set -euo pipefail
             if [ -f ${PROJECT_ROOT}/.venv/bin/activate ]; then
@@ -656,7 +658,7 @@ if [ "${RUN_MODE}" = "seq" ]; then
         echo "▶ [${i}/$((${#CONFIGS[@]} - 1))] ${local_cmd}"
         echo ""
 
-        code=$(_run_single "${local_cmd}")
+        code=$(_run_single "${local_cmd}" | tail -n 1)
 
         if [ "${code}" -ne 0 ]; then
             echo "❌ Config [${i}] failed with exit code: ${code}"
@@ -667,7 +669,7 @@ if [ "${RUN_MODE}" = "seq" ]; then
 
 else
 
-    EXIT_CODE=$(_run_single "${RESOLVED_COMMAND}")
+    EXIT_CODE=$(_run_single "${RESOLVED_COMMAND}" | tail -n 1)
 
 fi
 
@@ -735,3 +737,6 @@ fi
 # =====================================================
 
 _handle_final_state "${EXIT_CODE}" "end"
+
+# 2026-10-19: 子プロセスの失敗をジョブの終了コードに反映する（Slurm上で FAILED になり、afterok の依存も止まる）
+exit "${EXIT_CODE}"
