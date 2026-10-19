@@ -611,17 +611,12 @@ _run_single() {
                 ${cmd}
             " 1>&2 &
     else
-        # 2026-10-19: 標準出力に出すと、呼び出し側の code=$(_run_single ...) に混ざって終了コードが数値にならず、
-        # 失敗しても「正常終了」扱いになっていた。標準エラーに出す。
-        echo "⚠️ Apptainer not found or SIF_PATH not set. Running command on host system." >&2
-        bash -c "
-            set -euo pipefail
-            if [ -f ${PROJECT_ROOT}/.venv/bin/activate ]; then
-                source ${PROJECT_ROOT}/.venv/bin/activate
-            fi
-            cd ${PROJECT_ROOT}
-            ${cmd}
-        " 1>&2 &
+        # 2026-10-19: コンテナなしの実行は禁止（ユーザー方針）。以前はノード上で直接実行にフォールバックしていたため、
+        # SIFが消えたことに気づかず0013〜0017がコンテナ外で走った。SIFがなければ失敗させる。
+        echo "❌ Apptainer image not found (SIF_PATH=${SIF_PATH:-unset}). Refusing to run outside the container." >&2
+        set -e
+        echo 97
+        return
     fi
 
     local pid=$!
