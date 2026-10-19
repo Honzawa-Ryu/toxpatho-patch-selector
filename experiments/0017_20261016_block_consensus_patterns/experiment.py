@@ -69,14 +69,15 @@ def l2(x: np.ndarray) -> np.ndarray:
     return x / np.linalg.norm(x, axis=1, keepdims=True)
 
 
-def load_subsets(slides: pd.DataFrame, features_dir: Path, cfg: dict, logger):
+def load_subsets(slides: pd.DataFrame, features_dir, cfg: dict, logger):
     """各slideのh5を1回だけ読み、PCA用・学習プール・評価用のpatchを互いに重ならないよう抜き出す（1536次元、L2正規化）。"""
     out = {k: [] for k in ["pca", "train", "eval"]}
     rows = {k: [] for k in out}
     eval_xy = []
     n_need = cfg["pca_patches_per_slide"] + cfg["train_pool_per_slide"] + cfg["eval_patches_per_slide"]
     for i, sid in enumerate(slides.slide_id):
-        with h5py.File(features_dir / f"{sid}.h5", "r") as h:
+        path = features_dir(sid) if callable(features_dir) else features_dir / f"{sid}.h5"
+        with h5py.File(path, "r") as h:
             n = h["features"].shape[0]
             pick = np.sort(np.random.default_rng([cfg["seed"], int(sid)]).choice(n, size=min(n_need, n), replace=False))
             f = l2(h["features"][pick].astype(np.float32))
@@ -220,6 +221,62 @@ def read_tiles(picks, row, xy, slides, size0, labeler):
     return tiles
 
 
+def per_k_consensus(labels, run_meta, pairs, rate_k, row, slides, base_rate, cfg, tau, logger=None):
+    """kごとに分けてコンセンサスのコアを作る（2026-10-18方針: kを混ぜない）。
+
+    各kについて、そのkのrunだけの共所属率でコアを作り、そのkのrunを半分ずつに分けて一致度を測る。
+    さらに細かいkのコアが1つ粗いkのどのコアにどれだけ入るか（包含率）をたどり、全粒度で入れ子になるかを判定する。
+    Returns: cores {k: (n,) array}, tables {k: DataFrame}, chains DataFrame（最も細かいkのコアごと）
+    """
+    a, b = pairs[:, 0], pairs[:, 1]
+    n = len(row)
+    ks = sorted(rate_k)
+    rng = np.random.default_rng(cfg["seed"])
+    cores, tables = {}, {}
+    for k in ks:
+        idx = np.flatnonzero(run_meta.k.to_numpy() == k)
+        rate = rate_k[k]
+        core = cores_from_edges(n, pairs, rate, tau, "leiden", row, cfg)
+        js = []
+        for _ in range(cfg["n_split_repeats"]):
+            p = rng.permutation(idx)
+            for h in (p[: len(p) // 2], p[len(p) // 2:]):
+                r = (labels[h][:, a] == labels[h][:, b]).mean(0)
+                js.append(best_jaccard(core, cores_from_edges(n, pairs, r, tau, "leiden", row, cfg)))
+        same = (core[a] == core[b]) & (core[a] >= 0)
+        cs = np.bincount(a[same], weights=rate[same], minlength=n) + np.bincount(b[same], weights=rate[same], minlength=n)
+        cn = np.bincount(a[same], minlength=n) + np.bincount(b[same], minlength=n)
+        tab = core_table(core, row, slides, np.where(cn > 0, cs / np.maximum(cn, 1), 0.0), base_rate)
+        tab["split_half_J"] = tab.core.map(dict(enumerate(np.median(np.stack(js), axis=0)))) if len(tab) else []
+        cores[k], tables[k] = core, tab
+        if logger:
+            lo = tab.ctrl_patch_frac < 0.05
+            logger.info(f"per-k k={k}: {len(tab)} cores, assigned {(core >= 0).mean():.2f}, J median {tab.split_half_J.median():.2f}, "
+                        f"Control<5% {int(lo.sum())} (J {tab[lo].split_half_J.median():.2f})")
+    parent = {}
+    for fine, coarse in zip(ks[::-1][:-1], ks[::-1][1:]):
+        recs = []
+        for c in range(cores[fine].max() + 1):
+            pc = pd.Series(cores[coarse][cores[fine] == c]).value_counts(normalize=True).drop(-1, errors="ignore")
+            recs.append({"core": c, "parent": int(pc.index[0]) if len(pc) else -1, "contained": float(pc.iloc[0]) if len(pc) else 0.0})
+        parent[(fine, coarse)] = pd.DataFrame(recs).set_index("core")
+    chains = []
+    for r in tables[ks[-1]].itertuples():
+        rec = {f"core_k{ks[-1]}": r.core, "n_patches": r.n_patches, "ctrl_frac": r.ctrl_patch_frac, "top_exp": r.top_exp,
+               "top_exp_share": r.top_exp_share, "findings": lift_text(r), f"J_k{ks[-1]}": r.split_half_J}
+        cur, ok = r.core, True
+        for fine, coarse in zip(ks[::-1][:-1], ks[::-1][1:]):
+            q = parent[(fine, coarse)].loc[cur] if cur >= 0 else None
+            par, cont = (int(q.parent), float(q.contained)) if q is not None else (-1, 0.0)
+            rec.update({f"parent_k{coarse}": par, f"contained_in_k{coarse}": cont,
+                        f"J_k{coarse}": tables[coarse].set_index("core").split_half_J.get(par, np.nan)})
+            ok = ok and cont >= cfg.get("nest_contained_min", 0.7)
+            cur = par
+        rec["nested_all_levels"] = ok
+        chains.append(rec)
+    return cores, tables, pd.DataFrame(chains)
+
+
 def main() -> None:
     project_root = _get_project_root()
     sys.path.insert(0, str(project_root))
@@ -241,12 +298,24 @@ def main() -> None:
     # --- 対象slide ---
     m = pd.read_parquet(project_root / cfg["manifest_parquet"])
     m["slide_id"] = m.slide_id.astype(str)
+    if "pathology_label_status" in m:   # 所見不明・同一個体の重複は除く（0010と同じ規則）
+        m = m[m.pathology_label_status != "unknown"]
+    if "duplicate_animal_image" in m:
+        m = m[~m.duplicate_animal_image]
     slides = m[m.exp_id.isin(cfg["exp_ids"])].sort_values(["exp_id", "dose", "sacrifice_period", "individual_id"]).reset_index(drop=True)
-    scan = pd.read_csv(project_root / "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_scanner_meta.csv",
-                       dtype={"slide_id": str})[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"})
-    slides = slides.merge(scan, on="slide_id", how="left", validate="one_to_one")
-    features_dir = project_root / cfg["features_dir"]
-    missing = [s for s in slides.slide_id if not (features_dir / f"{s}.h5").exists()]
+    if "scanner" not in slides:
+        scan = pd.read_csv(project_root / "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_scanner_meta.csv",
+                           dtype={"slide_id": str})[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"})
+        slides = slides.merge(scan, on="slide_id", how="left", validate="one_to_one")
+    # 特徴量は全patch版を優先し、なければ（追加Controlなど）2,048 patch版を使う
+    fdirs = [project_root / d for d in cfg.get("features_dirs", [cfg["features_dir"]])]
+
+    def features_dir(sid):
+        for d in fdirs:
+            if (d / f"{sid}.h5").exists():
+                return d / f"{sid}.h5"
+        return None
+    missing = [s for s in slides.slide_id if features_dir(s) is None]
     if missing:
         raise FileNotFoundError(f"{len(missing)} slides lack features (0016 full phase): {missing[:5]}")
     treated = slides[slides.dose_level != "Control"]
@@ -270,7 +339,7 @@ def main() -> None:
 
     size0 = {}
     for sid in slides.slide_id:
-        with h5py.File(features_dir / f"{sid}.h5", "r") as h:
+        with h5py.File(features_dir(sid), "r") as h:
             size0[sid] = int(h["coords"].attrs.get("patch_size_level0", 256))
     t0 = time.time()
     tfrac = tissue_fraction(slides, rows["eval"], eval_xy, size0, cfg)
@@ -317,7 +386,7 @@ def main() -> None:
     n = len(ev)
     summary, assignments = [], {}
     for tau in cfg["taus"]:
-        for method in ["components", "leiden"]:
+        for method in cfg.get("mixed_methods", ["components", "leiden"]):
             core = cores_from_edges(n, pairs, rate, tau, method, erow, cfg)
             assignments[f"{method}_tau{tau}"] = core
             sizes = np.bincount(core[core >= 0]) if (core >= 0).any() else np.array([])
@@ -330,7 +399,7 @@ def main() -> None:
     for rep in range(cfg["n_split_repeats"]):
         perm = rng.permutation(len(labels))
         halves = [perm[: len(perm) // 2], perm[len(perm) // 2:]]
-        for method in ["components", "leiden"]:
+        for method in cfg.get("mixed_methods", ["components", "leiden"]):
             full = assignments[f"{method}_tau{cfg['sheet_tau']}"]
             for hi, hidx in enumerate(halves):
                 r = (labels[hidx][:, pairs[:, 0]] == labels[hidx][:, pairs[:, 1]]).mean(0)
@@ -346,7 +415,7 @@ def main() -> None:
     ev_table.to_parquet(run_dir / "eval_patches.parquet", index=False)
 
     # --- コアの中身と画像シート（sheet_tau） ---
-    for method in ["components", "leiden"]:
+    for method in cfg.get("mixed_methods", ["components", "leiden"]):
         core = assignments[f"{method}_tau{cfg['sheet_tau']}"]
         same = core[pairs[:, 0]] == core[pairs[:, 1]]
         c_sum = np.bincount(pairs[same, 0], weights=rate[same], minlength=n) + np.bincount(pairs[same, 1], weights=rate[same], minlength=n)
@@ -385,6 +454,50 @@ def main() -> None:
                            lambda sl, p: (f"e{sl.exp_id} {sl.compound_name[:13]} {sl.dose_level[0]}", f"{sl.scanner} t{tfrac_kept[p]:.2f}"))
         draw_sheet(f"0017 unassigned patches ({method}, tau={cfg['sheet_tau']}), random 48 of {len(un):,}",
                    [("unassigned", tiles)], run_dir / "sheets" / f"unassigned_{method}_tau{cfg['sheet_tau']}.jpg")
+
+    # --- kごとのコンセンサス（2026-10-18方針）と、全粒度で入れ子かつControlが少ないコアの画像シート ---
+    if cfg.get("per_k", False):
+        t0 = time.time()
+        tau = cfg["sheet_tau"]
+        cores_k, tables_k, chains = per_k_consensus(labels, run_meta, pairs, rate_k, erow, slides, base_rate, cfg, tau, logger)
+        out = run_dir / "per_k"
+        out.mkdir(exist_ok=True)
+        for k, t in tables_k.items():
+            t.sort_values("n_patches", ascending=False).to_csv(out / f"cores_k{k}_tau{tau:g}.csv", index=False)
+        ev_table.assign(**{f"core_k{k}": c for k, c in cores_k.items()})[["slide_id", "x", "y"] + [f"core_k{k}" for k in cores_k]] \
+            .to_parquet(out / f"assignments_tau{tau:g}.parquet", index=False)
+        chains.to_csv(out / f"chains_tau{tau:g}.csv", index=False)
+        kf = max(cores_k)
+        core, rf = cores_k[kf], rate_k[kf]
+        same = (core[pairs[:, 0]] == core[pairs[:, 1]]) & (core[pairs[:, 0]] >= 0)
+        c_sum = np.bincount(pairs[same, 0], weights=rf[same], minlength=n) + np.bincount(pairs[same, 1], weights=rf[same], minlength=n)
+        c_n = np.bincount(pairs[same, 0], minlength=n) + np.bincount(pairs[same, 1], minlength=n)
+        centrality = np.where(c_n > 0, c_sum / np.maximum(c_n, 1), 0.0)
+        keep_c = chains[chains.nested_all_levels & (chains.ctrl_frac < 0.05)][f"core_k{kf}"]
+        sel = tables_k[kf][tables_k[kf].core.isin(keep_c)].sort_values(["top_exp_share", "n_patches"], ascending=[True, False])
+        for f0 in range(0, len(sel), 10):
+            sheet_rows = []
+            for r in sel.iloc[f0:f0 + 10].itertuples():
+                members = np.flatnonzero(core == r.core)
+                members = members[np.argsort(-centrality[members])]
+                picks, seen = [], set()
+                for p in members:
+                    if erow[p] not in seen:
+                        picks.append(p)
+                        seen.add(erow[p])
+                    if len(picks) == cfg["sheet_tiles"]:
+                        break
+                tiles = read_tiles(picks, erow, exy, slides, size0,
+                                   lambda sl, p: (f"e{sl.exp_id} {sl.compound_name[:13]} {sl.dose_level[0]}",
+                                                  f"{sl.sacrifice_period} {sl.scanner} {'F' if sl.has_finding else '-'}"))
+                exps = slides.iloc[erow[members]].compound_name.value_counts(normalize=True)
+                header = (f"core {r.core}: {r.n_patches} patches / {r.n_slides} slides / {r.n_exp} exp | Ctrl {r.ctrl_patch_frac:.2f} | "
+                          f"J {r.split_half_J:.2f} | {lift_text(r)} | " + ", ".join(f"{k_[:12]} {v:.0%}" for k_, v in exps.head(4).items()))
+                sheet_rows.append((header, tiles))
+            draw_sheet(f"0017 {variant_key}: k={kf} cores nested across k={sorted(cores_k)} with Control < 5% (tau={tau}), "
+                       f"multi-experiment first. F = slide has a recorded finding", sheet_rows,
+                       run_dir / "sheets" / f"per_k{kf}_nested_ctrl_lt0.05" / f"cores_{f0 // 10 + 1:02d}.jpg")
+        logger.info(f"per-k done: {int(chains.nested_all_levels.sum())} nested, {len(sel)} nested with Control<5%; {time.time() - t0:.0f}s")
 
     (run_dir / "results.json").write_text(json.dumps(
         {"n_slides": len(slides), "n_eval_patches": int(n), "n_eval_excluded_blank": int((~keep).sum()),

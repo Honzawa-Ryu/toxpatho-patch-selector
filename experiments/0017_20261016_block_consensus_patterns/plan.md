@@ -71,3 +71,10 @@ cut 0.72の塊3（23試験）のうち手元に投与群がある11試験（853�
 ibuprofen, naproxen, ethambutol, theophylline, papaverine, disopyramide）で、pilotと同じ条件で回す（`--variant block3`）。
 特徴量は0016 full_block3段で全patchを抽出（参照染色は同じ`reference.json`）。最大の塊の転送分31試験の処理はこの後。
 所見名の付け方は2026-10-17修正版（30%以上に出る所見の中から倍率順）。
+
+## 追加: 最大の塊全体（block6_all、2026-10-20）
+
+Issue #11。cut 0.72の最大の塊44試験すべて（31試験の投与群を転送・抽出済み）。所見ラベルは`scripts/build_block_manifest.py`で付け直し（所見不明・重複個体は除外）。
+追加Controlは2,048 patch版の特徴量しかないため、全patch版がなければ2,048 patch版を使う（評価用・学習用patchの抽出には十分）。
+kごとのコンセンサスを本体に組み込み（`per_k: true`）、k=200のコアのうち全粒度で入れ子かつControl<5%のものの画像シートを出す。
+kを混ぜた方式はLeiden・τ=0.8だけ参考に残す。メモリ対策で学習patchは1枚100（プール200）。
