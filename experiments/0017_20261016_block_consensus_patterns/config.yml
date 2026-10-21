@@ -54,3 +54,4 @@ variants:
     taus: [0.8]
     mixed_methods: ["leiden"]      # 連結成分は巨大な1成分になるので省く
     per_k: true
+    io_workers: 12                 # h5読み込み・組織割合をslideごとに並列（2026-10-21、12時間で打ち切られたため）

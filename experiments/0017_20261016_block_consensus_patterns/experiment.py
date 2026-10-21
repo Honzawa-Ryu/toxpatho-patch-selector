@@ -69,45 +69,67 @@ def l2(x: np.ndarray) -> np.ndarray:
     return x / np.linalg.norm(x, axis=1, keepdims=True)
 
 
+def _read_one(args):
+    """1枚分: h5を丸ごと読んでから必要な行を抜く（h5pyの飛び飛びの読み出しは非常に遅いため、2026-10-21変更）。"""
+    path, sid, cfg = args
+    a, b = cfg["pca_patches_per_slide"], cfg["pca_patches_per_slide"] + cfg["train_pool_per_slide"]
+    n_need = b + cfg["eval_patches_per_slide"]
+    with h5py.File(path, "r") as h:
+        feats = h["features"][:]
+        coords = h["coords"][:]
+    n = len(feats)
+    pick = np.sort(np.random.default_rng([cfg["seed"], int(sid)]).choice(n, size=min(n_need, n), replace=False))
+    f = l2(feats[pick].astype(np.float32))
+    xy = coords[pick]
+    perm = np.random.default_rng([cfg["seed"], int(sid), 1]).permutation(len(pick))
+    return f[perm[:a]], f[perm[a:b]], f[perm[b:]], xy[perm[b:]]
+
+
 def load_subsets(slides: pd.DataFrame, features_dir, cfg: dict, logger):
-    """各slideのh5を1回だけ読み、PCA用・学習プール・評価用のpatchを互いに重ならないよう抜き出す（1536次元、L2正規化）。"""
+    """各slideのh5を1回だけ読み、PCA用・学習プール・評価用のpatchを互いに重ならないよう抜き出す（1536次元、L2正規化）。
+    slideごとの読み込みは複数プロセスで並列に行う（cfg["io_workers"]）。結果はslideの順に並ぶ。"""
+    from concurrent.futures import ProcessPoolExecutor
+    jobs = [((features_dir(sid) if callable(features_dir) else features_dir / f"{sid}.h5"), sid, cfg) for sid in slides.slide_id]
     out = {k: [] for k in ["pca", "train", "eval"]}
     rows = {k: [] for k in out}
     eval_xy = []
-    n_need = cfg["pca_patches_per_slide"] + cfg["train_pool_per_slide"] + cfg["eval_patches_per_slide"]
-    for i, sid in enumerate(slides.slide_id):
-        path = features_dir(sid) if callable(features_dir) else features_dir / f"{sid}.h5"
-        with h5py.File(path, "r") as h:
-            n = h["features"].shape[0]
-            pick = np.sort(np.random.default_rng([cfg["seed"], int(sid)]).choice(n, size=min(n_need, n), replace=False))
-            f = l2(h["features"][pick].astype(np.float32))
-            xy = h["coords"][:][pick]
-        perm = np.random.default_rng([cfg["seed"], int(sid), 1]).permutation(len(pick))
-        a, b = cfg["pca_patches_per_slide"], cfg["pca_patches_per_slide"] + cfg["train_pool_per_slide"]
-        for key, sel in [("pca", perm[:a]), ("train", perm[a:b]), ("eval", perm[b:])]:
-            out[key].append(f[sel])
-            rows[key].append(np.full(len(sel), i))
-            if key == "eval":
-                eval_xy.append(xy[sel])
-        if (i + 1) % 100 == 0:
-            logger.info(f"  read {i + 1}/{len(slides)} slides")
+    with ProcessPoolExecutor(max_workers=cfg.get("io_workers", 1)) as ex:
+        for i, (fp, ft, fe, xy) in enumerate(ex.map(_read_one, jobs, chunksize=4)):
+            for key, arr in [("pca", fp), ("train", ft), ("eval", fe)]:
+                out[key].append(arr)
+                rows[key].append(np.full(len(arr), i))
+            eval_xy.append(xy)
+            if (i + 1) % 200 == 0:
+                logger.info(f"  read {i + 1}/{len(slides)} slides")
     return ({k: np.concatenate(v) for k, v in out.items()}, {k: np.concatenate(v) for k, v in rows.items()},
             np.concatenate(eval_xy))
 
 
-def tissue_fraction(slides: pd.DataFrame, row: np.ndarray, xy: np.ndarray, size0: dict, cfg: dict) -> np.ndarray:
-    """評価用patchの組織割合（白に近くない画素の割合）。低解像度の層から読む。"""
+def _tissue_one(args):
+    svs, xy, size0, cfg = args
+    w = openslide.OpenSlide(svs)
+    level = w.get_best_level_for_downsample(cfg["tissue_level_downsample"])
+    ds = w.level_downsamples[level]
+    px = max(8, int(round(size0 / ds)))
+    out = []
+    for x, y in xy:
+        rgb = np.asarray(w.read_region((int(x), int(y)), level, (px, px)).convert("RGB"), dtype=np.float32)
+        out.append((rgb.mean(axis=2) < cfg["tissue_white_threshold"]).mean())
+    w.close()
+    return np.asarray(out)
+
+
+def tissue_fraction(slides: pd.DataFrame, row: np.ndarray, xy: np.ndarray, size0: dict, cfg: dict, logger=None) -> np.ndarray:
+    """評価用patchの組織割合（白に近くない画素の割合）。低解像度の層から読む。slideごとに複数プロセスで並列。"""
+    from concurrent.futures import ProcessPoolExecutor
     frac = np.zeros(len(row))
-    for i, sl in enumerate(slides.itertuples()):
-        idx = np.flatnonzero(row == i)
-        w = openslide.OpenSlide(sl.svs_path)
-        level = w.get_best_level_for_downsample(cfg["tissue_level_downsample"])
-        ds = w.level_downsamples[level]
-        px = max(8, int(round(size0[sl.slide_id] / ds)))
-        for j in idx:
-            rgb = np.asarray(w.read_region((int(xy[j, 0]), int(xy[j, 1])), level, (px, px)).convert("RGB"), dtype=np.float32)
-            frac[j] = (rgb.mean(axis=2) < cfg["tissue_white_threshold"]).mean()
-        w.close()
+    idxs = [np.flatnonzero(row == i) for i in range(len(slides))]
+    jobs = [(sl.svs_path, xy[ix], size0[sl.slide_id], cfg) for sl, ix in zip(slides.itertuples(), idxs)]
+    with ProcessPoolExecutor(max_workers=cfg.get("io_workers", 1)) as ex:
+        for i, (ix, v) in enumerate(zip(idxs, ex.map(_tissue_one, jobs, chunksize=4))):
+            frac[ix] = v
+            if logger and (i + 1) % 500 == 0:
+                logger.info(f"  tissue fraction {i + 1}/{len(slides)} slides")
     return frac
 
 
@@ -322,9 +344,19 @@ def main() -> None:
     base_rate = treated.finding_types.explode().dropna().value_counts() / len(treated)
     logger.info(f"{len(slides)} slides ({(slides.dose_level == 'Control').sum()} Control), {slides.exp_id.nunique()} exp")
 
-    # --- patchの抜き出しとPCA ---
+    # --- patchの抜き出しとPCA ---（時間がかかるので結果を保存し、やり直し時は読み込む。2026-10-21）
     t0 = time.time()
-    feats, rows, eval_xy = load_subsets(slides, features_dir, cfg, logger)
+    cache = project_root / "outputs" / exp_name / f"{variant_key}_cache"
+    cache.mkdir(parents=True, exist_ok=True)
+    if (cache / "subsets.npz").exists():
+        z = np.load(cache / "subsets.npz")
+        feats = {k: z[k] for k in ["pca", "train", "eval"]}
+        rows = {k: z[f"rows_{k}"] for k in ["pca", "train", "eval"]}
+        eval_xy = z["eval_xy"]
+        logger.info(f"loaded cached subsets from {cache}")
+    else:
+        feats, rows, eval_xy = load_subsets(slides, features_dir, cfg, logger)
+        np.savez(cache / "subsets.npz", eval_xy=eval_xy, **feats, **{f"rows_{k}": v for k, v in rows.items()})
     is_ctrl = (slides.dose_level == "Control").to_numpy()
     pc = feats["pca"]
     ctrl_rows, trt_rows = np.flatnonzero(is_ctrl[rows["pca"]]), np.flatnonzero(~is_ctrl[rows["pca"]])
@@ -342,7 +374,11 @@ def main() -> None:
         with h5py.File(features_dir(sid), "r") as h:
             size0[sid] = int(h["coords"].attrs.get("patch_size_level0", 256))
     t0 = time.time()
-    tfrac = tissue_fraction(slides, rows["eval"], eval_xy, size0, cfg)
+    if (cache / "tissue_frac.npy").exists():
+        tfrac = np.load(cache / "tissue_frac.npy")
+    else:
+        tfrac = tissue_fraction(slides, rows["eval"], eval_xy, size0, cfg, logger)
+        np.save(cache / "tissue_frac.npy", tfrac)
     keep = tfrac >= cfg["min_tissue_frac"]
     logger.info(f"tissue fraction: {(~keep).sum():,} / {len(keep):,} eval patches below {cfg['min_tissue_frac']} excluded; {time.time() - t0:.0f}s")
     ev, erow, exy, tfrac_kept = ev[keep], rows["eval"][keep], eval_xy[keep], tfrac[keep]

@@ -7,14 +7,14 @@
 #SBATCH --export=ALL
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64g
-#SBATCH --time=12:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=96g
+#SBATCH --time=48:00:00
 
 # 他の実験のジョブに依存させたい場合、有効化してjob_idを埋める
 # （job_idは outputs/{依存先exp}/latest_job_id.txt を参照。投入のたびに
 #  変わりうる値なので、都度手動で書き換えること）:
-#SBATCH --dependency=afterok:14631   # 最大の塊のmanifest作成（build_block_manifest.py）の完了待ち（2026-10-20）
+# #SBATCH --dependency=afterok:<job_id>
 
 # Array run にする場合、上の3行の --output/--error/この直後の --array を
 # 以下の2行に置き換える（%j→%A_%a、--array=0-N を追加。Nの決め方は下記参照）:
