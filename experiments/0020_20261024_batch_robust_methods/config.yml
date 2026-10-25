@@ -1,0 +1,64 @@
+# 0020: バッチ効果に頑健な表現の比較（評価はBayerアノテーション）
+seed: 0
+annotation_dir: data/by-tggates-annotations
+features_dir: outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+
+min_overlap: 0.5          # patchとポリゴンの重なり / 小さい方の面積
+random_per_slide: 800     # ラベルのないpatchの数（1枚あたり）
+stripe_width: 2032        # スキャナのストライプ幅（level 0 px）
+pca_components: 64
+
+knn_label: 15             # 別slideだけを近傍にしたkNNの近傍数
+knn_batch: 30             # 混ざり具合の近傍数
+batch_queries: 20000      # 混ざり具合を測るpatchの数（無作為）
+kmeans_k: 30
+supervised:               # --mode supervised: Bayerのラベルで線形判別の部分空間を学び、学習に使わない試験で評価
+  inputs: [raw, rank_slide, center_slide]
+  pre_pca: 256
+  folds: 5
+probe:                    # 各ラベル vs 実質の線形分類（試験ごとに分けた交差検証）
+  folds: 5
+  C: 0.1
+
+harmony:
+  n_clusters: 50
+  theta: 2.0
+  sigma: 0.1
+  lamb: 1.0
+  max_iter: 10
+  max_iter_cluster: 20
+
+contrast:                 # mnn_contrast: 別slideとの相互最近傍の組（slideの平均を引いたPCA64で探す）を正例にした対照学習
+  mnn_k: 10
+  hidden: 512
+  out_dim: 64
+  lr: 0.001
+  epochs: 20
+  batch: 1024
+  temperature: 0.1
+
+methods: [raw, pca64, center_slide, zscore_slide, rank_slide, center_stripe, coral_slide, harmony_slide, harmony_exp, center_harmony, mnn_contrast, mnn_contrast_rank, bbknn_slide]
+
+# ラベルの優先順（病変 > 構造 > 実質）と、まとめ方
+label_map:
+  "Necrosis (area)": necrosis
+  "Necrosis (single cell)": single_cell_necrosis
+  "Single cell necrosis/apoptosis": single_cell_necrosis
+  "Mitosis": mitosis
+  "Inflammatory infiltrate": inflammation
+  "Extramedullary hematopoiesis": emh
+  "Hemorrhage": hemorrhage
+  "Dark hepatocytes": dark_hepatocytes
+  "Neoplasia": neoplasia
+  "Oval cell/bile duct proliferation": bile_duct_prolif
+  "Staining, contamination, and out-of-focus artifact": artifact
+  "Central vein": central_vein
+  "Portal tract": portal_tract
+  "Large vessels": large_vessel
+  "Connective tissue": connective
+  "Parenchyma": parenchyma
+label_priority: [necrosis, single_cell_necrosis, mitosis, inflammation, emh, hemorrhage, dark_hepatocytes, neoplasia, bile_duct_prolif, artifact,
+                 central_vein, portal_tract, large_vessel, connective, parenchyma]
+min_label_patches: 30     # 評価に使うラベルの最少patch数
+workers: 8

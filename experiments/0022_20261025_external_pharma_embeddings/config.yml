@@ -1,0 +1,17 @@
+# 0022: 外部（エーザイ・シオノギ）のMacenko正規化UNI2-h特徴量
+seed: 0
+bench_root: /workspace/andre01/honzawa/02-playground/tggate-bench
+slides_csv: outputs/0013_20261012_extract_external_tiles/default/slides.csv   # bench_root から
+roi_json: docs/external/liver_roi.json
+pieces_exp: outputs/0012_20261012_render_external_roi_candidates
+reference_json: outputs/0016_20261013_tier1_macenko_embeddings/reference.json   # このリポジトリから
+target_mpp: 0.4916
+patch_px: 256
+thumb_size: 1600
+min_tissue_frac: 0.5
+white_gray: 220
+min_sat: 0.07
+fit_patches_per_slide: 40
+patch_encoder: uni_v2
+batch_size: 64
+num_workers: 7

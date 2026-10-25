@@ -1,0 +1,25 @@
+# 0023: 層が現実の組織とどう結びつくか（小葉の位置の層をリークを断って作り、所見の分布と突き合わせる）
+seed: 0
+exp0020: 0020_20261024_batch_robust_methods
+exp0021: 0021_20261025_patch_prototypes
+models_from: v3_maps          # 0021の教師なしPCA（pre）だけ使う。LDAは使わない
+dim: 64
+alpha: 0.5
+hops: [4, 16]
+folds: 5                      # 試験ごとに分けた交差検証
+lobular_max_dist: 1500
+min_patches: 30
+
+# --mode external
+exp0022: 0022_20261025_external_pharma_embeddings
+bench_root: /workspace/andre01/honzawa/02-playground/tggate-bench
+external_findings: outputs/external_data_audit/findings_raw.csv
+combo_resid_weight: 0.5
+lesion_prototypes:            # 0021 v3_maps（combo, k=30）のプロトタイプ番号（Bayerのラベルに対応）
+  necrosis: [7, 25]
+  mitosis: [23, 27]
+  single_cell_necrosis: [4]
+  dark_hepatocytes: [20]
+  central_vein: [16]
+  portal_tract: [19, 17]
+external_maps: ["76051", "76052", "76075", "F0219 4101-1", "F0219 1101-1", "F0220 4103-1", "76057"]

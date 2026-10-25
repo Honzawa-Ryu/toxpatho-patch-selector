@@ -1,0 +1,47 @@
+# 0021: patchのプロトタイプ（試作）
+seed: 0
+exp0020: 0020_20261024_batch_robust_methods     # アノテーションのslideの読み込みは0020の関数とconfigを使う
+exp0017: 0017_20261016_block_consensus_patterns
+tgg_variant: block6_clean                        # 0017のキャッシュから評価用patchを使う
+pca_components: 64
+pre_pca: 256
+k: 30
+kmeans_seeds: [0, 1, 2, 3, 4]
+sheet_tiles: 24
+tsne_points: 20000
+representations: [unsup, weak, combo]
+combo_resid_dim: 16      # combo: LDA方向を除いた残りのPCAの次元
+combo_resid_weight: 0.5  # combo: 残りの重み（LDA方向に対する）
+map_representation: combo
+map_thumb: 1400
+# slideの地図: アノテーションのある主な化合物から（壊死・核分裂像・構造が見えるもの）と、Control
+map_slides: [25661, 63530, 52750, 29588, 41468, 66179, 27686, 70564, 47004, 29957, 9047, 13607, 52759, 29514]
+
+# --mode context: 隣接patch（8近傍）の情報を足してから、固定したプロトタイプに割り当て直す（ProtoGTX arXiv 2610.24023 の空間的な文脈化を、学習なしで近似）
+context_hops: [0, 1, 2, 4, 8]
+context_alphas: [0.5]
+context_map_settings: [[0, 0.0], [2, 0.5], [8, 0.5]]
+context_map_thumb: 1200
+
+# --mode context_build: 自分の表現（combo）と周りの平均（伝播2回・8回）を連結した表現で、プロトタイプを作り直す
+cb:
+  alpha: 0.5
+  fit_points: 400000
+  variants:
+    self_ctx2: {self_weight: 1.0, ctx_weight: 1.0, hops: [2]}
+    self_ctx2_8: {self_weight: 1.0, ctx_weight: 0.7, hops: [2, 8]}
+
+# --mode context_explore: context_buildのキャッシュ（--source）から、周りの情報の効かせ方を試す
+ce:
+  slides_from: v3_maps
+  alpha: 0.5
+  fit_points: 300000
+  map_slides: [25661, 63530, 52750, 29588, 66179, 13607]
+  lobular_zoom_px: 8000      # 拡大図の窓（level 0 px、約4 mm）
+  lobular_max_dist: 1500     # 小葉内の位置: 中心静脈・門脈域のポリゴンが両方この距離（level 0 px、約750 µm）以内のpatchだけ
+  variants:
+    self_only: {kind: concat, self_weight: 1.0, ctx_weight: 0.0, hops: [2]}
+    lob_w05: {kind: lobular, self_weight: 1.0, ctx_weight: 0.5, hops: [4], lobular_weight: 0.5}
+    lob_w1: {kind: lobular, self_weight: 1.0, ctx_weight: 0.5, hops: [4], lobular_weight: 1.0}
+    lob_w2: {kind: lobular, self_weight: 1.0, ctx_weight: 0.5, hops: [4], lobular_weight: 2.0}
+# explore_v1/v2で使った設定（w05_h2, w05_h4, w03_h2_8, two_level_c6, two_level_c10, ctx_only_h4）はREADMEに記録
