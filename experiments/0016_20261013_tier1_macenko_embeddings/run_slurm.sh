@@ -63,7 +63,7 @@ GRID_ARGS=(
     "--chunk"
 )
 GRID_VALUES=(
-    "full_added_treated"
+    "full_annot"
     "0 1 2 3"
 )
 

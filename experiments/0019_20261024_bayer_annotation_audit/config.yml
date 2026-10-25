@@ -1,0 +1,16 @@
+# 0019: Bayerの病変アノテーションの中身と信用性の確認
+seed: 0
+annotation_dir: data/by-tggates-annotations
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+wsi_dirs:
+  - /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/data/wsi
+  - /workspace/andre01/honzawa/02-playground/tggate-bench/data/wsi_all
+thumb_size: 1600          # 重ね描きの縮小画像の長辺（px）
+tissue_downsample: 32     # 組織判定に使う層のおおよその縮小率
+tissue_gray_max: 215      # これより暗い画素を組織とみなす（0017の白判定220に近い値）
+gallery_n: 24             # ラベルごとの拡大画像の数（別々のslideから）
+gallery_tile: 256         # 拡大画像1枚の大きさ（px）
+gallery_pad: 96           # 切り出しの余白（level 0の画素）
+gallery_max_side: 1024    # 切り出しの最大の一辺（level 0の画素）。これより大きいポリゴンは縮小して読む
+workers: 12

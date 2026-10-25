@@ -57,7 +57,8 @@ def load_config(exp_dir: Path) -> dict:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")
-    parser.add_argument("--phase", choices=["coords", "coords_treated", "ctrl", "treated", "full", "full_block3", "full_added_treated"], required=True)
+    parser.add_argument("--phase", choices=["coords", "coords_treated", "ctrl", "treated", "full", "full_block3", "full_added_treated",
+                                            "coords_annot", "full_annot"], required=True)
     parser.add_argument("--chunk", type=int, required=True)   # 0..n_chunks-1（array task）
     return parser.parse_args()
 
@@ -89,6 +90,15 @@ def build_slides(project_root: Path, config: dict) -> pd.DataFrame:
     slides = pd.concat([p_[cols] for p_ in parts], ignore_index=True)
     if slides.slide_id.duplicated().any():
         raise ValueError("duplicated slide_id between tier1 manifest and added Ctrl list")
+    # Bayerの病変アノテーションがあり、全patchの特徴量がないslide（2026-10-24、0020の評価用）。svsの場所は一覧に直接書く。
+    # 既に一覧にあるslide（追加Controlの2,048 patch版など）は行を足さず、annotの印だけ付ける。
+    slides["annot"], slides["annot_row"] = False, False   # annot_row: この一覧で足した行（以前の段の対象には入れない）
+    if config.get("added_annot_list"):
+        a3 = pd.read_csv(project_root / config["added_annot_list"], dtype={"slide_id": str}).rename(
+            columns={"COMPOUND_NAME": "compound_name", "EXP_ID": "exp_id"})
+        a3["is_ctrl"], a3["added"], a3["annot"], a3["annot_row"] = a3.DOSE_LEVEL == "Control", True, True, True
+        slides.loc[slides.slide_id.isin(a3.slide_id), "annot"] = True
+        slides = pd.concat([slides, a3[~a3.slide_id.isin(slides.slide_id)][cols + ["annot", "annot_row"]]], ignore_index=True)
     return slides.sort_values("slide_id").reset_index(drop=True)
 
 
@@ -219,12 +229,14 @@ def main() -> None:
     logger.info(f"Starting: {exp_name} / {variant_key}")
 
     slides = build_slides(project_root, config)
-    target = {"coords": slides[slides.added], "coords_treated": slides[slides.added & ~slides.is_ctrl], "ctrl": slides[slides.is_ctrl], "treated": slides[~slides.is_ctrl],
+    old = slides[~slides.annot_row]   # 以前の段は、アノテーションの一覧で足した行を含めない
+    target = {"coords": old[old.added], "coords_treated": old[old.added & ~old.is_ctrl], "ctrl": old[old.is_ctrl], "treated": old[~old.is_ctrl],
               "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
               "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
-              "full_added_treated": slides[slides.added & ~slides.is_ctrl]}[args.phase]
+              "full_added_treated": old[old.added & ~old.is_ctrl],
+              "coords_annot": slides[slides.annot], "full_annot": slides[slides.annot]}[args.phase]
     chunk = target.iloc[args.chunk::config["n_chunks"]]
-    if args.phase in ("coords", "coords_treated"):   # 座標がまだないslideだけ
+    if args.phase in ("coords", "coords_treated", "coords_annot"):   # 座標がまだないslideだけ
         # 2026-10-19修正: 以前はchunkに分ける前に絞っていたため、他chunkの進み具合で割り振りがずれ、
         # 遅れて始まったchunkで60枚が抜けた。分けてから絞る。
         def has_coords(sid):
@@ -236,7 +248,7 @@ def main() -> None:
         chunk = chunk[~chunk.slide_id.map(has_coords)]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 
-    if args.phase in ("coords", "coords_treated"):
+    if args.phase in ("coords", "coords_treated", "coords_annot"):
         res = run_coords(project_root, config, exp_name, chunk, args.chunk, run_dir, logger)
         (run_dir / "results.json").write_text(json.dumps(res, indent=2))
         if res["n_with_coords"] < res["n_slides"]:
