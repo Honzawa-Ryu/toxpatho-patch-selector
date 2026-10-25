@@ -299,25 +299,8 @@ def per_k_consensus(labels, run_meta, pairs, rate_k, row, slides, base_rate, cfg
     return cores, tables, pd.DataFrame(chains)
 
 
-def main() -> None:
-    project_root = _get_project_root()
-    sys.path.insert(0, str(project_root))
-    from lib.clustering import _undirected_pairs, kmeans_lloyd, knn_graph
-    from lib.output_utils import complete_run, get_run_dir, write_run_metadata
-    from sklearn.decomposition import PCA
-
-    args = parse_args()
-    exp_name = os.environ["EXP_NAME"]
-    cfg = load_config(Path(__file__).parent)
-    variant_key = args.variant
-    cfg.update(cfg.get("variants", {}).get(variant_key, {}))   # 試験の組だけ差し替える
-    run_dir = get_run_dir(project_root, __file__, variant_key, output_root=os.environ.get("OUTPUT_ROOT"))
-    logger = setup_logger(run_dir, exp_name)
-    write_run_metadata(run_dir, exp_name=exp_name, variant_key=variant_key, config=cfg)
-    logger.info(f"Starting: {exp_name} / {variant_key}")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    # --- 対象slide ---
+def select_slides(cfg: dict, project_root: Path) -> pd.DataFrame:
+    """対象slideの表（行の順がpatchのslide番号になる）。可視化スクリプトからも使う。"""
     m = pd.read_parquet(project_root / cfg["manifest_parquet"])
     m["slide_id"] = m.slide_id.astype(str)
     if "pathology_label_status" in m:   # 所見不明・同一個体の重複は除く（0010と同じ規則）
@@ -329,6 +312,100 @@ def main() -> None:
         scan = pd.read_csv(project_root / "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_scanner_meta.csv",
                            dtype={"slide_id": str})[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"})
         slides = slides.merge(scan, on="slide_id", how="left", validate="one_to_one")
+    if cfg.get("qc_tiers"):   # tggate-wsi-qcの目録の区分で絞る（2026-10-22: ぼやけ・縞がクラスタリングに効くため）
+        q = pd.read_csv(cfg["qc_catalog"], dtype={"slide_id": str}, usecols=["slide_id", "tier"])
+        slides = slides[slides.slide_id.isin(q[q.tier.isin(cfg["qc_tiers"])].slide_id)].reset_index(drop=True)
+    return slides
+
+
+def derive_cache(src: Path, src_slides: pd.DataFrame, slides: pd.DataFrame, cache: Path) -> None:
+    """別variantのキャッシュから、slidesに含まれるslideの分だけ抜き出す。
+    patchの抜き方はslideごとに決まっている（_read_oneのseedはslide_id）ので、読み直した場合と同じになる。"""
+    new_idx = pd.Series(np.arange(len(slides)), index=slides.slide_id)
+    remap = src_slides.slide_id.map(new_idx).to_numpy()          # 元のslide番号 → 新しい番号（含まれなければNaN）
+    z = np.load(src / "subsets.npz")
+    out = {}
+    for k in ["pca", "train", "eval"]:
+        r = remap[z[f"rows_{k}"]]
+        m = ~np.isnan(r)
+        out[k], out[f"rows_{k}"] = z[k][m], r[m].astype(np.int64)
+        if k == "eval":
+            out["eval_xy"] = z["eval_xy"][m]
+            np.save(cache / "tissue_frac.npy", np.load(src / "tissue_frac.npy")[m])
+    np.savez(cache / "subsets.npz", **out)
+
+
+def cache_dir(cfg: dict, variant_key: str, project_root: Path) -> Path:
+    """抜き出したpatchのキャッシュ。cache_variantがあればそのvariantのものを共有する（slideの組が同じとき）。"""
+    return project_root / "outputs/0017_20261016_block_consensus_patterns" / f"{cfg.get('cache_variant', variant_key)}_cache"
+
+
+def center_by_slide(feats: dict, rows: dict, n_slides: int):
+    """各slideの平均（抜き出した全patch: PCA用・学習用・評価用）を引き、slide内の相対的な方向だけを残す（2026-10-23）。
+    Returns: (平均を引いた特徴量, slideごとの平均 (n_slides, d))"""
+    from scipy.sparse import csr_matrix
+    keys = list(feats)
+    r = np.concatenate([rows[k] for k in keys])
+    ind = csr_matrix((np.ones(len(r), dtype=np.float32), (r, np.arange(len(r)))), shape=(n_slides, len(r)))
+    sums = np.asarray(ind @ np.concatenate([feats[k] for k in keys]))
+    means = (sums / np.bincount(r, minlength=n_slides)[:, None]).astype(np.float32)
+    return {k: feats[k] - means[rows[k]] for k in keys}, means
+
+
+def load_cached(cfg: dict, variant_key: str, project_root: Path, slides: pd.DataFrame) -> dict:
+    """キャッシュを読み、center_per_slideなら平均を引く。Returns: feats, rows, eval_xy, means（引かないならNone）"""
+    z = np.load(cache_dir(cfg, variant_key, project_root) / "subsets.npz")
+    feats = {k: z[k] for k in ["pca", "train", "eval"]}
+    rows = {k: z[f"rows_{k}"] for k in ["pca", "train", "eval"]}
+    means = None
+    if cfg.get("center_per_slide"):
+        feats, means = center_by_slide(feats, rows, len(slides))
+    return {"feats": feats, "rows": rows, "eval_xy": z["eval_xy"], "means": means}
+
+
+def fit_pca(cfg: dict, slides: pd.DataFrame, feats_pca: np.ndarray, rows_pca: np.ndarray):
+    """PCAはControlと投与群から同数のpatchで学習する（0003の注意）。"""
+    from sklearn.decomposition import PCA
+    is_ctrl = (slides.dose_level == "Control").to_numpy()
+    c, t = np.flatnonzero(is_ctrl[rows_pca]), np.flatnonzero(~is_ctrl[rows_pca])
+    t = np.random.default_rng(cfg["seed"]).choice(t, size=min(len(c), len(t)), replace=False)
+    return PCA(n_components=cfg["pca_components"], svd_solver="randomized", random_state=cfg["seed"]).fit(feats_pca[np.r_[c, t]])
+
+
+def cached_pca(cfg: dict, variant_key: str, project_root: Path, slides: pd.DataFrame):
+    """main()と同じ手順・seedでPCAを学習し直す。Returns: (fitted PCA, load_cachedの結果)"""
+    d = load_cached(cfg, variant_key, project_root, slides)
+    return fit_pca(cfg, slides, d["feats"]["pca"], d["rows"]["pca"]), d
+
+
+def cached_eval_embedding(cfg: dict, variant_key: str, project_root: Path):
+    """main()のキャッシュから、main()と同じ手順でPCAを当て直す（可視化・0018から使う）。
+    組織割合で除いた後の評価用patchを返すので、順番は eval_patches.parquet と同じ。
+    Returns: slides, ev (PCA後), feats (1536次元。center_per_slideなら平均を引いたもの), row, xy"""
+    slides = select_slides(cfg, project_root)
+    pca, d = cached_pca(cfg, variant_key, project_root, slides)
+    keep = np.load(cache_dir(cfg, variant_key, project_root) / "tissue_frac.npy") >= cfg["min_tissue_frac"]
+    feats = d["feats"]["eval"][keep]
+    return slides, pca.transform(feats).astype(np.float32), feats, d["rows"]["eval"][keep], d["eval_xy"][keep]
+
+
+def main() -> None:
+    project_root = _get_project_root()
+    sys.path.insert(0, str(project_root))
+    from lib.clustering import _undirected_pairs, kmeans_lloyd, knn_graph
+    from lib.output_utils import complete_run, get_run_dir, write_run_metadata
+    args = parse_args()
+    exp_name = os.environ["EXP_NAME"]
+    cfg = load_config(Path(__file__).parent)
+    variant_key = args.variant
+    cfg.update(cfg.get("variants", {}).get(variant_key, {}))   # 試験の組だけ差し替える
+    run_dir = get_run_dir(project_root, __file__, variant_key, output_root=os.environ.get("OUTPUT_ROOT"))
+    logger = setup_logger(run_dir, exp_name)
+    write_run_metadata(run_dir, exp_name=exp_name, variant_key=variant_key, config=cfg)
+    logger.info(f"Starting: {exp_name} / {variant_key}")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    slides = select_slides(cfg, project_root)
     # 特徴量は全patch版を優先し、なければ（追加Controlなど）2,048 patch版を使う
     fdirs = [project_root / d for d in cfg.get("features_dirs", [cfg["features_dir"]])]
 
@@ -346,8 +423,12 @@ def main() -> None:
 
     # --- patchの抜き出しとPCA ---（時間がかかるので結果を保存し、やり直し時は読み込む。2026-10-21）
     t0 = time.time()
-    cache = project_root / "outputs" / exp_name / f"{variant_key}_cache"
+    cache = cache_dir(cfg, variant_key, project_root)
     cache.mkdir(parents=True, exist_ok=True)
+    if not (cache / "subsets.npz").exists() and cfg.get("derive_cache_from"):
+        derive_cache(project_root / "outputs" / exp_name / f"{cfg['derive_cache_from']}_cache",
+                     select_slides({**cfg, "qc_tiers": None}, project_root), slides, cache)
+        logger.info(f"derived subsets from {cfg['derive_cache_from']}_cache")
     if (cache / "subsets.npz").exists():
         z = np.load(cache / "subsets.npz")
         feats = {k: z[k] for k in ["pca", "train", "eval"]}
@@ -357,12 +438,14 @@ def main() -> None:
     else:
         feats, rows, eval_xy = load_subsets(slides, features_dir, cfg, logger)
         np.savez(cache / "subsets.npz", eval_xy=eval_xy, **feats, **{f"rows_{k}": v for k, v in rows.items()})
+    if cfg.get("center_per_slide"):
+        feats, means = center_by_slide(feats, rows, len(slides))
+        np.save(run_dir / "slide_means.npy", means)
+        logger.info("subtracted per-slide means (slide-relative directions only)")
     is_ctrl = (slides.dose_level == "Control").to_numpy()
-    pc = feats["pca"]
-    ctrl_rows, trt_rows = np.flatnonzero(is_ctrl[rows["pca"]]), np.flatnonzero(~is_ctrl[rows["pca"]])
-    trt_rows = np.random.default_rng(cfg["seed"]).choice(trt_rows, size=min(len(ctrl_rows), len(trt_rows)), replace=False)
-    pca = PCA(n_components=cfg["pca_components"], svd_solver="randomized", random_state=cfg["seed"])
-    pca.fit(pc[np.r_[ctrl_rows, trt_rows]])
+    ctrl_rows = np.flatnonzero(is_ctrl[rows["pca"]])
+    trt_rows = np.flatnonzero(~is_ctrl[rows["pca"]])[: len(ctrl_rows)]   # 件数の記録用（学習はfit_pcaで同数を無作為抽出）
+    pca = fit_pca(cfg, slides, feats["pca"], rows["pca"])
     train = pca.transform(feats["train"]).astype(np.float32)
     ev = pca.transform(feats["eval"]).astype(np.float32)
     del feats

@@ -55,3 +55,34 @@ variants:
     mixed_methods: ["leiden"]      # 連結成分は巨大な1成分になるので省く
     per_k: true
     io_workers: 12                 # h5読み込み・組織割合をslideごとに並列（2026-10-21、12時間で打ち切られたため）
+  block6_clean:   # block6_allのうちQC目録でA_clean（ボケ・縦縞なし）の2,271枚（2026-10-22ユーザー決定。試験の欠け・偏りはそのまま）
+    manifest_parquet: "experiments/0017_20261016_block_consensus_patterns/manifest_block6_cut072.parquet"   # scripts/build_block_manifest.py
+    exp_ids: [182, 184, 186, 238, 240, 242, 262, 266, 297, 303, 305, 307, 324, 326, 366, 368, 370, 393, 409, 411, 413, 434, 436, 441, 443, 445, 507, 509, 511, 525, 527, 529, 534, 536, 538, 569, 571, 573, 594, 596, 598, 686, 688, 691]
+    features_dirs:
+      - "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"          # 全patch
+      - "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048"  # 追加Controlは2,048 patchのみ
+    train_pool_per_slide: 200      # slideが約3,400枚あるのでメモリ対策（pilotは400）
+    train_patches_per_slide: 100   # 1 runの学習patchは約34万（pilotは約20万）
+    taus: [0.8]
+    mixed_methods: ["leiden"]      # 連結成分は巨大な1成分になるので省く
+    per_k: true
+    io_workers: 12                 # h5読み込み・組織割合をslideごとに並列（2026-10-21、12時間で打ち切られたため）
+    qc_catalog: "/workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv"
+    qc_tiers: ["A_clean"]
+    derive_cache_from: block6_all  # 特徴量の読み込みはblock6_allのキャッシュから抜き出す
+  block6_clean_centered:   # block6_cleanと同じslideで、各slideの平均を引いてから（slide内の相対的な方向だけ。2026-10-23ユーザー提案）
+    manifest_parquet: "experiments/0017_20261016_block_consensus_patterns/manifest_block6_cut072.parquet"   # scripts/build_block_manifest.py
+    exp_ids: [182, 184, 186, 238, 240, 242, 262, 266, 297, 303, 305, 307, 324, 326, 366, 368, 370, 393, 409, 411, 413, 434, 436, 441, 443, 445, 507, 509, 511, 525, 527, 529, 534, 536, 538, 569, 571, 573, 594, 596, 598, 686, 688, 691]
+    features_dirs:
+      - "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko"          # 全patch
+      - "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048"  # 追加Controlは2,048 patchのみ
+    train_pool_per_slide: 200      # slideが約3,400枚あるのでメモリ対策（pilotは400）
+    train_patches_per_slide: 100   # 1 runの学習patchは約34万（pilotは約20万）
+    taus: [0.8]
+    mixed_methods: ["leiden"]      # 連結成分は巨大な1成分になるので省く
+    per_k: true
+    io_workers: 12                 # h5読み込み・組織割合をslideごとに並列（2026-10-21、12時間で打ち切られたため）
+    qc_catalog: "/workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv"
+    qc_tiers: ["A_clean"]
+    cache_variant: block6_clean    # 抜き出したpatchはblock6_cleanと共有
+    center_per_slide: true         # 平均は1536次元で、抜き出した全patch（1枚約350）から。PCAは引いた後に学習

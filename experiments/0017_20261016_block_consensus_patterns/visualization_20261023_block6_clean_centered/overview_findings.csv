@@ -1,0 +1,29 @@
+finding,n_slides,n_experiments,dose_level:Control,dose_level:Low,dose_level:Middle,dose_level:High,sacrifice_period:4 day,sacrifice_period:8 day,sacrifice_period:15 day,sacrifice_period:29 day,scanner:SS1598,scanner:SS1601
+Hypertrophy,286,17,0,16,86,184,38,52,82,114,8,278
+Necrosis,127,18,22,21,38,46,30,33,35,29,5,122
+"Degeneration, granular, eosinophilic",90,2,0,25,30,35,15,20,26,29,0,90
+"Proliferation, bile duct",88,3,0,16,29,43,15,28,22,23,1,87
+"Vacuolization, cytoplasmic",73,6,0,0,16,57,0,11,28,34,0,73
+"Change, eosinophilic",61,5,0,0,12,49,8,11,18,24,0,61
+Swelling,60,1,0,20,20,20,15,15,15,15,1,59
+Cellular infiltration,53,5,0,6,15,32,17,21,8,7,0,53
+"Proliferation, oval cell",49,1,0,15,17,17,4,15,15,15,1,48
+Increased mitosis,40,3,0,8,13,19,34,6,0,0,0,40
+"Change, acidophilic",32,1,0,5,18,9,7,10,5,10,0,32
+Cellular foci,18,4,0,5,10,3,0,0,1,17,1,17
+Edema,18,1,0,0,1,17,6,5,4,3,0,18
+"Hematopoiesis, extramedullary",16,2,0,0,0,16,0,5,6,5,4,12
+Single cell necrosis,15,3,0,0,2,13,2,1,5,7,0,15
+"Deposit, glycogen",12,1,0,0,2,10,7,2,2,1,0,12
+"Deposit, hemosiderin",12,1,0,0,0,12,0,2,5,5,0,12
+Granuloma,9,3,0,2,2,5,1,1,1,6,0,9
+"Proliferation, Kupffer cell",8,2,1,1,0,6,2,1,2,3,0,8
+"Deposit, pigment",6,2,0,0,0,6,0,0,0,6,0,6
+Anisonucleosis,5,1,0,0,1,4,0,3,1,1,0,5
+"Adenoma, hepatocellular",4,1,0,3,1,0,0,0,0,4,0,4
+Dilatation,3,1,0,0,0,3,0,0,0,3,0,3
+Microgranuloma,3,3,1,0,0,2,0,1,1,1,0,3
+"Inclusion body, intracytoplasmic",2,1,0,0,0,2,0,0,0,2,0,2
+Disarrangement,2,1,0,0,1,1,0,0,1,1,0,2
+"Necrosis, fibrinoid",2,1,0,0,0,2,2,0,0,0,0,2
+Atrophy,1,1,0,0,0,1,0,0,1,0,0,1

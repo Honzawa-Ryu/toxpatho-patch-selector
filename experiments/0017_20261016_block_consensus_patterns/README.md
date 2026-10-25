@@ -63,3 +63,18 @@ Control<5%のコアは解像度を下げると少し安定（0.005で5コア・0
 - `outputs/.../<variant>/sheets/`: コアの画像シート（上位40、Control<5%、全粒度で入れ子）
 - `outputs/.../pilot/slide_maps_leiden_tau0.8/`: slide全体のpatchをコアで色分けした図（13試験×High・Control）
 - `outputs/.../<variant>/diagnostics/`、`per_k/`: 診断・解像度比較・kごとの結果
+
+## 最大の塊全体（2026-10-20〜23）
+
+kごとのコンセンサス（`per_k: true`）を本体に組み込み、cut 0.72の最大の塊44試験すべてで回した。続く2段階の方式は0018。
+
+| variant | 内容 | slide / 試験 | 評価用patch | k=200のコア / Control<5% / 全粒度で入れ子かつControl<5% |
+|---|---|---|---:|---|
+| `block6_all` | 44試験すべて | 3,468 / 44 | 161,250 | 140 / 20 / 9 |
+| `block6_clean` | QC目録（tggate-wsi-qc）でA_clean（ボケ・縦縞なし）のみ。試験の欠け・偏りはそのまま（2026-10-22ユーザー決定） | 2,271 / 39 | 105,410 | 133 / 27 / 10 |
+| `block6_clean_centered` | block6_cleanで、各slideの平均（1536次元、1枚約350 patch）を引いてからPCA（2026-10-23ユーザー提案） | 2,271 / 39 | 105,410 | 122 / 5 / 1 |
+
+- block6_cleanはblock6_allのキャッシュから抜き出し（`derive_cache_from`）、centeredはblock6_cleanのキャッシュを共有（`cache_variant`）。
+- 概要図: `visualization_<日付>_<variant>/`（O1〜O4: 所見・試験・scannerの内訳、A〜E: t-SNEとコア）。所見ありslideのpatchは所見を問わず1か所に集まった（block6_all）。
+- block6_cleanにしても、Controlのslide（nitrosodiethylamineなど）に縦の帯が残った。0018で調べた結果、スキャナのストライプ（2,032 px）と同じ間隔だが、ピント（ラプラシアン分散）では説明できない（ぼやけ以外のスキャン由来の影響）。
+- 平均を引くと、コアは化合物をまたぐようになる（コア内で最多の化合物の割合の中央値 0.2前後→0.12〜0.16）が、Controlとの分離は弱くなる。
