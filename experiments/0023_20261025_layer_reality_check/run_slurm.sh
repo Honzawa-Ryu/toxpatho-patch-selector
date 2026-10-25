@@ -7,7 +7,7 @@
 #SBATCH --export=ALL
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=24g
+#SBATCH --mem=48g
 #SBATCH --time=04:00:00
 
 # 他の実験のジョブに依存させたい場合、有効化してjob_idを埋める
@@ -51,7 +51,7 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 # =====================================================
 
 RUN_MODE="single"
-RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant external_v2 --mode external"
+RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant three_layers_v1 --mode three_layers"
 
 # =====================================================
 # Array run にしたい場合

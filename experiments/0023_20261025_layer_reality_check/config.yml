@@ -23,3 +23,13 @@ lesion_prototypes:            # 0021 v3_maps（combo, k=30）のプロトタイ�
   central_vein: [16]
   portal_tract: [19, 17]
 external_maps: ["76051", "76052", "76075", "F0219 4101-1", "F0219 1101-1", "F0220 4103-1", "76057"]
+
+# --mode three_layers: 形態・小葉の位置・領域の3層
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+map_thumb: 1000
+tg_maps: ["25661", "52750", "63530", "27686", "13607"]
+layers:
+  region_k: 6           # 周りの情報（伝播16回）だけのk-means（TG-GATEsで学習）
+  region_fit: 300000
+  extent_hops: 8        # 病変の広がり: 病変プロトタイプの指示関数を伝播する回数
+  min_lesion_patches: 20
