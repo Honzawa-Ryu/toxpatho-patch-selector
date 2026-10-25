@@ -1,0 +1,24 @@
+# 0018: 0017 block6_allの評価用patchから、Controlと同じクラスタに入りにくいpatchを抜き（1段目）、抜いたpatchだけでコアを作る（2段目）
+seed: 0
+source_exp: 0017_20261016_block_consensus_patterns
+source_variant: block6_all
+
+# 1段目
+threshold_grid: 400          # 閾値の候補（スコアの分位点）
+sheet_tiles: 24
+
+# 2段目
+embeddings: [pca0017, pca_refit]
+pca_components: 64
+ks: [10, 20, 40]
+sample_seeds: [0, 1, 2, 3, 4]
+init_seeds: [0, 1, 2, 3]
+train_frac: 0.8
+knn: 30
+tau: 0.8
+leiden_resolution: 1.0
+min_core_patches: 50
+min_core_slides: 3
+n_split_repeats: 3
+nest_contained_min: 0.7
+tsne_max_points: 40000
