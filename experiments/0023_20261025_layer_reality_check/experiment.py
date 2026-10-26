@@ -74,6 +74,14 @@ def load_module(path, name):
     return mod
 
 
+def max_grade(pos_f, *words):
+    """所見名に words をすべて含む行の最大の程度。該当する行がなければ0（空の最大値はNaNになり、図から落ちるため）。"""
+    m = np.ones(len(pos_f), dtype=bool)
+    for w in words:
+        m &= pos_f.finding_raw.str.contains(w).to_numpy()
+    return float(pos_f.grade[m].max()) if m.any() else 0.0
+
+
 def run_external(cfg, project_root, run_dir, logger, ex21, pre, X, pos, pm, src):
     """TG-GATEsのアノテーション132枚だけで学習した層（小葉の位置の回帰、0021の形態プロトタイプ）を、外部の78枚にそのまま当てる。
     外部では何も学習・調整しない。"""
@@ -115,8 +123,8 @@ def run_external(cfg, project_root, run_dir, logger, ex21, pre, X, pos, pm, src)
         rec = {"slide_id": r.slide_id, "provider": r.provider, "study": r.study, "label_unit": r.label_unit, "compound": r.compound, "dose": r.dose_raw,
                "control_status": r.control_status, "n_patches": len(f),
                "findings": "; ".join(f"{a} ({g:g})" for a, g in zip(pos_f.finding_raw, pos_f.grade)),
-               "centrilobular_necrosis": float(pos_f[pos_f.finding_raw.str.contains("ecrosis") & pos_f.finding_raw.str.contains("entrilobular")].grade.max() if len(pos_f) else 0) if len(pos_f) else 0.0,
-               "centrilobular_hypertrophy": float(pos_f[pos_f.finding_raw.str.contains("ypertrophy") & pos_f.finding_raw.str.contains("entrilobular")].grade.max()) if len(pos_f[pos_f.finding_raw.str.contains("ypertrophy") & pos_f.finding_raw.str.contains("entrilobular")]) else 0.0}
+               "centrilobular_necrosis": max_grade(pos_f, "ecrosis", "entrilobular"),
+               "centrilobular_hypertrophy": max_grade(pos_f, "ypertrophy", "entrilobular")}
         for name, ids in cfg["lesion_prototypes"].items():
             mk = np.isin(cl, ids)
             rec[f"share_{name}"] = float(mk.mean())

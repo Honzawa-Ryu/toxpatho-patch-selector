@@ -27,7 +27,7 @@ from lib.clustering import propagate_labels  # noqa: E402
 
 EXP = ROOT / "experiments/0017_20261016_block_consensus_patterns"
 RUN = ROOT / "outputs/0017_20261016_block_consensus_patterns/pilot"
-VIS = sorted(EXP.glob("visualization_*"))[-1]
+VIS = EXP / "visualization_20261017"   # pilotの可視化（eval_embedding.npz・pca.npzがある）。名前順の最後は別variantになる
 OUT = RUN / "slide_maps_leiden_tau0.8"
 COL = "leiden_tau0.8"
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"

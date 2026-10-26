@@ -55,7 +55,9 @@ def main():
     m["slide_id"] = m.slide_id.astype(str)
     scan = pd.read_csv(ROOT / "experiments/0010_20260925_pathology_benchmark_subset/label_audit/slide_scanner_meta.csv",
                        dtype={"slide_id": str})[["slide_id", "aperio.ScanScope ID"]].rename(columns={"aperio.ScanScope ID": "scanner"})
-    slides = m[m.slide_id.isin(ev.slide_id)].merge(scan, on="slide_id", how="left").reset_index(drop=True)
+    if "scanner" not in m:   # block6のmanifestには既にscanner列がある（二重に結合するとscanner_x/_yになる）
+        m = m.merge(scan, on="slide_id", how="left")
+    slides = m[m.slide_id.isin(ev.slide_id)].reset_index(drop=True)
     row = ev.slide_id.map({s: i for i, s in enumerate(slides.slide_id)}).to_numpy()
     xy = ev[["x", "y"]].to_numpy()
     size0 = {}
