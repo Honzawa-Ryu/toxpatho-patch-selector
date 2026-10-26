@@ -1,0 +1,20 @@
+# 0025: 隣接patchの情報の入れ方を探す（2026-10-26ユーザー: 係数などの最適化、それ以外も変えてよい、ベストを目指す）
+# 対象: Bayerのポリゴンがある230枚の全patch（隣接patchを使うので全patch）。
+# リーク対策:
+#  - LDA（Bayerのラベルで学ぶ方向）は試験ごとの5分割で学び、各patchの表現は、その試験を学習に入れていないLDAで作る（out-of-fold）。
+#  - 試験を2組（select / test）に分け、設定はselectの試験のラベル付きpatchだけで選び、testの試験で最終評価する。
+seed: 0
+exp0020: 0020_20261024_batch_robust_methods
+exp0021: 0021_20261025_patch_prototypes
+models_from: v3_maps            # 0021の教師なしPCA256（pre）だけ使う。LDA・残りのPCAは分割ごとに作り直す
+folds: 5
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+workers: 7
+
+k: 30
+fit_points: 300000
+kmeans_seeds: [0, 1]
+select_frac: 0.5                # 試験をこの割合でselect組に
+small_labels: [central_vein, portal_tract, mitosis, dark_hepatocytes]   # 小さい構造（隣接情報で消えやすい）
+repeats: 4                      # k-meansの学習点とseedを変えて繰り返す（ばらつきの見積もり）

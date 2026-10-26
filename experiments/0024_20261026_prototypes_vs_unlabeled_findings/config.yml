@@ -1,0 +1,35 @@
+# 0024: 0021のプロトタイプ（unsup / weak / combo、k=30）が、Bayerのラベルにない所見（肥大・空胞化・好酸性変化・脂肪変性など）と
+# 程度に応じて増えるかを、同じ試験のControl slideとの差で見る（2026-10-26ユーザー決定: 試験内の比較。弱教師ありの有無も比べる）。
+# 所見表の所見はどの版のプロトタイプの学習にも使っていない。
+seed: 42
+exp0021: 0021_20261025_patch_prototypes
+models_from: v3_maps
+representations: [unsup, weak, combo]
+pca_components: 64
+combo_resid_weight: 0.5
+
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+wsi_dir: data/TGGATEs/WSI/Liver
+features_dirs:      # 全patchを優先し、なければ2,048 patch版（追加Control）
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+blocks:             # 0017の塊。block6はQC目録でA_cleanのslideだけ、block3は全部（2026-10-26ユーザー決定）
+  block6:
+    exp_ids: [182, 184, 186, 238, 240, 242, 262, 266, 297, 303, 305, 307, 324, 326, 366, 368, 370, 393, 409, 411, 413, 434, 436, 441, 443, 445, 507, 509, 511, 525, 527, 529, 534, 536, 538, 569, 571, 573, 594, 596, 598, 686, 688, 691]
+    qc_tiers: [A_clean]
+  block3:
+    exp_ids: [174, 176, 280, 282, 319, 346, 348, 391, 428, 432, 463]
+workers: 7
+
+# 所見: 陽性slideがmin_pos枚以上かつmin_compounds化合物以上のもの＋force（脂肪変性はcholesterolの1化合物のみ）
+min_pos: 10
+min_compounds: 2
+force_findings: ["Degeneration, fatty"]
+grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}   # P（程度なしで「あり」）は1
+min_ctrl: 2          # 試験内の比較に必要なControl slideの数
+min_exps: 2          # 「複数の試験で同じ向き」を数えるのに必要な試験数
+
+# 図
+top_pairs: 8         # 版ごとに、程度との相関が高い（所見, プロトタイプ）の組をこの数だけ図と画像シートにする
+sheet_tiles: 24
