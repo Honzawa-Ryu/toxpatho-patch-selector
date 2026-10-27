@@ -32,3 +32,13 @@ min_ctrl: 2
 top_prototypes: 6              # 化合物ごとに、試験内のControlより増えるプロトタイプの上位を画像にする
 sheet_tiles: 24
 map_thumb: 1400
+
+# --variant tree_v1: 系統樹（2026-10-27ユーザー: unsup＋1×LDAが最適候補、細かく作って階層でまとめるアプローチを見たい）
+variants:
+  tree_v1:
+    representations: [unsup_lda1]
+    ks_big: [100]
+    cuts: [20, 30, 40]
+    sheet_at: []
+    map_at: [0, 0]
+    tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}

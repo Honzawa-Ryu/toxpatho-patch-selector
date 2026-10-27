@@ -51,7 +51,7 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 # =====================================================
 
 RUN_MODE="single"
-RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant three_layers_v1 --mode three_layers"
+RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant external_v3 --mode external"
 
 # =====================================================
 # Array run にしたい場合

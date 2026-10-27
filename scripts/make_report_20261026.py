@@ -150,7 +150,7 @@ with style_context("default", palette_name="okabe_ito_on_white"):
     save(fig, "F4_lobular_layer_vs_topography", [src], "Bayer lesion patches; position predicted out-of-fold by experiment (5 folds); OOF R2 0.25")
 
     # F5. 外部（エーザイ・シオノギ）: TG-GATEsだけで学習した層をそのまま当てる（0023）
-    src = O / "0023_20261025_layer_reality_check/external_v2/external_layers.csv"
+    src = O / "0023_20261025_layer_reality_check/external_v3/external_layers.csv"   # 2026-10-27: 程度がNaNになる不具合を直して再実行（78枚すべて）
     t = pd.read_csv(src)
     t["ctrl"] = t.control_status.isin(["explicit"])
     t["cl_nec"] = t.centrilobular_necrosis.fillna(0)

@@ -200,6 +200,7 @@ def main() -> None:
     t0 = time.time()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cfg = config
+    cfg.update(cfg.get("variants", {}).get(args.variant, {}))   # 版ごとの上書き（例: tree_v1 は1つの表現・k=100で系統樹を作る）
     load_module(project_root / "experiments" / cfg["exp0021"] / "experiment.py", "exp0021")
     load_module(project_root / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
     ex17 = load_module(project_root / "experiments/0017_20261016_block_consensus_patterns/experiment.py", "exp0017")
@@ -426,6 +427,82 @@ def main() -> None:
                 canvas.save(out / "maps" / f"{tag}_{r_.slide_id}.jpg", quality=88)
         logger.info(f"{tag} done (ARI {ari:.3f}); {time.time() - t0:.0f}s")
 
+    def draw_tree(rep, kb, cl, cen, Zl, X):
+        """プロトタイプの系統樹（2026-10-27ユーザー: 細かく作ってから階層でまとめるアプローチを見たい）。
+        系統樹の図と、葉の順に並べたプロトタイプごとの表・画像（重心に近い順、230枚と脂肪変性の試験からそれぞれ4枚、同じslideからは1枚）。"""
+        from scipy.cluster.hierarchy import dendrogram
+        tdir = run_dir / "tree" / f"{rep}_k{kb}"
+        (tdir / "img").mkdir(parents=True, exist_ok=True)
+        # 230枚と対象を合わせたslideの表（画像の読み出し用）
+        sa = pd.read_csv(src / "slides.csv", dtype=str).rename(columns={"EXP_ID": "exp", "COMPOUND_NAME": "compound", "DOSE_LEVEL": "dose", "SACRIFICE_PERIOD": "period"})
+        known = {**pd.read_csv(project_root / "outputs/0021_20261025_patch_prototypes/v3_maps/slides.csv", dtype=str).set_index("slide_id").svs_path.to_dict(),
+                 **pd.read_csv(project_root / "outputs/target_slide_list/annot_and_fatty_missing.csv", dtype=str).set_index("slide_id").svs_path.to_dict()}
+        sa["svs_path"] = [known.get(a_, b_) for a_, b_ in zip(sa.slide_id, sa.svs_path)]
+        sa["source"] = "Bayer"
+        st = slides[["slide_id", "exp", "compound", "dose", "period", "svs_path"]].assign(source="fatty")
+        st["exp"] = st.exp.astype(str)
+        sall = pd.concat([sa[["slide_id", "exp", "compound", "dose", "period", "svs_path", "source"]], st], ignore_index=True)
+        row_all = np.r_[c["row"], row + len(sa)]
+        xy_all = np.r_[c["xy"], xy]
+        size0_all = {**dict(zip(sa.slide_id, c["size0"].tolist())), **size0}
+        exp_all = sall.exp.astype(str).to_numpy()[row_all]
+        ctrl_all = (sall.dose.to_numpy() == "Control")[row_all]
+        dist = torch.cat([(x - cen[torch.from_numpy(cl[i:i + len(x)]).to(device)]).norm(dim=1) for i, x in zip(range(0, len(X), 65536), X.split(65536))]).cpu().numpy()
+        cuts = {cc: fcluster(Zl, cc, criterion="maxclust") for cc in cfg["tree"]["cuts"]}
+        dn = dendrogram(Zl, no_plot=True)
+        order = dn["leaves"]
+        recs = []
+        for j in order:
+            mk = np.flatnonzero(cl == j)
+            ma, mt = mk[mk < na], mk[mk >= na] - na
+            lab_j = laba[ma][laba[ma] >= 0]
+            lc = pd.Series(lab_j).value_counts()
+            r = {"prototype": int(j), "n_patches": len(mk), "n_bayer": len(ma), "n_fatty_exps": len(mt), "n_slides": len(np.unique(row_all[mk])),
+                 "n_experiments": len(np.unique(exp_all[mk])), "ctrl_share": float(ctrl_all[mk].mean()), "n_labeled": len(lab_j),
+                 "bayer_top_label": prio[lc.index[0]] if len(lc) else "", "bayer_purity": float(lc.iloc[0] / len(lab_j)) if len(lc) else np.nan,
+                 **{f"group_{cc}": int(cuts[cc][j]) for cc in cuts}}
+            for cname in ("CCl4", "cholesterol"):
+                pm = mt[(cmpd == cname)[row[mt]]]
+                r[f"n_{cname}"] = len(pm)
+                r[f"fatty_purity_{cname}"] = float((fat[row[pm]] > 0).mean()) if len(pm) else np.nan
+            recs.append(r)
+            # 画像
+            picks = []
+            for part, n_ in ((ma, 4), (mt + na, 4)):
+                seen = set()
+                for q in part[np.argsort(dist[part])]:
+                    if row_all[q] not in seen:
+                        picks.append(int(q))
+                        seen.add(row_all[q])
+                    if len(seen) == n_:
+                        break
+            if picks:
+                tiles = ex17.read_tiles(picks, row_all, xy_all, sall, size0_all,
+                                        lambda s_, q_: (f"{'B' if s_.source == 'Bayer' else 'F'} e{s_.exp} {str(s_.compound)[:12]} {str(s_.dose)[0]}", f"{s_.period} {prio[laba[q_]] if q_ < na and laba[q_] >= 0 else ''}"))
+                ex17.draw_sheet("", [("", tiles)], tdir / "img" / f"p{j:03d}.jpg")
+        tab = pd.DataFrame(recs)
+        tab.to_csv(tdir / "prototypes_in_tree_order.csv", index=False)
+        np.save(tdir / "assign_all.npy", cl.astype(np.int16))
+        # 系統樹の図（葉の下に、Bayerのラベルと脂肪変性の純度）
+        fig, axes = plt.subplots(3, 1, figsize=(max(14, kb * 0.16), 7.5), gridspec_kw={"height_ratios": [4, 0.6, 0.6]}, sharex=False)
+        dendrogram(Zl, ax=axes[0], color_threshold=Zl[-cfg["tree"]["color_cut"] + 1, 2], labels=[f"p{j}" for j in range(kb)], leaf_font_size=6)
+        axes[0].set_ylabel("Ward distance")
+        axes[0].set_title(f"0026 {rep}, k={kb}: prototype tree (colours = {cfg['tree']['color_cut']} groups); 230 Bayer slides + CCl4/cholesterol experiments", fontsize=9)
+        labs_ = sorted(set(tab.bayer_top_label) - {""})
+        cmap = plt.get_cmap("tab20")
+        axes[1].bar(np.arange(kb), 1, color=[cmap(labs_.index(x) % 20) if x else (0.9, 0.9, 0.9) for x in tab.bayer_top_label], width=1.0)
+        axes[1].set_yticks([]); axes[1].set_xlim(-0.5, kb - 0.5); axes[1].set_xticks([])
+        axes[1].set_ylabel("Bayer\nlabel", fontsize=7, rotation=0, ha="right", va="center")
+        for i_, l_ in enumerate(labs_):
+            axes[1].text(1.002, 0.95 - i_ * 0.11, l_, color=cmap(i_ % 20), fontsize=6, transform=axes[1].transAxes, va="top")
+        fp = np.nanmax(np.c_[tab.fatty_purity_CCl4.fillna(0) * (tab.n_CCl4 >= 200), tab.fatty_purity_cholesterol.fillna(0) * (tab.n_cholesterol >= 200)], axis=1)
+        axes[2].bar(np.arange(kb), fp, color=["#D55E00" if v >= 0.9 else "#999999" for v in fp], width=1.0)
+        axes[2].set_xlim(-0.5, kb - 0.5); axes[2].set_xticks([]); axes[2].set_ylim(0, 1)
+        axes[2].set_ylabel("fatty\npurity", fontsize=7, rotation=0, ha="right", va="center")
+        fig.savefig(tdir / "T1_tree.png", dpi=170, bbox_inches="tight", facecolor="white")
+        plt.close(fig)
+        logger.info(f"tree {rep} k={kb}: {len(tab)} leaves; {time.time() - t0:.0f}s")
+
     for rep in cfg["representations"]:
         torch.cuda.empty_cache()
         X = get_X(rep)
@@ -438,6 +515,8 @@ def main() -> None:
             Zl = linkage(cenA.astype(np.float64), method="ward")
             np.save(run_dir / f"linkage_{rep}_k{kb}.npy", Zl)
             np.save(run_dir / f"centroids_{rep}_k{kb}.npy", cenA)
+            if cfg.get("tree") and kb == cfg["tree"]["k"]:
+                draw_tree(rep, kb, clA, torch.from_numpy(cenA).to(device), Zl, X)
             for cut in [c_ for c_ in cfg["cuts"] if c_ < kb] + [kb]:
                 lab_cut = np.arange(kb) if cut == kb else fcluster(Zl, cut, criterion="maxclust") - 1
                 evaluate(rep, kb, cut, lab_cut[clA], ari)
