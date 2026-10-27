@@ -20,6 +20,8 @@ blocks:             # 0017の塊。block6はQC目録でA_cleanのslideだけ、b
     qc_tiers: [A_clean]
   block3:
     exp_ids: [174, 176, 280, 282, 319, 346, 348, 391, 428, 432, 463]
+  fatty:             # 2026-10-27追加（v2）: 脂肪変性の試験（CCl4 単回66・反復67、cholesterol 698）。QCで絞らない
+    exp_ids: [66, 67, 698]
 workers: 7
 
 # 所見: 陽性slideがmin_pos枚以上かつmin_compounds化合物以上のもの＋force（脂肪変性はcholesterolの1化合物のみ）

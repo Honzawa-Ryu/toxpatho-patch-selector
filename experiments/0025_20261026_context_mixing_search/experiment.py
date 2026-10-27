@@ -268,6 +268,8 @@ def configs(variant="v1"):
         return configs_v4()
     if variant == "v5":
         return configs_v5()
+    if variant == "v6":
+        return configs_v6()
     return configs_v1()
 
 
@@ -310,6 +312,12 @@ def configs_v5():
         for k in (10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 150, 200):
             C.append({**base, "k": k})
     return C
+
+
+def configs_v6():
+    """以前の報告（0021 explore_v2、132枚、リークあり）の3つの版を、リークなしで測り直す（2026-10-27ユーザー）。
+    隣接情報なし / 自分×0.5＋周り（伝播4回）×1.0（= linear w=2） / 周りだけ。ラベルごとのk80・純度は全ラベルで出す。"""
+    return [{"kind": "self"}, {"kind": "linear", "hops": 4, "w": 2.0, "alpha": 0.5}, {"kind": "ctx_only", "hops": 4, "alpha": 0.5}]
 
 
 def consensus_kmeans(X, k, n_runs, fit_points, seed, device):
@@ -487,6 +495,8 @@ def run_search(cfg, args, project_root, run_dir, logger, device):
             X = torch.cat([Zt, cf["w"] * (prop(cf["hops"], cf["alpha"]) - Zt)], 1)
         elif kd == "resid_only":
             X = torch.cat([Zt[:, :nL], prop(cf["hops"], cf["alpha"])[:, nL:]], 1)
+        elif kd == "ctx_only":
+            X = prop(cf["hops"], cf["alpha"])
         elif kd == "sym":
             X = torch.cat([Zt, cf["w"] * G.sym(Zt, cf["hops"])], 1)
         elif kd == "learned":
@@ -516,7 +526,8 @@ def run_search(cfg, args, project_root, run_dir, logger, device):
                     base[rp] = (cl, cen)
                 if kd == "bilateral_smooth":
                     cl = soft_smooth(X, cen, G, cf["beta"], cf["iters"], cf["tau_q"])
-            r = {"name": name, "repeat": rp, **{kk: str(v) for kk, v in cf.items()}, **metrics(cl, lab, exp, row, sel, G, cfg["small_labels"], prio)}
+            rep_labels = [prio[k_] for k_ in keep] if args.variant == "v6" else cfg["small_labels"]
+            r = {"name": name, "repeat": rp, **{kk: str(v) for kk, v in cf.items()}, **metrics(cl, lab, exp, row, sel, G, rep_labels, prio)}
             res.append(r)
             rep_cl.append(cl.cpu().numpy().astype(np.int16))
             if rp == 0:
