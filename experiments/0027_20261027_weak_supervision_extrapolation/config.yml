@@ -1,0 +1,57 @@
+# 0027: 外挿性を保てる弱教師あり・バッチ除去の比較（2026-10-27ユーザー: 調べた手法を比較して、われわれの建付けに応用できるものを探す）
+# 外挿性の物差し: Bayerのラベルの一部を「伏せて」学習し、伏せたラベルが分かれるかを測る（学習に使ったラベルとは別に集計）。
+# リーク対策: ラベルを使う手法は試験ごとの5分割で学び、各patchはその試験を学習に入れていないモデルで写す。
+seed: 0
+exp0020: 0020_20261024_batch_robust_methods
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+cache_from: cache_v1
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+min_ctrl_slides: 2          # Controlの特徴量がこの枚数以上ある試験だけを対象にする（Controlを基準にする手法のため。全手法を同じslideで比べる）
+ctrl_patches_per_slide: 2048
+workers: 6
+folds: 5
+dim: 64                     # 教師なしPCA・白色化の次元
+
+holdouts:                   # 伏せるラベルの組（この組のラベルは学習に使わず、評価だけに使う）
+  A: [necrosis, dark_hepatocytes, inflammation]
+  B: [central_vein, portal_tract, mitosis]
+
+methods: [unsup, lda, unsup_lda, sphering, tvn, tvn_lda, gcd, ae_adv]
+lda_beta: 1.0               # unsup_lda / tvn_lda: 元の表現にLDAの方向をこの重みで並べる
+nn:                         # gcd・ae_adv の小さなネットワーク
+  hidden: 256
+  out: 64
+  epochs: 4
+  batch: 2048
+  lr: 0.001
+  temperature: 0.1
+  sup_weight: 1.0           # gcd: 教師あり対照学習（既知のラベル）の重み
+  rec_weight: 1.0           # ae_adv: 再構成
+  cls_weight: 1.0           # ae_adv: 既知のラベルの分類
+  adv_weight: 0.3           # ae_adv: 試験を当てられないようにする（勾配反転）
+
+ks: [30, 100]
+kmeans_seeds: [0, 1]
+fit_points: 300000
+knn: 30
+mix_queries: 20000
+
+# v1: ラベルを使う手法を試験ごとの5分割で学んだ。分割ごとに別のモデル（別の座標系）になり、全patchを合わせたk-means・近傍で
+#     分割の違いがそのまま分かれ目になってしまった（gcdの「別の試験の近傍」4%など）。→ 比較として不適切。
+# v2: ラベルを使う手法も全試験で1つのモデルを学ぶ。伏せたラベルは学習に一切使わないので、伏せたラベルの評価（外挿性）はリークなし。
+#     既知のラベルの値は学習に使ったラベルで測るので高めに出る（参考値）。
+variants:
+  v2:
+    folds: 1
+    methods: [unsup, lda, unsup_lda, sphering, sphering_lda, tvn, tvn_lda, gcd, ae_adv]
+  v3:                       # 脂肪変性（Bayerにラベルなし）で外挿性を確かめる。Bayerのラベルは全部使う（伏せない）
+    folds: 1
+    methods: [unsup, lda, unsup_lda, sphering, sphering_lda, tvn_lda]
+    holdouts: {none: []}
+    fatty_exps: [66, 67, 698]
+pathology_csv: data/corrected/open_tggates_pathology.csv
+grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}

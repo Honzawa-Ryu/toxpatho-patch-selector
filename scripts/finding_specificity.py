@@ -10,7 +10,7 @@
 入力: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/（slides.csv, slide_findings.csv, slide_shares_<版>.csv, assignments.npz）
 出力: 同じフォルダの specificity/
 
-usage: python scripts/finding_specificity.py
+usage: python scripts/finding_specificity.py [v1|v2]
 """
 import importlib.util
 import sys
@@ -25,11 +25,11 @@ import pandas as pd
 from scipy.stats import rankdata
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1"
+RUN = ROOT / "outputs/0024_20261026_prototypes_vs_unlabeled_findings" / (sys.argv[1] if len(sys.argv) > 1 else "v1")   # 0024の版（v2は脂肪変性の試験を追加）
 OUT = RUN / "specificity"
 REPS = ["unsup", "weak", "combo"]
 GRADE = {"minimal": 1, "slight": 2, "moderate": 3, "severe": 4, "P": 1}
-SHEET_FINDINGS = ["Hypertrophy", "Vacuolization, cytoplasmic", "Proliferation, bile duct", "Degeneration, granular, eosinophilic",
+SHEET_FINDINGS = ["Degeneration, fatty", "Hypertrophy", "Vacuolization, cytoplasmic", "Proliferation, bile duct", "Degeneration, granular, eosinophilic",
                   "Change, eosinophilic", "Necrosis", "Increased mitosis", "Cellular infiltration"]
 TILES = 8
 
