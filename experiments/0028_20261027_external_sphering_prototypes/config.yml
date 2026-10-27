@@ -1,0 +1,23 @@
+# 0028: TG-GATEsで作ったプロトタイプ（0026 tree_v2: Sphering＋LDA、unsup＋LDA。比較に0026 v1のcombo）を、外部（エーザイ・塩野義）に当てる。
+# 外部では何も学習しない。Sphering（試験ごとの白色化）だけは、外部の各試験の対照群のpatchで行う（Controlを基準にするのは手法の定義どおり）。
+# 2026-10-27ユーザー: 終着点(1) ラベルのない所見への外挿、(2) 外部データへの外挿。外部の所見の記録との対応で両方を見る。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+exp0022: 0022_20261025_external_pharma_embeddings
+bench_root: /workspace/andre01/honzawa/02-playground/tggate-bench
+external_findings: outputs/external_data_audit/findings_raw.csv
+control_status: [explicit, candidate_missing_dose]   # 対照群とみなすslide（candidate_missing_dose は用量が「-」の群。F0220・F0221の1群）
+prototypes:                    # 名前: [0026のrun, 表現, k]
+  sphering_lda: [tree_v2, sphering_lda, 100]
+  unsup_lda1: [tree_v2, unsup_lda1, 100]
+  combo: [v1, combo, 100]
+min_pos: 2                     # 外部の所見: 程度>0のslideがこの枚数以上のものだけ
+workers: 6
+map_slides: ["76052", "F0219 4101-1", "F0221 4103-1", "F0220 4103-1"]
+map_thumb: 1200

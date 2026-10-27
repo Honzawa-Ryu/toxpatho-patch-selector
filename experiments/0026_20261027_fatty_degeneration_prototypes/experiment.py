@@ -217,6 +217,10 @@ def main() -> None:
     lab_c = np.where(laba >= 0, np.searchsorted(keep, np.maximum(laba, 0)), -1)
     annot_ids = pd.read_csv(src / "slides.csv", dtype=str).slide_id.tolist()
     slides = target_slides(cfg, project_root)
+    if cfg.get("drop_annot_overlap"):
+        n0 = len(slides)
+        slides = slides[~slides.slide_id.isin(annot_ids)].reset_index(drop=True)
+        logger.info(f"dropped {n0 - len(slides)} target slides already in the Bayer set")
     G, topo = fat_grades(cfg, project_root, slides)
     slides.drop(columns=["h5"]).to_csv(run_dir / "slides.csv", index=False)
     G.to_csv(run_dir / "slide_fat_grades.csv")
@@ -244,13 +248,13 @@ def main() -> None:
     #  raw             : 以前（0003）の方式。L2 → PCA64、slide内の順位もLDAもなし
     reps_ab = {}
     need = set(cfg["representations"])
-    if need & {"combo", "combo_bilateral"} or any(r_.startswith("unsup_lda") for r_ in need):
+    if need & {"combo", "combo_bilateral", "sphering_lda"} or any(r_.startswith("unsup_lda") for r_ in need):
         tf = fit_combo(Ka, lab_c, cfg, cfg["seed"])
         reps_ab["combo"] = np.concatenate([tf(b_) for b_ in np.array_split(np.concatenate([Ka, Kt]), 40)])
     if "combo_strong" in need:
         tf2 = fit_combo(Ka, lab_c, {**cfg, "combo_resid_dim": 32, "combo_resid_weight": 1.0}, cfg["seed"])
         reps_ab["combo_strong"] = np.concatenate([tf2(b_) for b_ in np.array_split(np.concatenate([Ka, Kt]), 40)])
-    if "unsup" in need or any(r_.startswith("unsup_lda") for r_ in need):
+    if "unsup" in need or "sphering_lda" in need or any(r_.startswith("unsup_lda") for r_ in need):
         reps_ab["unsup"] = np.concatenate([Ka[:, :64], Kt[:, :64]]).astype(np.float32)
     del Ka, Kt
     if "raw" in need:
@@ -268,13 +272,51 @@ def main() -> None:
 
     L_lda = len(keep) - 1
 
+    def control_K64():
+        """Bayerの集合と対象の試験のControl slide（全patchまたは2,048 patch版）を、slide内の順位 → PCA256 → 上位64次元に。"""
+        ex27 = load_module(project_root / "experiments/0027_20261027_weak_supervision_extrapolation/experiment.py", "exp0027")
+        q = pd.read_csv(cfg["qc_catalog"], dtype=str)
+        q = q[q.EXP_ID.notna() & (q.EXP_ID != "")]
+        exps = set(pd.read_csv(src / "slides.csv", dtype=str).EXP_ID.dropna().astype(int)) | set(cfg["target_exps"])
+        qc = q[(q.DOSE_LEVEL == "Control") & q.EXP_ID.astype(int).isin(exps)].copy()
+        def h5_of(sid):
+            for d_ in cfg["ctrl_features_dirs"]:
+                if (project_root / d_ / f"{sid}.h5").exists():
+                    return str(project_root / d_ / f"{sid}.h5")
+            return ""
+        qc["h5"] = [h5_of(x) for x in qc.slide_id]
+        qc = qc[qc.h5 != ""]
+        with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(str(pre_path), 2048)) as ex:
+            parts_c = list(ex.map(ex27._load_ctrl, qc.h5))
+        Kc = np.concatenate(parts_c)[:, :64]
+        exp_c = np.concatenate([np.full(len(p_), int(e)) for p_, e in zip(parts_c, qc.EXP_ID)])
+        logger.info(f"Control for sphering: {len(qc)} slides in {len(set(exp_c))} experiments, {len(Kc):,} patches; {time.time() - t0:.0f}s")
+        return Kc, exp_c, ex27
+
+    exp_annot = pd.read_csv(src / "slides.csv", dtype=str).EXP_ID.fillna("-1").astype(int).to_numpy()[c["row"]]
+    exp_all = np.r_[exp_annot, slides.exp.to_numpy()[row]]
+
     def get_X(rep):
+        if rep == "sphering_lda":
+            # 2026-10-27（0027の比較で最良）: 試験ごとにControlで白色化した元の表現（64次元）に、Bayerのラベルで学んだLDAの方向を同じ大きさで並べる。
+            # Controlのない試験（試験0060の1枚）は、全試験のControlをまとめて白色化する
+            Kc, exp_c, ex27 = control_K64()
+            U = reps_ab["unsup"]
+            e_fix = np.where(np.isin(exp_all, exp_c), exp_all, -999)
+            Kc2, ec2 = np.r_[Kc, Kc], np.r_[exp_c, np.full(len(exp_c), -999)]
+            Sw = ex27.sphering(U, e_fix, Kc2, ec2)
+            Lw = reps_ab["combo"][:, :L_lda]
+            fac = float(Sw.std(0).mean() / Lw.std(0).mean())
+            (run_dir / "scale_sphering_lda.json").write_text(json.dumps({"lda_scale": fac, "lda_beta": cfg["lda_beta"], "dim": 64}))   # 外部データ（0028）で同じ大きさに写すため
+            return torch.from_numpy(np.concatenate([Sw, cfg["lda_beta"] * fac * Lw], axis=1).astype(np.float32)).to(device)
         if rep.startswith("unsup_lda"):
             # 2026-10-27ユーザー: LDAでつぶした表現だけでなく、元の表現も残る塩梅を探す。unsup（PCA64）にLDAの方向をβ倍で並べる
             beta = float(rep[len("unsup_lda"):])
             U = reps_ab["unsup"]
             Lw = reps_ab["combo"][:, :L_lda]
-            Lw = Lw * (U.std(0).mean() / Lw.std(0).mean())
+            fac = float(U.std(0).mean() / Lw.std(0).mean())
+            (run_dir / f"scale_{rep}.json").write_text(json.dumps({"lda_scale": fac, "lda_beta": beta, "dim": 64}))
+            Lw = Lw * fac
             return torch.from_numpy(np.concatenate([U, beta * Lw], axis=1).astype(np.float32)).to(device)
         if rep == "combo_bilateral":
             Z = torch.from_numpy(reps_ab["combo"]).to(device)
