@@ -17,4 +17,4 @@ fit_points: 300000
 kmeans_seeds: [0, 1]
 select_frac: 0.5                # 試験をこの割合でselect組に
 small_labels: [central_vein, portal_tract, mitosis, dark_hepatocytes]   # 小さい構造（隣接情報で消えやすい）
-repeats: 4                      # k-meansの学習点とseedを変えて繰り返す（ばらつきの見積もり）
+repeats: 5                      # k-meansの学習点とseedを変えて繰り返す（ばらつき・seed依存性の見積もり）

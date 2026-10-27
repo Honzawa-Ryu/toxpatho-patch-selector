@@ -264,6 +264,10 @@ def configs(variant="v1"):
         return configs_v2()
     if variant == "v3":
         return configs_v3()
+    if variant == "v4":
+        return configs_v4()
+    if variant == "v5":
+        return configs_v5()
     return configs_v1()
 
 
@@ -282,6 +286,42 @@ def configs_v3():
         C.append({"kind": "self", "k": k})
         C.append({"kind": "bilateral", "hops": 2, "w": 1.0, "alpha": 0.5, "sigma_q": 0.1, "k": k})
     return C
+
+
+def configs_v4():
+    """プロトタイプの決め方の安定性と、純度を優先したときのk（2026-10-26ユーザー: 1つの所見が1クラスタより、1クラスタの純度が高い方が価値が高い。
+    k-meansのseed依存性も見る）。各設定を5回くり返し、くり返しの間の一致（ARI）も出す。
+    consensus: k-meansを10回まわし、全部の重心（k×10）をさらにk個にまとめた重心で割り当てる（seed依存を減らす）。"""
+    C = []
+    for base in ({"kind": "self"}, {"kind": "bilateral", "hops": 2, "w": 1.0, "alpha": 0.5, "sigma_q": 0.1}):
+        for k in (30, 50, 80, 120):
+            C.append({**base, "k": k})
+            C.append({**base, "k": k, "consensus": 10})
+        C.append({**base, "k": 30, "norm": "l2"})
+        C.append({**base, "k": 30, "fit_points": 1000000})
+    return C
+
+
+def configs_v5():
+    """kの掃引（2026-10-26ユーザー: k=30を掘り下げていない）。純度（homogeneity・小さい構造の純度）、NMI、くり返しの間の一致（ARI）をkごとに出す。
+    homogeneityはkを増やすほど上がるので、kの決め方は「純度の伸びが鈍るところ」「seedに対して安定なところ」「人が見られる数」で相談する。"""
+    C = []
+    for base in ({"kind": "self"}, {"kind": "bilateral", "hops": 2, "w": 1.0, "alpha": 0.5, "sigma_q": 0.1}):
+        for k in (10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 150, 200):
+            C.append({**base, "k": k})
+    return C
+
+
+def consensus_kmeans(X, k, n_runs, fit_points, seed, device):
+    """k-meansをn_runs回（学習点とseedを変えて）まわし、重心をすべて集めてk個にまとめ直した重心で割り当てる。"""
+    from lib.clustering import kmeans_lloyd
+    cents = []
+    for m in range(n_runs):
+        _, cen = kmeans_fit_assign(X, k, [seed * 1000 + m], fit_points, np.random.default_rng([seed, m]), device)
+        cents.append(cen.cpu().numpy())
+    _, meta, _ = kmeans_lloyd(np.concatenate(cents), k, seed, device)
+    cen = torch.from_numpy(meta).to(device)
+    return torch.cat([torch.cdist(x, cen).argmin(1) for x in X.split(65536)]), cen
 
 
 def learned_context(Zt, feats, lab_c, exp, hidden, folds, seed, device, epochs=300):
@@ -459,24 +499,38 @@ def run_search(cfg, args, project_root, run_dir, logger, device):
             Hh = Hh / Hh.std(0).mean().clamp_min(1e-6) * Zt.std(0).mean()   # 大きさを自分の表現にそろえる
             X = Hh if cf["out"] == "h" else torch.cat([Zt, Hh], 1)
         kk_ = cf.get("k", cfg["k"])
+        fp_ = cf.get("fit_points", cfg["fit_points"])
+        if cf.get("norm") == "l2":
+            X = torch.nn.functional.normalize(X, dim=1)
+        rep_cl = []
         for rp in range(n_rep):
             rr = np.random.default_rng([cfg["seed"], rp])
             seeds = [s_ + 100 * rp for s_ in cfg["kmeans_seeds"]]
             if kd == "smooth":
                 cl = soft_smooth(Zt, base[rp][1], G, cf["beta"], cf["iters"], cf["tau_q"])
+            elif cf.get("consensus"):
+                cl, cen = consensus_kmeans(X, kk_, cf["consensus"], fp_, cfg["seed"] + 17 * rp, device)
             else:
-                cl, cen = kmeans_fit_assign(X, kk_, seeds, cfg["fit_points"], rr, device)
+                cl, cen = kmeans_fit_assign(X, kk_, seeds, fp_, rr, device)
                 if kd == "self" and not cf.get("rep") and "k" not in cf:
                     base[rp] = (cl, cen)
                 if kd == "bilateral_smooth":
                     cl = soft_smooth(X, cen, G, cf["beta"], cf["iters"], cf["tau_q"])
             r = {"name": name, "repeat": rp, **{kk: str(v) for kk, v in cf.items()}, **metrics(cl, lab, exp, row, sel, G, cfg["small_labels"], prio)}
             res.append(r)
+            rep_cl.append(cl.cpu().numpy().astype(np.int16))
             if rp == 0:
-                assigns[name] = cl.cpu().numpy().astype(np.int16)
+                assigns[name] = rep_cl[0]
+        # くり返しの間の一致（seed依存性）: 無作為の30万patchで、くり返しの全ての組のARIの平均
+        if n_rep > 1:
+            from sklearn.metrics import adjusted_rand_score
+            sub = np.random.default_rng(0).choice(len(rep_cl[0]), size=min(300000, len(rep_cl[0])), replace=False)
+            aris = [adjusted_rand_score(rep_cl[i][sub], rep_cl[j][sub]) for i in range(n_rep) for j in range(i + 1, n_rep)]
+            for x in res[-n_rep:]:
+                x["ari_between_repeats"] = float(np.mean(aris))
         pd.DataFrame(res).to_csv(out_csv, index=False)
         t = pd.DataFrame([x for x in res if x["name"] == name])
-        logger.info(f"{name}: NMI sel {t.nmi_sel.mean():.3f}±{t.nmi_sel.std():.3f} (hom {t.hom_sel.mean():.3f}, comp {t.comp_sel.mean():.3f}), "
+        logger.info(f"{name}: NMI sel {t.nmi_sel.mean():.3f}±{t.nmi_sel.std():.3f} (hom {t.hom_sel.mean():.3f}, comp {t.comp_sel.mean():.3f}), ARI {t.get('ari_between_repeats', pd.Series([np.nan])).mean():.3f}, "
                     f"small purity {t.small_purity_sel.mean():.2f}, neighbour same {t.neighbor_same.mean():.2f}; {time.time() - t1:.0f}s")
         if len(prop_cache) > 12:
             prop_cache.clear()
@@ -491,8 +545,8 @@ def run_search(cfg, args, project_root, run_dir, logger, device):
     #  best_nmi     : NMI最大
     #  best_context : NMIがself（既定の表現）の平均−標準偏差以上の中で、隣のpatchが同じプロトタイプの割合が最大（隣接情報を損なわずに入れる）
     #  best_small   : 小さい構造の純度の平均が最大
-    if "k" in df:   # kを変えた行はNMIの大きさが比べられないので、選ぶ対象から外す
-        df_all, df = df, df[df["k"].isna()]
+    if "k" in df:   # kの違う行はNMIの大きさが比べられないので、既定のkの行だけから選ぶ
+        df_all, df = df, df[df["k"].isna() | (df["k"].astype(str) == str(cfg["k"]))]
     s0 = df[df.name == "self"].iloc[0] if (df.name == "self").any() else df[df.kind == "self"].iloc[0]
     thr = s0.nmi_sel - (s0.nmi_sel_sd if np.isfinite(s0.nmi_sel_sd) else 0.005)
     picks = {"self": s0["name"], "best_nmi": df.sort_values("nmi_sel", ascending=False).iloc[0]["name"],

@@ -1,0 +1,30 @@
+# 0026: 脂肪変性（微小滴と大滴）がプロトタイプとして分かれるか（2026-10-26ユーザー: 微小滴と大滴をプロトタイプとして分けられることに価値がある。
+# 1つの所見が1クラスタより、1クラスタの純度が高い方が価値が高い）。
+# 表現は0025の土台（slide内の順位 → 0021の教師なしPCA256 → combo）と、0025で最良だった境界を保つ伝播。
+# LDA・残りのPCAは、Bayerのポリゴンがある230枚（0025 cache_v1）で学ぶ。Bayerには脂肪のラベルがないので、脂肪の区別は教えていない。
+seed: 0
+exp0020: 0020_20261024_batch_robust_methods
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+features_dir: outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+target_exps: [66, 67, 698]     # CCl4 単回・反復（中心静脈側の脂肪変性）、cholesterol食（辺縁の脂肪変性）
+fat_findings: ["Degeneration, fatty", "Vacuolization, cytoplasmic", "Deposit, lipid", "Degeneration, vacuolar"]
+grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+workers: 6
+
+context: {hops: 2, w: 1.0, alpha: 0.5, sigma_q: 0.1}   # 0025の最良（境界を保つ伝播）
+ks: [20, 30, 40]                 # 2026-10-27ユーザー: kはNMIが最大になるあたり（0025 v5では20〜40）
+representations: [self, bilateral]   # 0025: kが大きいと隣接情報は小さい構造の純度を少し下げるので、両方見る
+consensus_runs: 10               # 0025 v4: コンセンサスk-meansでseed依存を減らす
+map_k: 30
+fit_annot: 400000              # k-meansの学習点: 230枚から
+fit_target: 400000             # k-meansの学習点: 脂肪変性の試験から（脂肪のpatchがプロトタイプを作れるように）
+min_ctrl: 2
+top_prototypes: 6              # 化合物ごとに、試験内のControlより増えるプロトタイプの上位を画像にする
+sheet_tiles: 24
+map_thumb: 1400
