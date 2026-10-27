@@ -18,10 +18,14 @@ grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
 workers: 6
 
 context: {hops: 2, w: 1.0, alpha: 0.5, sigma_q: 0.1}   # 0025の最良（境界を保つ伝播）
-ks: [20, 30, 40]                 # 2026-10-27ユーザー: kはNMIが最大になるあたり（0025 v5では20〜40）
-representations: [self, bilateral]   # 0025: kが大きいと隣接情報は小さい構造の純度を少し下げるので、両方見る
+ks_big: [100, 200]               # 2026-10-27ユーザー: 細かく作ってから階層でまとめる（NMIに合わせてkを決めると、Bayerにない所見が押し込まれる）
+cuts: [20, 30, 40, 60]           # 階層をこの数で切ったものも評価する
+representations: [raw, unsup, unsup_lda0.5, unsup_lda1, unsup_lda2, combo, combo_bilateral, combo_strong]   # 2026-10-27ユーザー: LDAでつぶさず元の表現も残る塩梅を探す。unsup_ldaβ = unsup（PCA64）＋β×LDA
+sheet_at: [[100, 100], [200, 200]]   # 画像シートを作る（k-meansのk, 切った数）
+map_reps: [raw, unsup_lda1, combo_bilateral]
+min_proto_patches: 500           # 要約で、化合物のpatchがこれ未満のプロトタイプは除く
 consensus_runs: 10               # 0025 v4: コンセンサスk-meansでseed依存を減らす
-map_k: 30
+map_at: [100, 100]
 fit_annot: 400000              # k-meansの学習点: 230枚から
 fit_target: 400000             # k-meansの学習点: 脂肪変性の試験から（脂肪のpatchがプロトタイプを作れるように）
 min_ctrl: 2
