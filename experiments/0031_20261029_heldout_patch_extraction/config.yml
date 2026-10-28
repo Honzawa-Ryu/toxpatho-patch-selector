@@ -1,0 +1,27 @@
+# 0031: 仮説①のpatch単位の検証。Bayerの230枚を化合物単位で5分割し、分割ごとに学習側だけで LDA → プロトタイプ（k-means）→ 名前付け を行い、
+#       学習に入れなかった化合物のslideのpatchを割り当てて、Bayerのポリゴン（正解）と照合する。A〜Dを同じ手順で比べる。
+# 2026-10-29ユーザー: ①を示すのに必要なもの（論理の穴はpatch単位の評価）。なるべく主張を後押しできるように。
+# 漏れ対策: 分割内で閉じる（評価する化合物のラベルは、LDA・k-means・名前付けのどれにも使わない）。分割をまたいで座標を混ぜない（0027 v1の失敗）。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_beta: 1.0
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # このslideのラベルは学習にも評価にも使わない（脂肪滴の多い肝細胞が「実質」と描かれている）
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+ctrl_features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+ctrl_patches_per_slide: 2048
+workers: 8
+folds: 5                       # 化合物単位
+reps: [D_unsup, C_lda, B_sphering, A_sphering_lda]
+k: 100
+consensus_runs: 5
+fit_points: 300000
+naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
+bootstrap: 2000                # 化合物を復元抽出
