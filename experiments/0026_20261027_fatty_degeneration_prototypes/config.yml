@@ -67,6 +67,16 @@ variants:
     map_reps: []
     map_at: [100, 100]
     tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}
+  tree_v3u:    # 2026-10-28ユーザー: 2×2（ラベルの有無 × Sphering の有無）の残り2つ。unsup（ラベルなし・正規化なし）とLDAのみ（ラベルあり・正規化なし）
+    representations: [lda, unsup]
+    drop_annot_overlap: true
+    lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv
+    ks_big: [100]
+    cuts: [20, 30, 40]
+    sheet_at: [[100, 100]]
+    map_reps: []
+    map_at: [100, 100]
+    tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}
   tree_v1:
     representations: [unsup_lda1]
     ks_big: [100]

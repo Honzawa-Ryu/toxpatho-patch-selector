@@ -61,3 +61,35 @@ variants:
       knn: 30
       queries: 20000
       tsne_per_study: 500
+  v5:                          # 2026-10-28ユーザー: 2×2（ラベルの有無 × Sphering の有無）で、v2〜v4の解析をまとめてやり直す
+    maps:
+      A_sphering_lda: [tree_v3, sphering_lda, 100]
+      B_sphering: [tree_v3s, sphering, 100]
+      C_lda: [tree_v3u, lda, 100]
+      D_unsup: [tree_v3u, unsup, 100]
+    titles: {A_sphering_lda: "A: Sphering + LDA", B_sphering: "B: Sphering", C_lda: "C: LDA only", D_unsup: "D: unsup (none)"}
+    thumb: 1000
+    zoom:
+      window_patches: 16
+      px_per_patch: 32
+      kinds: [necrosis, inflammation, random]
+      min_hits: 3
+      alpha: 70
+    study_effect:
+      knn: 30
+      queries: 20000
+      provider_specific: 0.9
+    necrosis_tiles:
+      n: 32
+      per_slide: 2
+    domain_gap:
+      qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+      features_dirs:
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+      tg_exps: 6
+      tg_per_exp: 4
+      patches: 2048
+      knn: 30
+      queries: 20000
+      tsne_per_study: 500

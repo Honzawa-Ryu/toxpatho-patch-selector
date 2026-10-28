@@ -254,7 +254,7 @@ def main() -> None:
     #  raw             : 以前（0003）の方式。L2 → PCA64、slide内の順位もLDAもなし
     reps_ab = {}
     need = set(cfg["representations"])
-    if need & {"combo", "combo_bilateral", "sphering_lda"} or any(r_.startswith("unsup_lda") for r_ in need):
+    if need & {"combo", "combo_bilateral", "sphering_lda", "lda"} or any(r_.startswith("unsup_lda") for r_ in need):
         tf = fit_combo(Ka, lab_c, cfg, cfg["seed"])
         reps_ab["combo"] = np.concatenate([tf(b_) for b_ in np.array_split(np.concatenate([Ka, Kt]), 40)])
     if "combo_strong" in need:
@@ -310,6 +310,9 @@ def main() -> None:
         return ex27.sphering(reps_ab["unsup"], e_fix, Kc2, ec2)
 
     def get_X(rep):
+        if rep == "lda":
+            # 2026-10-28: ラベルあり・正規化なしの対照（Bayerのラベルで学んだLDAの方向だけ）
+            return torch.from_numpy(reps_ab["combo"][:, :L_lda].astype(np.float32)).to(device)
         if rep == "sphering":
             # 2026-10-28: ラベルなしの対照（Sphering＋LDAからLDAを除いたもの）
             return torch.from_numpy(sphered().astype(np.float32)).to(device)

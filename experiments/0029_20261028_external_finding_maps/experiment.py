@@ -186,8 +186,15 @@ def main() -> None:
     study = sl.study.to_numpy()[row]
     cm = sl.is_ctrl.to_numpy()[row]
     Sw = ex27.sphering(U, study, U[cm], study[cm])
-    sc = json.loads((run26 / cfg["maps"]["A_sphering_lda"][0] / "scale_sphering_lda.json").read_text())
-    X = {"A_sphering_lda": np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], axis=1).astype(np.float32), "B_sphering": Sw.astype(np.float32)}
+    sl_run = [run for run, rep, k in cfg["maps"].values() if rep == "sphering_lda"]
+    sc = json.loads((run26 / sl_run[0] / "scale_sphering_lda.json").read_text()) if sl_run else None
+
+    def as_rep(rep, U_, S_, L_):
+        """表現の名前から、外部（またはTG-GATEsの対照群）の特徴を組み立てる"""
+        return {"sphering_lda": lambda: np.concatenate([S_, sc["lda_beta"] * sc["lda_scale"] * L_], axis=1), "sphering": lambda: S_,
+                "lda": lambda: L_, "unsup": lambda: U_}[rep]().astype(np.float32)
+    X = {mname: as_rep(rep, U, Sw, Lp) for mname, (run, rep, k) in cfg["maps"].items()}
+    titles = cfg.get("titles", {"A_sphering_lda": "A: Sphering + LDA", "B_sphering": "B: Sphering"})
     cls = {}
     for mname in cfg["maps"]:
         ct = torch.from_numpy(cens[mname])
@@ -225,6 +232,16 @@ def main() -> None:
         share_rows.append(d)
     shares = pd.DataFrame(share_rows)
     shares.to_csv(run_dir / "slide_group_shares.csv", index=False)
+    from scipy.stats import mannwhitneyu
+    auc = []
+    for g, rec in [("necrosis", "necrosis_recorded"), ("inflammation", "inflammation_recorded")]:
+        for mname in cfg["maps"]:
+            v = shares[f"{mname}__{g}"]
+            pos, ctl, neg = v[shares[rec]], v[shares.is_ctrl & ~shares[rec]], v[~shares[rec]]
+            auc.append({"group": g, "map": mname, "n_pos": len(pos), "median_pos": pos.median(), "median_ctrl": ctl.median(),
+                        "AUC_pos_vs_ctrl": mannwhitneyu(pos, ctl).statistic / (len(pos) * len(ctl)), "AUC_pos_vs_all_neg": mannwhitneyu(pos, neg).statistic / (len(pos) * len(neg))})
+    pd.DataFrame(auc).to_csv(run_dir / "slide_auc.csv", index=False)
+    logger.info("slide AUC:\n" + pd.DataFrame(auc).round(3).to_string(index=False))
     logger.info("median share by role:\n" + shares[shares.role != ""].groupby("role")[[c_ for c_ in shares if "__" in c_]].median().round(4).T.to_string())
 
     font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 15)
@@ -247,9 +264,9 @@ def main() -> None:
                 if g in rgb:
                     d.rectangle([x0 * s_, y0 * s_, x0 * s_ + b, y0 * s_ + b], fill=rgb[g] + (235,))
             panels.append(Image.alpha_composite(th.convert("L").convert("RGBA"), ov).convert("RGB"))
-        canvas = Image.new("RGB", (th.width * 3 + 20, th.height + 30), "white")
+        canvas = Image.new("RGB", (th.width * len(panels) + 10 * (len(panels) - 1), th.height + 30), "white")
         dd = ImageDraw.Draw(canvas)
-        for j, (pn, ttl) in enumerate(zip(panels, ["original", "A: Sphering + LDA (Bayer labels)", "B: Sphering (no labels)"])):
+        for j, (pn, ttl) in enumerate(zip(panels, ["original"] + [titles[m_] + "" for m_ in cfg["maps"]])):
             canvas.paste(pn, (j * (th.width + 10), 30))
             dd.text((j * (th.width + 10) + 4, 6), ttl, fill="black", font=font)
         canvas.save(out / f"{r.slide_id.replace(' ', '_')}.jpg", quality=85)
@@ -309,9 +326,9 @@ def main() -> None:
                         if g in rgb:
                             d.rectangle([qx * P + 1, qy * P + 1, (qx + 1) * P - 2, (qy + 1) * P - 2], outline=rgb[g] + (255,), width=3, fill=rgb[g] + (zc["alpha"],))
                     panels.append(Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB"))
-                canvas = Image.new("RGB", (W * P * 3 + 20, W * P + 30), "white")
+                canvas = Image.new("RGB", (W * P * len(panels) + 10 * (len(panels) - 1), W * P + 30), "white")
                 dd = ImageDraw.Draw(canvas)
-                for j, (pn, ttl) in enumerate(zip(panels, ["original", "A: Sphering + LDA", "B: Sphering"])):
+                for j, (pn, ttl) in enumerate(zip(panels, ["original"] + [titles[m_] + "" for m_ in cfg["maps"]])):
                     canvas.paste(pn, (j * (W * P + 10), 30))
                     dd.text((j * (W * P + 10) + 4, 6), ttl, fill="black", font=font)
                 fn = f"{r.slide_id.replace(' ', '_')}__{kind}.jpg"
@@ -387,9 +404,9 @@ def main() -> None:
                 for (x0, y0), g in zip(xy, grp[mname][cls[mname][m]]):
                     d.rectangle([x0 * s_, y0 * s_, x0 * s_ + b, y0 * s_ + b], fill=pal[int(g)] + (255,))
                 panels.append(Image.alpha_composite(th.convert("RGBA"), ov).convert("RGB"))
-            canvas = Image.new("RGB", (th.width * 3 + 20, th.height + 30), "white")
+            canvas = Image.new("RGB", (th.width * len(panels) + 10 * (len(panels) - 1), th.height + 30), "white")
             dd = ImageDraw.Draw(canvas)
-            for j, (pn, ttl) in enumerate(zip(panels, ["original", "A: Sphering + LDA (30 groups)", "B: Sphering (30 groups)"])):
+            for j, (pn, ttl) in enumerate(zip(panels, ["original"] + [titles[m_] + " (30 groups)" for m_ in cfg["maps"]])):
                 canvas.paste(pn, (j * (th.width + 10), 30))
                 dd.text((j * (th.width + 10) + 4, 6), ttl, fill="black", font=font)
             canvas.save(aout / f"{r.slide_id.replace(' ', '_')}.jpg", quality=85)
@@ -459,8 +476,9 @@ def main() -> None:
         st_e = np.array([f"{sl.provider[i][:4]} {sl.study[i]}" for i in row[ce]])
         dom = np.r_[np.zeros(len(Kt), int), np.ones(len(ce), int)]
         stud = np.r_[st_t, st_e]
-        R = {"none (PCA64)": np.r_[Ut, U[ce]], "B_sphering": np.r_[St, Sw[ce]],
-             "A_sphering_lda": np.r_[np.concatenate([St, sc["lda_beta"] * sc["lda_scale"] * Lt], 1), X["A_sphering_lda"][ce]]}
+        R = {mname: np.r_[as_rep(rep, Ut, St, Lt), X[mname][ce]] for mname, (run, rep, k) in cfg["maps"].items()}
+        if not any(rep == "unsup" for run, rep, k in cfg["maps"].values()):
+            R = {"none (PCA64)": np.r_[Ut, U[ce]], **R}
         gap = []
         for rname, Xr in R.items():
             Xr = torch.from_numpy(Xr.astype(np.float32))
@@ -475,7 +493,7 @@ def main() -> None:
             od, os_ = np.concatenate(od), np.concatenate(os_)
             rec = {"representation": rname, "knn_other_domain_from_TG": float(od[os_ == 0].mean()), "knn_other_domain_from_external": float(od[os_ == 1].mean()),
                    "expected_if_mixed_from_TG": float((dom == 1).mean()), "expected_if_mixed_from_external": float((dom == 0).mean())}
-            mk = {"B_sphering": "B_sphering", "A_sphering_lda": "A_sphering_lda"}.get(rname)
+            mk = rname if rname in cfg["maps"] else None
             if mk:
                 mins = [torch.cdist(x, torch.from_numpy(cens[mk])).min(1) for x in Xr.split(65536)]
                 dmin, a = torch.cat([m_.values for m_ in mins]).numpy(), torch.cat([m_.indices for m_ in mins]).numpy()
