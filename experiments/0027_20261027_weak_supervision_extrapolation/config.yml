@@ -53,5 +53,8 @@ variants:
     methods: [unsup, lda, unsup_lda, sphering, sphering_lda, tvn_lda]
     holdouts: {none: []}
     fatty_exps: [66, 67, 698]
+  v4:                       # 2026-10-28: 残り38試験のControlを抽出したあと、v2を全試験（Controlが2枚以上ある試験）でやり直す
+    folds: 1
+    methods: [unsup, lda, unsup_lda, sphering, sphering_lda, tvn, tvn_lda, gcd, ae_adv]
 pathology_csv: data/corrected/open_tggates_pathology.csv
 grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
