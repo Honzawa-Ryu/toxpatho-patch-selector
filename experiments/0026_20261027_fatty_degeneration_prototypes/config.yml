@@ -48,6 +48,25 @@ variants:
     map_reps: [sphering_lda]
     map_at: [100, 100]
     tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}
+  tree_v3:     # 2026-10-28ユーザー: tree_v2から、脂肪変性・細胞質の空胞化（TG-GATEsの所見）があるBayerの21枚のラベルをLDAの学習から外す
+    representations: [sphering_lda, unsup_lda1]
+    drop_annot_overlap: true
+    lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv
+    ks_big: [100]
+    cuts: [20, 30, 40]
+    sheet_at: [[100, 100]]
+    map_reps: [sphering_lda]
+    map_at: [100, 100]
+    tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}
+  tree_v3s:    # 2026-10-28: tree_v3と同じ条件で、ラベルなしの対照（Sphering）。外部の地図（0029）でSphering＋LDAとA/Bで比べる
+    representations: [sphering]
+    drop_annot_overlap: true
+    ks_big: [100]
+    cuts: [20, 30, 40]
+    sheet_at: [[100, 100]]
+    map_reps: []
+    map_at: [100, 100]
+    tree: {k: 100, cuts: [20, 30, 40], color_cut: 30}
   tree_v1:
     representations: [unsup_lda1]
     ks_big: [100]

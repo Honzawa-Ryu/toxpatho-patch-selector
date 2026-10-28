@@ -215,6 +215,12 @@ def main() -> None:
     keep = [k for k in np.unique(laba) if k >= 0 and (laba == k).sum() >= cfg20["min_label_patches"]]
     laba = np.where(np.isin(laba, keep), laba, -1)
     lab_c = np.where(laba >= 0, np.searchsorted(keep, np.maximum(laba, 0)), -1)
+    if cfg.get("lda_exclude_slides"):
+        # 2026-10-28: 脂肪滴系の所見（TG-GATEs）があるslideのラベルはLDAの学習に使わない（脂肪滴の多い肝細胞が「実質」と描かれているため）。評価には残す
+        ex_ids = pd.read_csv(project_root / cfg["lda_exclude_slides"], dtype=str).slide_id.tolist()
+        m_ex = np.isin(pd.read_csv(src / "slides.csv", dtype=str).slide_id.to_numpy()[c["row"]], ex_ids)
+        logger.info(f"LDA: excluded labels of {len(ex_ids)} slides ({int((m_ex & (lab_c >= 0)).sum()):,} labeled patches)")
+        lab_c = np.where(m_ex, -1, lab_c)
     annot_ids = pd.read_csv(src / "slides.csv", dtype=str).slide_id.tolist()
     slides = target_slides(cfg, project_root)
     if cfg.get("drop_annot_overlap"):
@@ -254,7 +260,7 @@ def main() -> None:
     if "combo_strong" in need:
         tf2 = fit_combo(Ka, lab_c, {**cfg, "combo_resid_dim": 32, "combo_resid_weight": 1.0}, cfg["seed"])
         reps_ab["combo_strong"] = np.concatenate([tf2(b_) for b_ in np.array_split(np.concatenate([Ka, Kt]), 40)])
-    if "unsup" in need or "sphering_lda" in need or any(r_.startswith("unsup_lda") for r_ in need):
+    if "unsup" in need or need & {"sphering", "sphering_lda"} or any(r_.startswith("unsup_lda") for r_ in need):
         reps_ab["unsup"] = np.concatenate([Ka[:, :64], Kt[:, :64]]).astype(np.float32)
     del Ka, Kt
     if "raw" in need:
@@ -296,15 +302,20 @@ def main() -> None:
     exp_annot = pd.read_csv(src / "slides.csv", dtype=str).EXP_ID.fillna("-1").astype(int).to_numpy()[c["row"]]
     exp_all = np.r_[exp_annot, slides.exp.to_numpy()[row]]
 
+    def sphered():
+        """試験ごとにControlで白色化した元の表現（64次元）。Controlのない試験（試験0060の1枚）は、全試験のControlをまとめて白色化する"""
+        Kc, exp_c, ex27 = control_K64()
+        e_fix = np.where(np.isin(exp_all, exp_c), exp_all, -999)
+        Kc2, ec2 = np.r_[Kc, Kc], np.r_[exp_c, np.full(len(exp_c), -999)]
+        return ex27.sphering(reps_ab["unsup"], e_fix, Kc2, ec2)
+
     def get_X(rep):
+        if rep == "sphering":
+            # 2026-10-28: ラベルなしの対照（Sphering＋LDAからLDAを除いたもの）
+            return torch.from_numpy(sphered().astype(np.float32)).to(device)
         if rep == "sphering_lda":
-            # 2026-10-27（0027の比較で最良）: 試験ごとにControlで白色化した元の表現（64次元）に、Bayerのラベルで学んだLDAの方向を同じ大きさで並べる。
-            # Controlのない試験（試験0060の1枚）は、全試験のControlをまとめて白色化する
-            Kc, exp_c, ex27 = control_K64()
-            U = reps_ab["unsup"]
-            e_fix = np.where(np.isin(exp_all, exp_c), exp_all, -999)
-            Kc2, ec2 = np.r_[Kc, Kc], np.r_[exp_c, np.full(len(exp_c), -999)]
-            Sw = ex27.sphering(U, e_fix, Kc2, ec2)
+            # 2026-10-27（0027の比較で最良）: 白色化した元の表現に、Bayerのラベルで学んだLDAの方向を同じ大きさで並べる
+            Sw = sphered()
             Lw = reps_ab["combo"][:, :L_lda]
             fac = float(Sw.std(0).mean() / Lw.std(0).mean())
             (run_dir / "scale_sphering_lda.json").write_text(json.dumps({"lda_scale": fac, "lda_beta": cfg["lda_beta"], "dim": 64}))   # 外部データ（0028）で同じ大きさに写すため

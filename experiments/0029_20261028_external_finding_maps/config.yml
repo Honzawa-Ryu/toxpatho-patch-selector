@@ -1,0 +1,35 @@
+# 0029: 仮説①（ラベルを学んだ所見・構造は、ラベルのないslideからも取り出せる）を、外部（塩野義・エーザイ）のslideの地図で目視確認する。
+# 2026-10-28ユーザー: プロトタイプをWSI上に色分けして領域を示し、目視で判定する。所見（壊死・炎症性浸潤）に加えて正常の構造（中心静脈・門脈域・太い血管）も。
+# A/B: Sphering＋LDA（ラベルあり）と Sphering（ラベルなし）を同じslideで並べる。名前の付け方は両方同じ。外部では何も学習しない（白色化は各試験の対照群だけ）。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0022: 0022_20261025_external_pharma_embeddings
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # 0026 tree_v3と同じLDAにする
+bench_root: /workspace/andre01/honzawa/02-playground/tggate-bench
+external_findings: outputs/external_data_audit/findings_raw.csv
+control_status: [explicit, candidate_missing_dose]
+maps:                          # A/B: 名前: [0026のrun, 表現, k]
+  A_sphering_lda: [tree_v3, sphering_lda, 100]
+  B_sphering: [tree_v3s, sphering, 100]
+naming:                        # プロトタイプの名前: Bayerのラベル付きpatchの中で、そのラベルの割合が min_share 以上か、全体の割合の min_lift 倍以上（ラベルのpatchが min_n 以上のとき）。複数あれば倍率の最大
+  min_share: 0.2
+  min_lift: 3.0
+  min_n: 20
+groups:                        # 地図で色を付けるラベル（Okabe-Ito）
+  necrosis: "#D55E00"
+  inflammation: "#E69F00"
+  central_vein: "#0072B2"
+  portal_tract: "#009E73"
+  large_vessel: "#CC79A7"
+selection:                     # 約40枚: 壊死の記録あり（胆管上皮・被膜を除く）＋各試験の対照群2枚＋炎症ありで壊死なし
+  necrosis_word: ecrosis
+  necrosis_exclude: [bileduct, Capsule]
+  inflammation_word: infiltration
+  n_ctrl_per_study: 2
+thumb: 1400
