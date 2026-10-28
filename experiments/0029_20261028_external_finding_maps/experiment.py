@@ -135,7 +135,7 @@ def main() -> None:
     import openslide
     import torch
     from PIL import Image, ImageDraw, ImageFont
-    cfg = config
+    cfg = {**config, **config.get("variants", {}).get(args.variant, {})}
     t0 = time.time()
     load_module(project_root / "experiments" / cfg["exp0021"] / "experiment.py", "exp0021")
     ex23 = load_module(project_root / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
@@ -254,6 +254,72 @@ def main() -> None:
             dd.text((j * (th.width + 10) + 4, 6), ttl, fill="black", font=font)
         canvas.save(out / f"{r.slide_id.replace(' ', '_')}.jpg", quality=85)
     sel.drop(columns=["unit"]).to_csv(run_dir / "selected_slides.csv", index=False)
+
+    # 5. 拡大図: 各slideで、壊死・炎症の色（AとBの和）が最も密な窓と、肝臓内の無作為な窓を、元画像・A・Bで並べる
+    zc = cfg.get("zoom")
+    if zc:
+        zout = run_dir / "zoom"
+        zout.mkdir(exist_ok=True)
+        rng = np.random.default_rng(cfg["seed"])
+        W, P = zc["window_patches"], zc["px_per_patch"]
+        zrows = []
+        for i in sel.index:
+            r = sl.loc[i]
+            m = row == i
+            xy, s0 = parts[i]["xy"], parts[i]["size0"]
+            gx, gy = (xy[:, 0] - xy[:, 0].min()) // s0, (xy[:, 1] - xy[:, 1].min()) // s0
+            nm = {mname: names[mname][cls[mname][m]] for mname in cfg["maps"]}
+            windows = []
+            for kind in zc["kinds"]:
+                if kind == "random":
+                    score = np.ones(len(xy))
+                else:
+                    score = np.zeros(len(xy))
+                    for mname in cfg["maps"]:
+                        score += nm[mname] == kind
+                grid = np.zeros((gy.max() + W + 1, gx.max() + W + 1))
+                np.add.at(grid, (gy, gx), score)
+                cs = np.pad(grid.cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+                dens = cs[W:, W:] - cs[:-W, W:] - cs[W:, :-W] + cs[:-W, :-W]   # 左上が(y, x)の窓の合計
+                for (wy, wx) in windows:          # 既に選んだ窓と重ならないように
+                    dens[max(0, wy - W + 1):wy + W, max(0, wx - W + 1):wx + W] = -1
+                if kind == "random":
+                    cand = np.argwhere(dens >= 0.8 * W * W)
+                    if not len(cand):
+                        continue
+                    wy, wx = cand[rng.integers(len(cand))]
+                else:
+                    if dens.max() < zc["min_hits"]:
+                        continue
+                    wy, wx = np.unravel_index(np.argmax(dens), dens.shape)
+                windows.append((wy, wx))
+                x0, y0 = int(xy[:, 0].min() + wx * s0), int(xy[:, 1].min() + wy * s0)
+                w = openslide.OpenSlide(str(Path(cfg["bench_root"]) / r.path))
+                ds = W * s0 / (W * P)
+                lv = w.get_best_level_for_downsample(ds)
+                f_ = w.level_downsamples[lv]
+                im = w.read_region((x0, y0), lv, (int(W * s0 / f_), int(W * s0 / f_))).convert("RGB").resize((W * P, W * P), Image.LANCZOS)
+                w.close()
+                inw = (gx >= wx) & (gx < wx + W) & (gy >= wy) & (gy < wy + W)
+                panels = [im]
+                for mname in cfg["maps"]:
+                    ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+                    d = ImageDraw.Draw(ov)
+                    for qx, qy, g in zip(gx[inw] - wx, gy[inw] - wy, nm[mname][inw]):
+                        if g in rgb:
+                            d.rectangle([qx * P + 1, qy * P + 1, (qx + 1) * P - 2, (qy + 1) * P - 2], outline=rgb[g] + (255,), width=3, fill=rgb[g] + (zc["alpha"],))
+                    panels.append(Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB"))
+                canvas = Image.new("RGB", (W * P * 3 + 20, W * P + 30), "white")
+                dd = ImageDraw.Draw(canvas)
+                for j, (pn, ttl) in enumerate(zip(panels, ["original", "A: Sphering + LDA", "B: Sphering"])):
+                    canvas.paste(pn, (j * (W * P + 10), 30))
+                    dd.text((j * (W * P + 10) + 4, 6), ttl, fill="black", font=font)
+                fn = f"{r.slide_id.replace(' ', '_')}__{kind}.jpg"
+                canvas.save(zout / fn, quality=88)
+                zrows.append({"slide_id": r.slide_id, "kind": kind, "file": f"zoom/{fn}", "x0": x0, "y0": y0, "size_um": round(W * s0 * float(r.mpp_x), 0),
+                              **{f"{mname}__{g}": int((nm[mname][inw] == g).sum()) for mname in cfg["maps"] for g in groups}})
+        pd.DataFrame(zrows).to_csv(run_dir / "zoom_windows.csv", index=False)
+        logger.info(f"zoom: {len(zrows)} windows; {time.time() - t0:.0f}s")
     logger.info(f"maps: {len(sel)}; {time.time() - t0:.0f}s")
 
     results: dict = {"n_slides": len(sl), "n_selected": len(sel), "roles": sel.role.value_counts().to_dict(),

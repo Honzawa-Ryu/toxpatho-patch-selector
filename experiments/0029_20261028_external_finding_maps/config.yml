@@ -33,3 +33,11 @@ selection:                     # 約40枚: 壊死の記録あり（胆管上皮�
   inflammation_word: infiltration
   n_ctrl_per_study: 2
 thumb: 1400
+variants:
+  v2:                          # 2026-10-28ユーザー: 拡大図を追加（全体図では1 patchが約2画素で判定できないため）
+    zoom:
+      window_patches: 16         # 窓は16×16 patch（約2 mm角）
+      px_per_patch: 40           # 1 patchを40画素で描く（窓は640画素）
+      kinds: [necrosis, inflammation, random]   # 壊死・炎症の色（AとBの和）が最も密な窓、肝臓内（patchが8割以上）の無作為な窓
+      min_hits: 3                # 色のpatchがこれ未満なら、その窓は作らない
+      alpha: 70
