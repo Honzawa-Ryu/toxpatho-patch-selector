@@ -106,3 +106,16 @@ variants:
       window_patches: 16       # 約2 mm角
       px_per_patch: 32         # 1パネル512画素
       alpha: 60
+  v7:                          # 2026-10-28ユーザー: v6の窓（約2 mm角・1パネル512画素）では小さくて判定できない。約1 mm角を1024画素（約1 µm/画素）に
+    maps:
+      A_sphering_lda: [tree_v3, sphering_lda, 100]
+      B_sphering: [tree_v3s, sphering, 100]
+      C_lda: [tree_v3u, lda, 100]
+      D_unsup: [tree_v3u, unsup, 100]
+    titles: {A_sphering_lda: "A", B_sphering: "B", C_lda: "C", D_unsup: "D"}
+    thumb: 600
+    rating:
+      n: {necrosis: 12, inflammation: 8, structure: 12, random: 8}
+      window_patches: 8        # 約1 mm角
+      px_per_patch: 128        # 1パネル1024画素
+      alpha: 40

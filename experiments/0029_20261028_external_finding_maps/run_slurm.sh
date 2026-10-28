@@ -52,7 +52,7 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 # =====================================================
 
 RUN_MODE="single"
-RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant v6"
+RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant v7"
 
 # =====================================================
 # Array run にしたい場合
