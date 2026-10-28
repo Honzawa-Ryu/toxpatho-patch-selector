@@ -338,6 +338,64 @@ def main() -> None:
         pd.DataFrame(zrows).to_csv(run_dir / "zoom_windows.csv", index=False)
         logger.info(f"zoom: {len(zrows)} windows; {time.time() - t0:.0f}s")
 
+    # 5b. 目視判定用の窓（2026-10-28ユーザー: 4つの表現を盲検で比べる）。窓ごとに、元画像と各表現の重ね描きを別々の画像にし、
+    #     ファイル名から表現が分からないよう、パネルの番号は窓ごとに無作為に割り当てる（対応表は rating_key.csv、公開しない）
+    rc = cfg.get("rating")
+    if rc:
+        import hashlib
+        rng = np.random.default_rng(cfg["seed"] + 1)
+        W, P = rc["window_patches"], rc["px_per_patch"]
+        rout = run_dir / "rating"
+        rout.mkdir(exist_ok=True)
+        focus = {"necrosis": ["necrosis"], "inflammation": ["inflammation"], "structure": ["central_vein", "portal_tract", "large_vessel"], "random": list(groups)}
+        pools = {"necrosis": sel.index[sel.necrosis_recorded], "inflammation": sel.index[sel.inflammation_recorded], "structure": sel.index, "random": sel.index}
+        plan = [(kind, i) for kind, n in rc["n"].items() for i in rng.choice(pools[kind], min(n, len(pools[kind])), replace=False)]
+        plan = [plan[j] for j in rng.permutation(len(plan))]
+        keyrows = []
+        for wi, (kind, i) in enumerate(plan):
+            r = sl.loc[i]
+            m = row == i
+            xy, s0 = parts[i]["xy"], parts[i]["size0"]
+            gx, gy = (xy[:, 0] - xy[:, 0].min()) // s0, (xy[:, 1] - xy[:, 1].min()) // s0
+            nm = {mname: names[mname][cls[mname][m]] for mname in cfg["maps"]}
+            score = np.ones(len(xy)) if kind == "random" else sum(np.isin(nm[mname], focus[kind]).astype(float) for mname in cfg["maps"])
+            grid = np.zeros((gy.max() + W + 1, gx.max() + W + 1))
+            np.add.at(grid, (gy, gx), score)
+            cs = np.pad(grid.cumsum(0).cumsum(1), ((1, 0), (1, 0)))
+            dens = cs[W:, W:] - cs[:-W, W:] - cs[W:, :-W] + cs[:-W, :-W]
+            if kind == "random":
+                cand = np.argwhere(dens >= 0.8 * W * W)
+                wy, wx = cand[rng.integers(len(cand))]
+            else:
+                wy, wx = np.unravel_index(np.argmax(dens), dens.shape)
+            x0, y0 = int(xy[:, 0].min() + wx * s0), int(xy[:, 1].min() + wy * s0)
+            w = openslide.OpenSlide(str(Path(cfg["bench_root"]) / r.path))
+            lv = w.get_best_level_for_downsample(s0 / P)
+            f_ = w.level_downsamples[lv]
+            im = w.read_region((x0, y0), lv, (int(W * s0 / f_), int(W * s0 / f_))).convert("RGB").resize((W * P, W * P), Image.LANCZOS)
+            w.close()
+            inw = (gx >= wx) & (gx < wx + W) & (gy >= wy) & (gy < wy + W)
+            wid = f"w{wi + 1:02d}"
+            im.save(rout / f"{wid}_orig.jpg", quality=90)
+            order = rng.permutation(list(cfg["maps"]))
+            rec = {"window": wid, "kind": kind, "slide_id": r.slide_id, "study": r.study, "provider": r.provider, "role": r.role, "x0": x0, "y0": y0,
+                   "size_um": round(W * s0 * float(r.mpp_x)), "records": r.records}
+            for k_, mname in enumerate(order, start=1):
+                ov = Image.new("RGBA", im.size, (0, 0, 0, 0))
+                d = ImageDraw.Draw(ov)
+                for qx, qy, g in zip(gx[inw] - wx, gy[inw] - wy, nm[mname][inw]):
+                    if g in focus[kind]:
+                        d.rectangle([qx * P + 1, qy * P + 1, (qx + 1) * P - 2, (qy + 1) * P - 2], outline=rgb[g] + (255,), width=3, fill=rgb[g] + (rc["alpha"],))
+                tag = hashlib.sha1(f"{wid}{mname}{cfg['seed']}".encode()).hexdigest()[:8]
+                fn = f"{wid}_{tag}.jpg"
+                Image.alpha_composite(im.convert("RGBA"), ov).convert("RGB").save(rout / fn, quality=90)
+                rec[f"panel{k_}"] = fn
+                rec[f"panel{k_}_map"] = mname
+                rec[f"panel{k_}_n_colored"] = int(np.isin(nm[mname][inw], focus[kind]).sum())
+            keyrows.append(rec)
+        pd.DataFrame(keyrows).to_csv(run_dir / "rating_key.csv", index=False)
+        logger.info(f"rating windows: {len(keyrows)} ({pd.Series([k for k, _ in plan]).value_counts().to_dict()}); {time.time() - t0:.0f}s")
+
     # 6. 試験間差の影響（2026-10-28ユーザー: 特に塩野義とエーザイ）。対照群のslideだけで、A/Bそれぞれ
     se_ = cfg.get("study_effect")
     if se_:
