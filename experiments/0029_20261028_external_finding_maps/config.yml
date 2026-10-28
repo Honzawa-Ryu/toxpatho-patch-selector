@@ -49,3 +49,15 @@ variants:
     necrosis_tiles:
       n: 32                      # 1行あたり最大32枚（8枚×4行）
       per_slide: 2
+  v4:                          # 2026-10-28ユーザー: TG-GATEsと外部の差（大きいイメージ）を超えられるか。対照群どうしで、補正なし・B・Aを比べる
+    domain_gap:
+      qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+      features_dirs:
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+      tg_exps: 6                 # 外部（6試験・対照群21枚）に合わせて、TG-GATEsも6試験
+      tg_per_exp: 4
+      patches: 2048              # 1 slideあたり（外部も同じ数に間引く）
+      knn: 30
+      queries: 20000
+      tsne_per_study: 500

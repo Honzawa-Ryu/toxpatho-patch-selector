@@ -421,6 +421,94 @@ def main() -> None:
         ex17.draw_sheet("External patches in prototypes named necrosis (A: Sphering + LDA, B: Sphering)", rows_t, run_dir / "necrosis_tiles.jpg")
         pd.DataFrame(nrec).to_csv(run_dir / "necrosis_tiles_counts.csv", index=False)
         logger.info(f"necrosis tiles: {nrec}; {time.time() - t0:.0f}s")
+
+    # 8. TG-GATEsと外部の差（2026-10-28ユーザー: 差が大きいイメージ。これを超えられるか）。対照群どうしで、補正なし（PCA64）・B・Aを比べる
+    dg = cfg.get("domain_gap")
+    if dg:
+        from concurrent.futures import ProcessPoolExecutor
+        from scipy.spatial.distance import jensenshannon
+        from sklearn.manifold import TSNE
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        rng = np.random.default_rng(cfg["seed"])
+        # TG-GATEsの対照群: Bayerの集合の試験から無作為に dg["tg_exps"] 試験、各試験 dg["tg_per_exp"] 枚、各slide dg["patches"] patch
+        q = pd.read_csv(dg["qc_catalog"], dtype=str)
+        q = q[(q.DOSE_LEVEL == "Control") & q.EXP_ID.notna()]
+        bayer_exps = set(pd.read_csv(src / "slides.csv", dtype=str).EXP_ID.dropna())
+        def h5_of(sid):
+            for d_ in dg["features_dirs"]:
+                if (project_root / d_ / f"{sid}.h5").exists():
+                    return str(project_root / d_ / f"{sid}.h5")
+            return ""
+        q = q[q.EXP_ID.isin(bayer_exps)].copy()
+        q["h5"] = [h5_of(x) for x in q.slide_id]
+        q = q[q.h5 != ""]
+        ok_exps = [e for e, n in q.EXP_ID.value_counts().items() if n >= dg["tg_per_exp"]]
+        exps = rng.choice(sorted(ok_exps), dg["tg_exps"], replace=False)
+        qt = pd.concat([q[q.EXP_ID == e].sample(dg["tg_per_exp"], random_state=cfg["seed"]) for e in exps])
+        with ProcessPoolExecutor(max_workers=cfg.get("workers", 6), initializer=ex27._init_ctrl, initargs=(str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl"), dg["patches"])) as ex:
+            Kt = list(ex.map(ex27._load_ctrl, qt.h5))
+        st_t = np.concatenate([np.full(len(k_), f"TG e{e}") for k_, e in zip(Kt, qt.EXP_ID)])
+        Kt = np.concatenate(Kt)
+        Ut, Lt = Kt[:, :64], tf(Kt)[:, :L]
+        # TG-GATEs側の白色化: 各試験のControl（ここでは選んだ対照群そのもの）で。0026と同じ手順
+        St = ex27.sphering(Ut, st_t, Ut, st_t)
+        # 外部の対照群: 各slideから同じ数のpatch
+        ce = np.concatenate([rng.choice(np.where(row == i)[0], min(dg["patches"], int((row == i).sum())), replace=False) for i in np.where(sl.is_ctrl)[0]])
+        st_e = np.array([f"{sl.provider[i][:4]} {sl.study[i]}" for i in row[ce]])
+        dom = np.r_[np.zeros(len(Kt), int), np.ones(len(ce), int)]
+        stud = np.r_[st_t, st_e]
+        R = {"none (PCA64)": np.r_[Ut, U[ce]], "B_sphering": np.r_[St, Sw[ce]],
+             "A_sphering_lda": np.r_[np.concatenate([St, sc["lda_beta"] * sc["lda_scale"] * Lt], 1), X["A_sphering_lda"][ce]]}
+        gap = []
+        for rname, Xr in R.items():
+            Xr = torch.from_numpy(Xr.astype(np.float32))
+            qi = rng.choice(len(Xr), min(dg["queries"], len(Xr)), replace=False)
+            od, os_ = [], []
+            for qq in np.array_split(qi, 20):
+                d_ = torch.cdist(Xr[qq], Xr)
+                d_[torch.from_numpy(stud[None, :] == stud[qq][:, None])] = float("inf")   # 同じ試験は除く
+                nb = d_.topk(dg["knn"], largest=False).indices.numpy()
+                od.append((dom[nb] != dom[qq][:, None]).mean(1))
+                os_.append(dom[qq])
+            od, os_ = np.concatenate(od), np.concatenate(os_)
+            rec = {"representation": rname, "knn_other_domain_from_TG": float(od[os_ == 0].mean()), "knn_other_domain_from_external": float(od[os_ == 1].mean()),
+                   "expected_if_mixed_from_TG": float((dom == 1).mean()), "expected_if_mixed_from_external": float((dom == 0).mean())}
+            mk = {"B_sphering": "B_sphering", "A_sphering_lda": "A_sphering_lda"}.get(rname)
+            if mk:
+                mins = [torch.cdist(x, torch.from_numpy(cens[mk])).min(1) for x in Xr.split(65536)]
+                dmin, a = torch.cat([m_.values for m_ in mins]).numpy(), torch.cat([m_.indices for m_ in mins]).numpy()
+                rec["median_dist_to_centroid_TG"] = float(np.median(dmin[dom == 0]))
+                rec["median_dist_to_centroid_external"] = float(np.median(dmin[dom == 1]))
+                Pm = {s_: np.bincount(a[stud == s_], minlength=len(cens[mk])) / (stud == s_).sum() for s_ in np.unique(stud)}
+                ss = list(Pm)
+                dd = {"TG_vs_TG": [], "ext_vs_ext": [], "TG_vs_ext": []}
+                for i_ in range(len(ss)):
+                    for j_ in range(i_ + 1, len(ss)):
+                        k_ = "TG_vs_TG" if ss[i_].startswith("TG") and ss[j_].startswith("TG") else ("ext_vs_ext" if not ss[i_].startswith("TG") and not ss[j_].startswith("TG") else "TG_vs_ext")
+                        dd[k_].append(jensenshannon(Pm[ss[i_]], Pm[ss[j_]]))
+                rec.update({f"JS_study_{k_}": float(np.mean(v)) for k_, v in dd.items()})
+            gap.append(rec)
+            # 図: t-SNE（各試験から同じ数）
+            pick = np.concatenate([rng.choice(np.where(stud == s_)[0], dg["tsne_per_study"], replace=False) for s_ in np.unique(stud)])
+            Y = TSNE(perplexity=30, init="pca", random_state=cfg["seed"]).fit_transform(Xr.numpy()[pick])
+            fig, ax = plt.subplots(figsize=(6.5, 6))
+            cols = {"TG": "#999999", "shio": "#0072B2", "eisa": "#D55E00"}
+            for s_ in np.unique(stud[pick]):
+                mm = stud[pick] == s_
+                ax.scatter(Y[mm, 0], Y[mm, 1], s=3, alpha=.5, color=cols[s_.split()[0]], label=None)
+            for k_, c_ in cols.items():
+                ax.scatter([], [], color=c_, s=20, label={"TG": "TG-GATEs controls", "shio": "Shionogi controls", "eisa": "Eisai controls"}[k_])
+            ax.legend(frameon=False, loc="best", fontsize=8)
+            ax.set_xticks([]); ax.set_yticks([])
+            ax.set_title(f"{rname}: t-SNE of control patches ({dg['tsne_per_study']} per study)", fontsize=9)
+            fig.savefig(run_dir / f"domain_tsne_{rname.split()[0]}.png", dpi=150, bbox_inches="tight")
+            plt.close(fig)
+        gap = pd.DataFrame(gap)
+        gap.to_csv(run_dir / "domain_gap.csv", index=False)
+        qt.to_csv(run_dir / "domain_gap_tg_controls.csv", index=False)
+        logger.info(f"TG controls: {len(qt)} slides from experiments {list(exps)}\n" + gap.round(3).T.to_string())
     logger.info(f"maps: {len(sel)}; {time.time() - t0:.0f}s")
 
     results: dict = {"n_slides": len(sl), "n_selected": len(sel), "roles": sel.role.value_counts().to_dict(),
