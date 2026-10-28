@@ -41,3 +41,11 @@ variants:
       kinds: [necrosis, inflammation, random]   # 壊死・炎症の色（AとBの和）が最も密な窓、肝臓内（patchが8割以上）の無作為な窓
       min_hits: 3                # 色のpatchがこれ未満なら、その窓は作らない
       alpha: 70
+  v3:                          # 2026-10-28ユーザー: A/Bそれぞれ全プロトタイプで色分けし、試験間差（特に塩野義とエーザイ）の影響を見る。壊死を本当に見ているかを画像で
+    study_effect:
+      knn: 30
+      queries: 20000
+      provider_specific: 0.9     # 会社ごとの対照群patch数で割った割合で、片方の会社が90%以上のプロトタイプ
+    necrosis_tiles:
+      n: 32                      # 1行あたり最大32枚（8枚×4行）
+      per_slide: 2

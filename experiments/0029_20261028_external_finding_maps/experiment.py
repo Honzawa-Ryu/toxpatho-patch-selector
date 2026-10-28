@@ -320,6 +320,107 @@ def main() -> None:
                               **{f"{mname}__{g}": int((nm[mname][inw] == g).sum()) for mname in cfg["maps"] for g in groups}})
         pd.DataFrame(zrows).to_csv(run_dir / "zoom_windows.csv", index=False)
         logger.info(f"zoom: {len(zrows)} windows; {time.time() - t0:.0f}s")
+
+    # 6. 試験間差の影響（2026-10-28ユーザー: 特に塩野義とエーザイ）。対照群のslideだけで、A/Bそれぞれ
+    se_ = cfg.get("study_effect")
+    if se_:
+        from scipy.spatial.distance import jensenshannon
+        import colorsys
+        prov = sl.provider.to_numpy()
+        ci = np.where(sl.is_ctrl)[0]
+        eff = []
+        for mname, (run, rep, k) in cfg["maps"].items():
+            P_ = np.zeros((len(sl), k))
+            np.add.at(P_, (row, cls[mname]), 1)
+            P_ /= P_.sum(1, keepdims=True)
+            d = {"within_study": [], "between_study_same_provider": [], "between_provider": []}
+            for a in range(len(ci)):
+                for b in range(a + 1, len(ci)):
+                    i_, j_ = ci[a], ci[b]
+                    kind = "within_study" if sl.study[i_] == sl.study[j_] else ("between_study_same_provider" if prov[i_] == prov[j_] else "between_provider")
+                    d[kind].append(jensenshannon(P_[i_], P_[j_]))
+            # 近傍: 対照群のpatchのうち、別の会社・別の試験のpatchが近傍に占める割合（同じslideは除く）
+            cmk = np.isin(row, ci)
+            Xc = torch.from_numpy(X[mname][cmk])
+            rc, pc, stc = row[cmk], prov[row[cmk]], study[cmk]
+            q = np.random.default_rng(cfg["seed"]).choice(len(Xc), min(se_["queries"], len(Xc)), replace=False)
+            nn_prov, nn_study = [], []
+            for qq in np.array_split(q, 20):
+                dist = torch.cdist(Xc[qq], Xc)
+                dist[torch.from_numpy(rc[None, :] == rc[qq][:, None])] = float("inf")
+                nb = dist.topk(se_["knn"], largest=False).indices.numpy()
+                nn_prov.append((pc[nb] != pc[qq][:, None]).mean(1))
+                nn_study.append((stc[nb] != stc[qq][:, None]).mean(1))
+            # 会社に偏ったプロトタイプ: 会社ごとの対照群patch数で割った割合で、片方が90%以上
+            cnt = pd.crosstab(cls[mname][cmk], pc)
+            frac = cnt / cnt.sum(0)
+            spec = (frac.max(1) / frac.sum(1)) >= se_["provider_specific"]
+            eff.append({"map": mname, **{f"JS_{k_}": float(np.mean(v)) for k_, v in d.items()},
+                        "knn_other_provider": float(np.concatenate(nn_prov).mean()), "knn_other_study": float(np.concatenate(nn_study).mean()),
+                        "expected_other_provider_if_mixed": float(1 - ((pd.Series(pc).value_counts() / len(pc)) ** 2).sum()),
+                        "share_ctrl_patches_in_provider_specific_protos": float(cnt[spec].sum().sum() / cnt.sum().sum()), "n_provider_specific_protos": int(spec.sum())})
+            pd.DataFrame(P_, index=sl.slide_id).to_csv(run_dir / f"proto_shares_{mname}.csv")
+        eff = pd.DataFrame(eff)
+        eff.to_csv(run_dir / "study_effect.csv", index=False)
+        logger.info("study effect (controls):\n" + eff.round(3).T.to_string())
+
+        # 全プロトタイプの色分け（系統樹を30に切ったまとまりで色。AとBの色は対応しない）
+        grp = {}
+        for mname, (run, rep, k) in cfg["maps"].items():
+            t_ = pd.read_csv(run26 / run / "tree" / f"{rep}_k{k}" / "prototypes_in_tree_order.csv").set_index("prototype")
+            grp[mname] = t_.group_30.reindex(range(k)).to_numpy()
+        pal = [tuple(int(255 * c_) for c_ in colorsys.hsv_to_rgb((i_ * 0.618) % 1, 0.65 + 0.3 * (i_ % 2), 0.95 - 0.25 * ((i_ // 2) % 2))) for i_ in range(31)]
+        aout = run_dir / "maps_all"
+        aout.mkdir(exist_ok=True)
+        for i in np.r_[ci, sel.index[~sel.index.isin(ci)]]:
+            r = sl.loc[i]
+            w = openslide.OpenSlide(str(Path(cfg["bench_root"]) / r.path))
+            th = w.get_thumbnail((cfg["thumb"], cfg["thumb"])).convert("RGB")
+            s_ = th.width / w.dimensions[0]
+            w.close()
+            m = row == i
+            xy, b = parts[i]["xy"], max(2, round(parts[i]["size0"] * s_))
+            panels = [th]
+            for mname in cfg["maps"]:
+                ov = Image.new("RGBA", th.size, (0, 0, 0, 0))
+                d = ImageDraw.Draw(ov)
+                for (x0, y0), g in zip(xy, grp[mname][cls[mname][m]]):
+                    d.rectangle([x0 * s_, y0 * s_, x0 * s_ + b, y0 * s_ + b], fill=pal[int(g)] + (255,))
+                panels.append(Image.alpha_composite(th.convert("RGBA"), ov).convert("RGB"))
+            canvas = Image.new("RGB", (th.width * 3 + 20, th.height + 30), "white")
+            dd = ImageDraw.Draw(canvas)
+            for j, (pn, ttl) in enumerate(zip(panels, ["original", "A: Sphering + LDA (30 groups)", "B: Sphering (30 groups)"])):
+                canvas.paste(pn, (j * (th.width + 10), 30))
+                dd.text((j * (th.width + 10) + 4, 6), ttl, fill="black", font=font)
+            canvas.save(aout / f"{r.slide_id.replace(' ', '_')}.jpg", quality=85)
+        logger.info(f"all-prototype maps; {time.time() - t0:.0f}s")
+
+    # 7. 壊死と名付いたプロトタイプに入った外部のpatch（A/B、壊死の記録ありslideと、それ以外のslideから）
+    nt = cfg.get("necrosis_tiles")
+    if nt:
+        ex17 = load_module(project_root / "experiments/0017_20261016_block_consensus_patterns/experiment.py", "exp0017")
+        sdf = sl.assign(svs_path=[str(Path(cfg["bench_root"]) / p_) for p_ in sl.path])
+        size0 = {r.slide_id: parts[i]["size0"] for i, r in enumerate(sl.itertuples())}
+        xy_all = np.concatenate([p_["xy"] for p_ in parts])
+        rng = np.random.default_rng(cfg["seed"])
+        lbl = lambda s_, q_: (f"{s_.provider[:4]} {s_.slide_id}", f"{'nec rec' if s_.necrosis_recorded else ('ctrl' if s_.is_ctrl else 'no nec rec')}")
+        rows_t, nrec = [], []
+        for mname in cfg["maps"]:
+            hit = names[mname][cls[mname]] == "necrosis"
+            for part, mask in [("壊死の記録ありslide", sl.necrosis_recorded.to_numpy()[row]), ("壊死の記録なしslide（対照群を含む）", ~sl.necrosis_recorded.to_numpy()[row])]:
+                idx = np.where(hit & mask)[0]
+                pick = []
+                for i_ in rng.permutation(np.unique(row[idx])):
+                    cand = idx[row[idx] == i_]
+                    pick += list(rng.choice(cand, min(nt["per_slide"], len(cand)), replace=False))
+                    if len(pick) >= nt["n"]:
+                        break
+                nrec.append({"map": mname, "part": part, "n_patches": len(idx), "n_slides": len(np.unique(row[idx]))})
+                if pick:
+                    rows_t.append((f"{mname}: {part}（壊死と名付いたプロトタイプのpatch {len(idx):,}、{len(np.unique(row[idx]))} slide）", ex17.read_tiles(pick[:nt['n']], row, xy_all, sdf, size0, lbl)))
+        ex17.draw_sheet("External patches in prototypes named necrosis (A: Sphering + LDA, B: Sphering)", rows_t, run_dir / "necrosis_tiles.jpg")
+        pd.DataFrame(nrec).to_csv(run_dir / "necrosis_tiles_counts.csv", index=False)
+        logger.info(f"necrosis tiles: {nrec}; {time.time() - t0:.0f}s")
     logger.info(f"maps: {len(sel)}; {time.time() - t0:.0f}s")
 
     results: dict = {"n_slides": len(sl), "n_selected": len(sel), "roles": sel.role.value_counts().to_dict(),
