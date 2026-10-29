@@ -140,7 +140,7 @@ def main() -> None:
     cfg = {**config, **config.get("variants", {}).get(args.variant, {})}
     t0 = time.time()
     load_module(project_root / "experiments" / cfg["exp0021"] / "experiment.py", "exp0021")
-    load_module(project_root / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
+    ex23 = load_module(project_root / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
     ex26 = load_module(project_root / "experiments" / cfg["exp0026"] / "experiment.py", "exp0026")
     ex27 = load_module(project_root / "experiments" / cfg["exp0027"] / "experiment.py", "exp0027")
     cfg20 = yaml.safe_load(open(project_root / "experiments/0020_20261024_batch_robust_methods/config.yml"))
@@ -189,30 +189,50 @@ def main() -> None:
                 f"in Bayer experiments {int(sl.bayer_exp.sum())}; positives per finding: {(G > 0).sum().to_dict()}; {time.time() - t0:.0f}s")
 
     # 3. 各slideを2,048 patchに間引き、slide内の順位 → PCA256 → U（64）・LDA（L）
-    with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl"), cfg["patches_per_slide"])) as ex:
-        Us, Ls, XYs, size0 = [], [], [], {}
-        for sid, (K, xy, s0) in zip(sl.slide_id, ex.map(_load_sub, sl.h5, chunksize=4)):
-            Us.append(K[:, :64])
-            Ls.append(tf(K)[:, :L].astype(np.float32))
-            XYs.append(xy)
-            size0[sid] = s0
-    row = np.concatenate([np.full(len(u), i) for i, u in enumerate(Us)])
-    U, Lp, XY = np.concatenate(Us), np.concatenate(Ls), np.concatenate(XYs)
-    del Us, Ls, XYs
-    expn = sl.EXP_ID.to_numpy()[row]
-    cm = sl.is_ctrl.to_numpy()[row]
-    e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
-    Sw = ex27.sphering(U, e_fix, np.r_[U[cm], U[cm]], np.r_[expn[cm], np.full(int(cm.sum()), -999)])
+    pre_path = str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl")
+    pre = pickle.loads(Path(pre_path).read_bytes())["pre"]
     sc = json.loads((run26 / "tree_v3" / "scale_sphering_lda.json").read_text())
-    rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U}
-    logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
+    resume = bool(cfg.get("resume")) and (run_dir / "assignments.npz").exists()
+    if resume:
+        # 途中で落ちた実行の割り当て（row, 座標, 各表現のプロトタイプ番号）を読み、特徴の読み直しを飛ばす（2026-10-29: 地図の部分の修正の再実行用）
+        import h5py
+        z = np.load(run_dir / "assignments.npz")
+        row, XY = z["row"], z["xy"]
+        size0 = {}
+        for sid, h5p in zip(sl.slide_id, sl.h5):
+            with h5py.File(h5p, "r") as h:
+                size0[sid] = int(h["coords"].attrs["patch_size_level0"])
+        expn = sl.EXP_ID.to_numpy()[row]
+        cm = sl.is_ctrl.to_numpy()[row]
+        ex27._init_ctrl(pre_path, cfg["patches_per_slide"])   # 地図の白色化で対照群を読み直すため
+        logger.info(f"resume: assignments for {len(row):,} patches loaded; {time.time() - t0:.0f}s")
+    else:
+      with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl"), cfg["patches_per_slide"])) as ex:
+          Us, Ls, XYs, size0 = [], [], [], {}
+          for sid, (K, xy, s0) in zip(sl.slide_id, ex.map(_load_sub, sl.h5, chunksize=4)):
+              Us.append(K[:, :64])
+              Ls.append(tf(K)[:, :L].astype(np.float32))
+              XYs.append(xy)
+              size0[sid] = s0
+      row = np.concatenate([np.full(len(u), i) for i, u in enumerate(Us)])
+      U, Lp, XY = np.concatenate(Us), np.concatenate(Ls), np.concatenate(XYs)
+      del Us, Ls, XYs
+      expn = sl.EXP_ID.to_numpy()[row]
+      cm = sl.is_ctrl.to_numpy()[row]
+      e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
+      Sw = ex27.sphering(U, e_fix, np.r_[U[cm], U[cm]], np.r_[expn[cm], np.full(int(cm.sum()), -999)])
+      rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U}
+      logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
 
     # 4. プロトタイプに割り当て、slideごとの構成比（同じ試験の対照群の平均を引く）
     names, shares, deltas, cls = {}, {}, {}, {}
     for mname, (run, rep, k) in cfg["maps"].items():
-        cen = torch.from_numpy(np.load(run26 / run / f"centroids_{rep}_k{k}.npy").astype(np.float32))
-        X = torch.from_numpy(rep_X[rep]().astype(np.float32))
-        cl = torch.cat([torch.cdist(x, cen).argmin(1) for x in X.split(65536)]).numpy()
+        if resume:
+            cl = z[f"cl_{mname}"].astype(np.int64)
+        else:
+            cen = torch.from_numpy(np.load(run26 / run / f"centroids_{rep}_k{k}.npy").astype(np.float32))
+            X = torch.from_numpy(rep_X[rep]().astype(np.float32))
+            cl = torch.cat([torch.cdist(x, cen).argmin(1) for x in X.split(65536)]).numpy()
         cls[mname] = cl
         sh = np.zeros((len(sl), k))
         np.add.at(sh, (row, cl), 1)
@@ -284,7 +304,8 @@ def main() -> None:
     fig.savefig(run_dir / "F1_finding_auc.png", dpi=150)
     plt.close(fig)
 
-    np.savez_compressed(run_dir / "assignments.npz", row=row, xy=XY, **{f"cl_{m_}": cls[m_].astype(np.int16) for m_ in cls})
+    if not resume:
+        np.savez_compressed(run_dir / "assignments.npz", row=row, xy=XY, **{f"cl_{m_}": cls[m_].astype(np.int16) for m_ in cls})
 
     # 7. 地図と各プロトタイプの見た目（2026-10-29ユーザー）。選んだslideは全patchで割り当て、プロトタイプの見た目は全slideの間引きpatchから
     mt = cfg.get("maps_tiles")
@@ -334,6 +355,18 @@ def main() -> None:
             grp[m_] = t_.group_30.reindex(range(k)).to_numpy()
         import colorsys
         pal = [tuple(int(255 * c_) for c_ in colorsys.hsv_to_rgb((i_ * 0.618) % 1, 0.65 + 0.3 * (i_ % 2), 0.95 - 0.25 * ((i_ // 2) % 2))) for i_ in range(31)]
+        pool_cache = {}
+
+        def ctrl_U(e):
+            """試験eの対照群のU（64次元）。e=None は全試験の対照群から40枚（再開時は読み直す）"""
+            if not resume:
+                m_ = cm if e is None else cm & (expn == e)
+                return U[m_]
+            if e not in pool_cache:
+                hs = sl.h5[sl.is_ctrl & (sl.EXP_ID == e)] if e is not None else sl.h5[sl.is_ctrl].sample(min(40, int(sl.is_ctrl.sum())), random_state=cfg["seed"])
+                pool_cache[e] = np.concatenate([_load_sub(h)[0][:, :64] for h in hs]) if len(hs) else np.zeros((0, 64), np.float32)
+            return pool_cache[e]
+
         mrows = []
         for i, why in pick:
             r = sl.loc[i]
@@ -344,8 +377,8 @@ def main() -> None:
             Kf = pre.transform(ex23.slide_rank(f_)).astype(np.float32)
             Uf, Lf = Kf[:, :64], tf(Kf)[:, :L].astype(np.float32)
             e = r.EXP_ID
-            cm_e = cm & (expn == e)
-            Sf = ex27.sphering(Uf, np.full(len(Uf), e), U[cm_e], expn[cm_e]) if cm_e.any() else ex27.sphering(Uf, np.full(len(Uf), -999), U[cm], np.full(int(cm.sum()), -999))
+            Uc = ctrl_U(e)
+            Sf = ex27.sphering(Uf, np.full(len(Uf), e), Uc, np.full(len(Uc), e)) if len(Uc) else ex27.sphering(Uf, np.full(len(Uf), -999), ctrl_U(None), np.full(len(ctrl_U(None)), -999))
             Xf = {"sphering_lda": np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1), "sphering": Sf, "lda": Lf, "unsup": Uf}
             w = openslide.OpenSlide(r.svs_path)
             th = w.get_thumbnail((mt["thumb"], mt["thumb"])).convert("RGB")

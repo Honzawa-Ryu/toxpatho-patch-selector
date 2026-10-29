@@ -47,6 +47,7 @@ variants:
       protos_per_sheet: 25
       colors: {necrosis: "#D55E00", inflammation: "#E69F00", mitosis: "#8E44AD", single_cell_necrosis: "#B8860B", emh: "#56B4E9", central_vein: "#0072B2", portal_tract: "#009E73", large_vessel: "#CC79A7"}
   v3:                          # 2026-10-29ユーザー: 命名を21枚除外版に差し替えて全部やり直し（v1の分類＋v2の地図・見た目）
+    resume: true               # 地図の部分で落ちたので、保存した割り当てから再開
     maps_tiles:
       n_per_finding: 2         # 所見ごとに記録ありslideを最大2枚（化合物は重複させない。新しい試験を優先、程度の高い順）＋その試験の対照群1枚
       thumb: 1000
