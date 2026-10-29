@@ -162,7 +162,9 @@ def main() -> None:
     names, cens = {}, {}
     for mname, (run, rep, k) in cfg["maps"].items():
         cl_all = np.load(run26 / run / "tree" / f"{rep}_k{k}" / "assign_all.npy").astype(np.int64)
-        tab = name_prototypes(cl_all[:na], laba, prio, k, cfg["naming"])
+        # 2026-10-29: 命名でも脂肪滴系の21枚のラベルを除く（v5までは含めていた。LDAからは除いていた）
+        lab_nm = np.where(np.isin(pd.read_csv(src / "slides.csv", dtype=str).slide_id.to_numpy()[c["row"]], ex_ids), -1, laba)
+        tab = name_prototypes(cl_all[:na], lab_nm, prio, k, cfg["naming"])
         tab.to_csv(run_dir / f"prototype_names_{mname}.csv", index=False)
         names[mname] = tab.name.to_numpy()
         cens[mname] = np.load(run26 / run / f"centroids_{rep}_k{k}.npy").astype(np.float32)

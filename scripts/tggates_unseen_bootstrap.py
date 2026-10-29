@@ -2,8 +2,9 @@
 
 読み出し（ロジスティック回帰、化合物単位5分割）は0030と同じ設定で作り直し、学習なし（名前付きプロトタイプの割合）も同じ定義。
 出力: outputs/0030_20261028_tggates_unseen_findings/v1/bootstrap/
-usage: python scripts/tggates_unseen_bootstrap.py  （コンテナ内、Slurm経由）
+usage: python scripts/tggates_unseen_bootstrap.py  [版]  （コンテナ内、Slurm経由。版の既定は上記）
 """
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -16,8 +17,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings/v1"
+RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings" / (sys.argv[1] if len(sys.argv) > 1 else "v3")
 OUT = RUN / "bootstrap"
+NAMES = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))["names_from"]
 MAPS = ["D_unsup", "C_lda", "B_sphering", "A_sphering_lda"]
 N_BOOT = 2000
 
@@ -34,7 +36,7 @@ def main():
         cm = pd.DataFrame(sh[ctrl]).groupby(sl.EXP_ID.to_numpy()[ctrl]).mean()
         base = cm.reindex(sl.EXP_ID).to_numpy()
         deltas[m] = sh - np.where(np.isnan(base), sh[ctrl].mean(0), base)
-        names[m] = pd.read_csv(ROOT / "outputs/0029_20261028_external_finding_maps/v5" / f"prototype_names_{m}.csv").set_index("prototype").name.fillna("").reindex(range(sh.shape[1])).to_numpy()
+        names[m] = pd.read_csv(ROOT / "outputs/0029_20261028_external_finding_maps" / NAMES / f"prototype_names_{m}.csv").set_index("prototype").name.fillna("").reindex(range(sh.shape[1])).to_numpy()
     scores = {}   # (finding, kind, map) -> 各slideのスコア（読み出しは化合物単位の分割の外側予測）
     for f, blab in cfg["findings"].items():
         y = (sl[f"grade__{f}"].to_numpy() > 0).astype(int)

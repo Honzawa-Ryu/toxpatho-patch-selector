@@ -25,7 +25,7 @@ maps:                          # 名前: [0026のrun, 表現, k]。名前の付�
   B_sphering: [tree_v3s, sphering, 100]
   C_lda: [tree_v3u, lda, 100]
   D_unsup: [tree_v3u, unsup, 100]
-names_from: v5
+names_from: v5_names_excl21   # 2026-10-29: 命名から脂肪滴系の21枚のラベルを除いた版（scripts/prototype_names_excl21.py）。v1はv5（含む）だった
 findings:                      # 対象の所見（TG-GATEsの FINDING_TYPE）。bayer: 対応するBayerのラベル（ないものは外挿の確認用）
   Necrosis: necrosis
   Single cell necrosis: single_cell_necrosis
@@ -38,3 +38,18 @@ findings:                      # 対象の所見（TG-GATEsの FINDING_TYPE）�
   Vacuolization, cytoplasmic: ""
   Degeneration, granular, eosinophilic: ""
 cv_splits: 5                   # 化合物単位の分割（化合物数が少なければその数）
+variants:
+  v2:                          # 2026-10-29ユーザー: slide上のプロトタイプの分布（地図）と、各プロトタイプの見た目（未学習slideのpatch）
+    maps_tiles:
+      n_per_finding: 2         # 所見ごとに記録ありslideを最大2枚（化合物は重複させない。新しい試験を優先、程度の高い順）＋その試験の対照群1枚
+      thumb: 1000
+      tiles_per_proto: 8
+      protos_per_sheet: 25
+      colors: {necrosis: "#D55E00", inflammation: "#E69F00", mitosis: "#8E44AD", single_cell_necrosis: "#B8860B", emh: "#56B4E9", central_vein: "#0072B2", portal_tract: "#009E73", large_vessel: "#CC79A7"}
+  v3:                          # 2026-10-29ユーザー: 命名を21枚除外版に差し替えて全部やり直し（v1の分類＋v2の地図・見た目）
+    maps_tiles:
+      n_per_finding: 2         # 所見ごとに記録ありslideを最大2枚（化合物は重複させない。新しい試験を優先、程度の高い順）＋その試験の対照群1枚
+      thumb: 1000
+      tiles_per_proto: 8
+      protos_per_sheet: 25
+      colors: {necrosis: "#D55E00", inflammation: "#E69F00", mitosis: "#8E44AD", single_cell_necrosis: "#B8860B", emh: "#56B4E9", central_vein: "#0072B2", portal_tract: "#009E73", large_vessel: "#CC79A7"}

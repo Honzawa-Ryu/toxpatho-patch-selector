@@ -67,6 +67,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _load_sub(h5_path):
+    """0027の_load_ctrlと同じ間引き（乱数はpatch数で決まる）で、特徴（PCA256）に加えて座標とpatch_size_level0も返す。"""
+    import h5py
+    W = sys.modules["exp0027"]._W
+    with h5py.File(h5_path, "r") as h:
+        f = h["features"][:].astype(np.float32)
+        xy = h["coords"][:]
+        s0 = int(h["coords"].attrs["patch_size_level0"])
+    rk = sys.modules["exp0023"].slide_rank(f)
+    idx = np.arange(len(rk))
+    if len(rk) > W["n"]:
+        idx = np.random.default_rng(len(rk)).choice(len(rk), size=W["n"], replace=False)
+    return W["pre"].transform(rk[idx]).astype(np.float32), xy[idx], s0
+
+
 def load_module(path, name):
     spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
@@ -175,13 +190,15 @@ def main() -> None:
 
     # 3. 各slideを2,048 patchに間引き、slide内の順位 → PCA256 → U（64）・LDA（L）
     with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl"), cfg["patches_per_slide"])) as ex:
-        Us, Ls = [], []
-        for K in ex.map(ex27._load_ctrl, sl.h5, chunksize=4):
+        Us, Ls, XYs, size0 = [], [], [], {}
+        for sid, (K, xy, s0) in zip(sl.slide_id, ex.map(_load_sub, sl.h5, chunksize=4)):
             Us.append(K[:, :64])
             Ls.append(tf(K)[:, :L].astype(np.float32))
+            XYs.append(xy)
+            size0[sid] = s0
     row = np.concatenate([np.full(len(u), i) for i, u in enumerate(Us)])
-    U, Lp = np.concatenate(Us), np.concatenate(Ls)
-    del Us, Ls
+    U, Lp, XY = np.concatenate(Us), np.concatenate(Ls), np.concatenate(XYs)
+    del Us, Ls, XYs
     expn = sl.EXP_ID.to_numpy()[row]
     cm = sl.is_ctrl.to_numpy()[row]
     e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
@@ -191,11 +208,12 @@ def main() -> None:
     logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
 
     # 4. プロトタイプに割り当て、slideごとの構成比（同じ試験の対照群の平均を引く）
-    names, shares, deltas = {}, {}, {}
+    names, shares, deltas, cls = {}, {}, {}, {}
     for mname, (run, rep, k) in cfg["maps"].items():
         cen = torch.from_numpy(np.load(run26 / run / f"centroids_{rep}_k{k}.npy").astype(np.float32))
         X = torch.from_numpy(rep_X[rep]().astype(np.float32))
         cl = torch.cat([torch.cdist(x, cen).argmin(1) for x in X.split(65536)]).numpy()
+        cls[mname] = cl
         sh = np.zeros((len(sl), k))
         np.add.at(sh, (row, cl), 1)
         sh /= sh.sum(1, keepdims=True)
@@ -265,6 +283,135 @@ def main() -> None:
     fig.tight_layout()
     fig.savefig(run_dir / "F1_finding_auc.png", dpi=150)
     plt.close(fig)
+
+    np.savez_compressed(run_dir / "assignments.npz", row=row, xy=XY, **{f"cl_{m_}": cls[m_].astype(np.int16) for m_ in cls})
+
+    # 7. 地図と各プロトタイプの見た目（2026-10-29ユーザー）。選んだslideは全patchで割り当て、プロトタイプの見た目は全slideの間引きpatchから
+    mt = cfg.get("maps_tiles")
+    if mt:
+        import glob
+        import h5py
+        import openslide
+        from PIL import Image, ImageDraw, ImageFont
+        ex17 = load_module(project_root / "experiments/0017_20261016_block_consensus_patterns/experiment.py", "exp0017")
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+        def svs_of(r):
+            cand = project_root / "data/TGGATEs/WSI/Liver" / str(r.SACRIFICE_PERIOD).replace(" ", "_") / f"{r.slide_id}.svs"
+            if cand.exists():
+                return str(cand)
+            g = glob.glob(str(project_root / "data/TGGATEs/WSI" / "**" / f"{r.slide_id}.svs"), recursive=True)
+            return g[0] if g else ""
+        sl["svs_path"] = [svs_of(r) for r in sl.itertuples()]
+        logger.info(f"svs found for {int((sl.svs_path != '').sum())} / {len(sl)} slides")
+        rgb = {g: tuple(int(h[i:i + 2], 16) for i in (1, 3, 5)) for g, h in mt["colors"].items()}
+        # 7a. slideの選び方: 所見ごとに記録ありを最大 n_per_finding 枚（新しい試験を優先、程度の高い順）＋その試験の対照群1枚
+        pick = []
+        for f, b in cfg["findings"].items():
+            if not b:
+                continue
+            cand = sl[(G[f].to_numpy() > 0) & (sl.svs_path != "")].copy()
+            cand["g"] = G[f].to_numpy()[cand.index]
+            cand = cand.sort_values(["bayer_exp", "g"], ascending=[True, False])
+            seen_c = set()
+            for r in cand.itertuples():
+                if r.COMPOUND_NAME in seen_c:
+                    continue
+                pick.append((r.Index, f))
+                seen_c.add(r.COMPOUND_NAME)
+                if len(seen_c) >= mt["n_per_finding"]:
+                    break
+        for i, f in list(pick):
+            cs = sl[(sl.EXP_ID == sl.EXP_ID[i]) & sl.is_ctrl & (sl.svs_path != "")]
+            if len(cs) and not any(j == cs.index[0] for j, _ in pick):
+                pick.append((cs.index[0], "control"))
+        logger.info(f"maps: {len(pick)} slides")
+        mout = run_dir / "maps"
+        mout.mkdir(exist_ok=True)
+        cen_t = {m_: torch.from_numpy(np.load(run26 / cfg["maps"][m_][0] / f"centroids_{cfg['maps'][m_][1]}_k{cfg['maps'][m_][2]}.npy").astype(np.float32)) for m_ in cfg["maps"]}
+        grp = {}
+        for m_, (run, rep, k) in cfg["maps"].items():
+            t_ = pd.read_csv(run26 / run / "tree" / f"{rep}_k{k}" / "prototypes_in_tree_order.csv").set_index("prototype")
+            grp[m_] = t_.group_30.reindex(range(k)).to_numpy()
+        import colorsys
+        pal = [tuple(int(255 * c_) for c_ in colorsys.hsv_to_rgb((i_ * 0.618) % 1, 0.65 + 0.3 * (i_ % 2), 0.95 - 0.25 * ((i_ // 2) % 2))) for i_ in range(31)]
+        mrows = []
+        for i, why in pick:
+            r = sl.loc[i]
+            with h5py.File(r.h5, "r") as h:
+                f_ = h["features"][:].astype(np.float32)
+                xy_f = h["coords"][:]
+                s0 = int(h["coords"].attrs["patch_size_level0"])
+            Kf = pre.transform(ex23.slide_rank(f_)).astype(np.float32)
+            Uf, Lf = Kf[:, :64], tf(Kf)[:, :L].astype(np.float32)
+            e = r.EXP_ID
+            cm_e = cm & (expn == e)
+            Sf = ex27.sphering(Uf, np.full(len(Uf), e), U[cm_e], expn[cm_e]) if cm_e.any() else ex27.sphering(Uf, np.full(len(Uf), -999), U[cm], np.full(int(cm.sum()), -999))
+            Xf = {"sphering_lda": np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1), "sphering": Sf, "lda": Lf, "unsup": Uf}
+            w = openslide.OpenSlide(r.svs_path)
+            th = w.get_thumbnail((mt["thumb"], mt["thumb"])).convert("RGB")
+            scl = th.width / w.dimensions[0]
+            w.close()
+            b_ = max(2, round(s0 * scl))
+            rec = {"slide_id": r.slide_id, "why": why, "compound": r.COMPOUND_NAME, "exp": e, "dose": r.DOSE_LEVEL, "period": r.SACRIFICE_PERIOD, "bayer_exp": bool(r.bayer_exp),
+                   "records": "; ".join(f"{f}={int(G[f].iloc[i])}" for f in G if G[f].iloc[i] > 0), "n_patches": len(Uf)}
+            for mode in ("named", "groups"):
+                panels = [th]
+                for m_, (run, rep, k) in cfg["maps"].items():
+                    X_ = torch.from_numpy(Xf[rep].astype(np.float32))
+                    cl_ = torch.cat([torch.cdist(x, cen_t[m_]).argmin(1) for x in X_.split(65536)]).numpy()
+                    ov = Image.new("RGBA", th.size, (0, 0, 0, 0))
+                    d = ImageDraw.Draw(ov)
+                    if mode == "named":
+                        nm_ = names[m_][cl_]
+                        for (x0, y0), g_ in zip(xy_f, nm_):
+                            if g_ in rgb:
+                                d.rectangle([x0 * scl, y0 * scl, x0 * scl + b_, y0 * scl + b_], fill=rgb[g_] + (235,))
+                        panels.append(Image.alpha_composite(th.convert("L").convert("RGBA"), ov).convert("RGB"))
+                        for g_ in rgb:
+                            rec[f"{m_}__{g_}"] = float((nm_ == g_).mean())
+                    else:
+                        for (x0, y0), g_ in zip(xy_f, grp[m_][cl_]):
+                            d.rectangle([x0 * scl, y0 * scl, x0 * scl + b_, y0 * scl + b_], fill=pal[int(g_)] + (255,))
+                        panels.append(Image.alpha_composite(th.convert("RGBA"), ov).convert("RGB"))
+                canvas = Image.new("RGB", (th.width * len(panels) + 10 * (len(panels) - 1), th.height + 30), "white")
+                dd = ImageDraw.Draw(canvas)
+                for j, (pn, ttl) in enumerate(zip(panels, ["original"] + [m_.split("_")[0] + (" (30 groups)" if mode == "groups" else "") for m_ in cfg["maps"]])):
+                    canvas.paste(pn, (j * (th.width + 10), 30))
+                    dd.text((j * (th.width + 10) + 4, 6), ttl, fill="black", font=font)
+                canvas.save(mout / f"{r.slide_id}_{mode}.jpg", quality=85)
+            mrows.append(rec)
+        pd.DataFrame(mrows).to_csv(run_dir / "map_slides.csv", index=False)
+        logger.info(f"maps done; {time.time() - t0:.0f}s")
+        # 7b. 各プロトタイプの見た目: 全slideの間引きpatchから、プロトタイプごとに別々のslideの tiles_per_proto 枚（投与群を優先）
+        tout = run_dir / "tiles"
+        tout.mkdir(exist_ok=True)
+        rng = np.random.default_rng(cfg["seed"])
+        ok_s = (sl.svs_path != "").to_numpy()
+        sdf = sl[["slide_id", "svs_path", "COMPOUND_NAME", "DOSE_LEVEL", "SACRIFICE_PERIOD", "EXP_ID"]].copy()
+        lbl = lambda s_, q_: (f"{s_.slide_id} e{s_.EXP_ID}", f"{str(s_.COMPOUND_NAME)[:14]} {str(s_.DOSE_LEVEL)[0]} {s_.SACRIFICE_PERIOD}")
+        for m_, (run, rep, k) in cfg["maps"].items():
+            cl_ = cls[m_]
+            tab = pd.read_csv(project_root / "outputs" / cfg["exp0029"] / cfg["names_from"] / f"prototype_names_{m_}.csv").set_index("prototype")
+            for part in range(0, k, mt["protos_per_sheet"]):
+                rows_t = []
+                for j in range(part, min(k, part + mt["protos_per_sheet"])):
+                    idx = np.where((cl_ == j) & ok_s[row])[0]
+                    if not len(idx):
+                        continue
+                    treated = idx[~ctrl_row[idx]] if (ctrl_row := sl.is_ctrl.to_numpy()[row])[idx].any() else idx
+                    order_ = rng.permutation(treated if len(treated) >= mt["tiles_per_proto"] else idx)
+                    picks, seen = [], set()
+                    for q in order_:
+                        if row[q] in seen:
+                            continue
+                        picks.append(int(q)); seen.add(row[q])
+                        if len(picks) >= mt["tiles_per_proto"]:
+                            break
+                    nm_ = tab.name.get(j, "")
+                    hdr = f"p{j:02d}  name: {nm_ if isinstance(nm_, str) and nm_ else '-'}   Bayer top: {tab.top_label.get(j, '')} ({tab.n_patches_bayer.get(j, 0):,} patches)   unseen patches: {len(idx):,} in {len(np.unique(row[idx]))} slides"
+                    rows_t.append((hdr, ex17.read_tiles(picks, row, XY, sdf, size0, lbl)))
+                ex17.draw_sheet(f"{m_}: prototypes {part}-{min(k, part + mt['protos_per_sheet']) - 1} on TG-GATEs slides unseen in training", rows_t, tout / f"{m_}_p{part:03d}.jpg")
+            logger.info(f"tiles {m_}; {time.time() - t0:.0f}s")
 
     results: dict = {"n_slides": len(sl), "n_experiments": len(exps), "mean_AUC_readout": res.groupby("map").AUC_readout.mean().to_dict(),
                      "mean_AUC_named": res.groupby("map").AUC_named_noTGtraining.mean().to_dict() if "AUC_named_noTGtraining" in res else {}}

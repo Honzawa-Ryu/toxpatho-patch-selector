@@ -8,8 +8,8 @@
 #SBATCH --nodes=1
 ##SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
-#SBATCH --mem=64g
-#SBATCH --time=04:00:00
+#SBATCH --mem=40g
+#SBATCH --time=03:00:00
 
 # 他の実験のジョブに依存させたい場合、有効化してjob_idを埋める
 # （job_idは outputs/{依存先exp}/latest_job_id.txt を参照。投入のたびに
@@ -52,7 +52,7 @@ PYTHON_PATH="${PROJECT_ROOT}/experiments/${EXP_NAME}/experiment.py"
 # =====================================================
 
 RUN_MODE="single"
-RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant v1"
+RUN_COMMAND="python ${PYTHON_PATH} --config config.yml --variant v3"
 
 # =====================================================
 # Array run にしたい場合

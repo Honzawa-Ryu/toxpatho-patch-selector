@@ -1,11 +1,12 @@
-"""usage: python scripts/external_severity.py  （コンテナ内、Slurm経由）"""
+"""usage: python scripts/external_severity.py  [版]  （コンテナ内、Slurm経由。版の既定は上記）"""
 # 0029 v5: 色の面積の割合と、外部の記録の重症度（試験内の順序尺度）の対応。A〜D、特にCとD
+import sys
 from pathlib import Path
 import numpy as np, pandas as pd
 from scipy.stats import spearmanr
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 P = Path("/workspace/andre01/honzawa/02-playground/toxpatho-patch-selector")
-R = P / "outputs/0029_20261028_external_finding_maps/v5"; O = R / "severity"
+R = P / "outputs/0029_20261028_external_finding_maps" / (sys.argv[1] if len(sys.argv) > 1 else "v8"); O = R / "severity"
 sh = pd.read_csv(R / "slide_group_shares.csv", dtype={"slide_id": str})
 sl = pd.read_csv(P / "outputs/0022_20261025_external_pharma_embeddings/default/slides.csv", dtype=str)
 fr = pd.read_csv("/workspace/andre01/honzawa/02-playground/tggate-bench/outputs/external_data_audit/findings_raw.csv", encoding="utf-8-sig", dtype=str)
