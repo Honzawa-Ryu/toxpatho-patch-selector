@@ -144,7 +144,7 @@ def main() -> None:
     ex26 = load_module(project_root / "experiments" / cfg["exp0026"] / "experiment.py", "exp0026")
     ex27 = load_module(project_root / "experiments" / cfg["exp0027"] / "experiment.py", "exp0027")
     cfg20 = yaml.safe_load(open(project_root / "experiments/0020_20261024_batch_robust_methods/config.yml"))
-    run26 = project_root / "outputs" / cfg["exp0026"]
+    run26 = project_root / cfg.get("proto_root", "outputs/" + cfg["exp0026"])   # プロトタイプの置き場。既定は0026
 
     # 1. 0026 tree_v3と同じLDA（Bayerの230枚、脂肪滴系の21枚のラベルを除く）
     src = project_root / "outputs" / cfg["exp0025"] / cfg["cache_from"]
@@ -191,10 +191,12 @@ def main() -> None:
     # 3. 各slideを2,048 patchに間引き、slide内の順位 → PCA256 → U（64）・LDA（L）
     pre_path = str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl")
     pre = pickle.loads(Path(pre_path).read_bytes())["pre"]
-    sc = json.loads((run26 / "tree_v3" / "scale_sphering_lda.json").read_text())
+    sl_run = [run for run, rep, k in cfg["maps"].values() if rep == "sphering_lda"]
+    sc = json.loads((run26 / sl_run[0] / "scale_sphering_lda.json").read_text()) if sl_run else None
     resume = bool(cfg.get("resume")) and (run_dir / "assignments.npz").exists()
+    feat_from = project_root / cfg["features_from"] if cfg.get("features_from") else run_dir / "features_sub.npz"
     if resume:
-        # 途中で落ちた実行の割り当て（row, 座標, 各表現のプロトタイプ番号）を読み、特徴の読み直しを飛ばす（2026-10-29: 地図の部分の修正の再実行用）
+        # 途中で落ちた実行の割り当て（row, 座標, 各表現のプロトタイプ番号）を読み、特徴の読み直しを飛ばす（地図の部分の修正の再実行用）
         import h5py
         z = np.load(run_dir / "assignments.npz")
         row, XY = z["row"], z["xy"]
@@ -207,22 +209,31 @@ def main() -> None:
         ex27._init_ctrl(pre_path, cfg["patches_per_slide"])   # 地図の白色化で対照群を読み直すため
         logger.info(f"resume: assignments for {len(row):,} patches loaded; {time.time() - t0:.0f}s")
     else:
-      with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(str(project_root / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl"), cfg["patches_per_slide"])) as ex:
-          Us, Ls, XYs, size0 = [], [], [], {}
-          for sid, (K, xy, s0) in zip(sl.slide_id, ex.map(_load_sub, sl.h5, chunksize=4)):
-              Us.append(K[:, :64])
-              Ls.append(tf(K)[:, :L].astype(np.float32))
-              XYs.append(xy)
-              size0[sid] = s0
-      row = np.concatenate([np.full(len(u), i) for i, u in enumerate(Us)])
-      U, Lp, XY = np.concatenate(Us), np.concatenate(Ls), np.concatenate(XYs)
-      del Us, Ls, XYs
-      expn = sl.EXP_ID.to_numpy()[row]
-      cm = sl.is_ctrl.to_numpy()[row]
-      e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
-      Sw = ex27.sphering(U, e_fix, np.r_[U[cm], U[cm]], np.r_[expn[cm], np.full(int(cm.sum()), -999)])
-      rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U}
-      logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
+        if feat_from.exists():
+            # 2026-10-29: 以前の実行で保存した間引き特徴（slide内の順位 → PCA256 の上位64と、LDAの13次元は固定なので再利用できる）
+            z = np.load(feat_from, allow_pickle=True)
+            U, Lp, row, XY = z["U"].astype(np.float32), z["Lp"].astype(np.float32), z["row"], z["xy"]
+            size0 = json.loads(str(z["size0"]))
+            assert (z["slide_ids"] == sl.slide_id.to_numpy()).all(), "features_from: slide list differs"
+            logger.info(f"features loaded from {feat_from}; {time.time() - t0:.0f}s")
+        else:
+            with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(pre_path, cfg["patches_per_slide"])) as ex:
+                Us, Ls, XYs, size0 = [], [], [], {}
+                for sid, (K, xy, s0) in zip(sl.slide_id, ex.map(_load_sub, sl.h5, chunksize=4)):
+                    Us.append(K[:, :64])
+                    Ls.append(tf(K)[:, :L].astype(np.float32))
+                    XYs.append(xy)
+                    size0[sid] = s0
+            row = np.concatenate([np.full(len(u), i) for i, u in enumerate(Us)])
+            U, Lp, XY = np.concatenate(Us), np.concatenate(Ls), np.concatenate(XYs)
+            del Us, Ls, XYs
+            np.savez_compressed(run_dir / "features_sub.npz", U=U.astype(np.float16), Lp=Lp.astype(np.float16), row=row, xy=XY, size0=json.dumps(size0), slide_ids=sl.slide_id.to_numpy().astype(str))
+        expn = sl.EXP_ID.to_numpy()[row]
+        cm = sl.is_ctrl.to_numpy()[row]
+        e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
+        Sw = ex27.sphering(U, e_fix, np.r_[U[cm], U[cm]], np.r_[expn[cm], np.full(int(cm.sum()), -999)])
+        rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U}
+        logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
 
     # 4. プロトタイプに割り当て、slideごとの構成比（同じ試験の対照群の平均を引く）
     names, shares, deltas, cls = {}, {}, {}, {}
@@ -379,7 +390,7 @@ def main() -> None:
             e = r.EXP_ID
             Uc = ctrl_U(e)
             Sf = ex27.sphering(Uf, np.full(len(Uf), e), Uc, np.full(len(Uc), e)) if len(Uc) else ex27.sphering(Uf, np.full(len(Uf), -999), ctrl_U(None), np.full(len(ctrl_U(None)), -999))
-            Xf = {"sphering_lda": np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1), "sphering": Sf, "lda": Lf, "unsup": Uf}
+            Xf = {"sphering_lda": (lambda: np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1)), "sphering": (lambda: Sf), "lda": (lambda: Lf), "unsup": (lambda: Uf)}
             w = openslide.OpenSlide(r.svs_path)
             th = w.get_thumbnail((mt["thumb"], mt["thumb"])).convert("RGB")
             scl = th.width / w.dimensions[0]
@@ -390,7 +401,7 @@ def main() -> None:
             for mode in ("named", "groups"):
                 panels = [th]
                 for m_, (run, rep, k) in cfg["maps"].items():
-                    X_ = torch.from_numpy(Xf[rep].astype(np.float32))
+                    X_ = torch.from_numpy(Xf[rep]().astype(np.float32))
                     cl_ = torch.cat([torch.cdist(x, cen_t[m_]).argmin(1) for x in X_.split(65536)]).numpy()
                     ov = Image.new("RGBA", th.size, (0, 0, 0, 0))
                     d = ImageDraw.Draw(ov)

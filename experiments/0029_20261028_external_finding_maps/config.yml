@@ -151,3 +151,34 @@ variants:
       knn: 30
       queries: 20000
       tsne_per_study: 500
+  v9:                          # 2026-10-29ユーザー: ①に必要最低限。Bayerだけで作った重心（0032）、表現はD（unsup）とC（LDAのみ）だけ
+    proto_root: outputs/0032_20261029_bayer_only_prototypes/v1
+    maps:
+      D_unsup: [., unsup, 100]
+      C_lda: [., lda, 100]
+    titles: {D_unsup: "D: unsup (no labels)", C_lda: "C: LDA only (Bayer labels)"}
+    thumb: 1000
+    zoom:
+      window_patches: 16
+      px_per_patch: 32
+      kinds: [necrosis, inflammation, random]
+      min_hits: 3
+      alpha: 70
+    study_effect:
+      knn: 30
+      queries: 20000
+      provider_specific: 0.9
+    necrosis_tiles:
+      n: 32
+      per_slide: 2
+    domain_gap:
+      qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+      features_dirs:
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+        - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+      tg_exps: 6
+      tg_per_exp: 4
+      patches: 2048
+      knn: 30
+      queries: 20000
+      tsne_per_study: 500

@@ -1,0 +1,18 @@
+# 0032: 仮説①用のプロトタイプ。Bayerの230枚だけで作る（0026は脂肪変性の試験を混ぜていた）。表現は C（LDAのみ）と D（unsup）だけ。
+# 2026-10-29ユーザー: ①を示すのに必要最低限に整理しなおして再実行。
+# 出力の形は0026に合わせる（0029・0030が proto_root で読む）: centroids_{rep}_k100.npy、tree/{rep}_k100/{assign_all.npy, prototypes_in_tree_order.csv, img/}
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # 脂肪滴系の所見がある21枚のラベルは、LDAにも名前付けにも使わない
+reps: [D_unsup, C_lda]
+k: 100
+consensus_runs: 10
+fit_points: 800000             # 1回あたりの学習点（Bayerの325万patchから無作為）
+cuts: [20, 30, 40]
+naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
+tiles_per_proto: 8

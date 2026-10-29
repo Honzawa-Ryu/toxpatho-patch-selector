@@ -54,3 +54,16 @@ variants:
       tiles_per_proto: 8
       protos_per_sheet: 25
       colors: {necrosis: "#D55E00", inflammation: "#E69F00", mitosis: "#8E44AD", single_cell_necrosis: "#B8860B", emh: "#56B4E9", central_vein: "#0072B2", portal_tract: "#009E73", large_vessel: "#CC79A7"}
+  v4:                          # 2026-10-29ユーザー: ①に必要最低限。Bayerだけで作った重心（0032）、表現はDとCだけ。名前は0029 v9。間引き特徴を保存して以後の再実行を短くする
+    proto_root: outputs/0032_20261029_bayer_only_prototypes/v1
+    names_from: v9
+    maps:
+      D_unsup: [., unsup, 100]
+      C_lda: [., lda, 100]
+    titles: {D_unsup: "D", C_lda: "C"}
+    maps_tiles:
+      n_per_finding: 2
+      thumb: 1000
+      tiles_per_proto: 8
+      protos_per_sheet: 25
+      colors: {necrosis: "#D55E00", inflammation: "#E69F00", mitosis: "#8E44AD", single_cell_necrosis: "#B8860B", emh: "#56B4E9", central_vein: "#0072B2", portal_tract: "#009E73", large_vessel: "#CC79A7"}

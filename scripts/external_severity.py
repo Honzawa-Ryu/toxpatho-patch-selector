@@ -17,7 +17,10 @@ def grade(mask):
 sl["necrosis_grade"] = grade(fr.finding_raw.str.contains("ecrosis") & ~fr.finding_raw.str.contains("bileduct|Capsule"))
 sl["inflammation_grade"] = grade(fr.finding_raw.str.contains("infiltration"))
 d = sh.merge(sl[["slide_id", "provider", "necrosis_grade", "inflammation_grade"]], on="slide_id")
-MAPS = ["D_unsup", "C_lda", "B_sphering", "A_sphering_lda"]
+_RUN = sys.argv[1] if len(sys.argv) > 1 else "v8"
+import yaml
+_C = yaml.safe_load(open(P / "experiments/0029_20261028_external_finding_maps/config.yml"))
+MAPS = list({**_C, **_C.get("variants", {}).get(_RUN, {})}["maps"])
 rng = np.random.default_rng(0)
 rows = []
 for g in ["necrosis", "inflammation"]:
@@ -42,7 +45,7 @@ o = pd.DataFrame(rows); o.to_csv(O / "severity_spearman.csv", index=False)
 pd.set_option("display.width", 220); print(o.round(3).to_string(index=False))
 print(d.groupby(["necrosis_grade"]).size().to_dict(), d.groupby(["inflammation_grade"]).size().to_dict())
 # 図
-fig, axes = plt.subplots(2, 4, figsize=(13, 6.4), sharey="row")
+fig, axes = plt.subplots(2, len(MAPS), figsize=(3.3 * len(MAPS), 6.4), sharey="row", squeeze=False)
 col = {"shionogi": "#0072B2", "eisai": "#D55E00"}
 title = {"D_unsup": "D: unsup (no labels, no norm.)", "C_lda": "C: LDA only", "B_sphering": "B: Sphering", "A_sphering_lda": "A: Sphering + LDA"}
 for r_, g in enumerate(["necrosis", "inflammation"]):
@@ -52,7 +55,7 @@ for r_, g in enumerate(["necrosis", "inflammation"]):
             mm = d.provider == p_
             ax.scatter(gr[mm] + rng.uniform(-.12, .12, mm.sum()) + (-.06 if p_ == "shionogi" else .06), d.loc[mm, f"{m}__{g}"] * 100, s=14, color=cc, alpha=.8, label=p_.capitalize() if (r_, c_) == (0, 0) else None)
         rr = o[(o.finding == g) & (o["map"] == m)].iloc[0]
-        ax.set_title(f"{title[m]}\nrho {rr.rho_pooled:.2f} [{rr.rho_lo:.2f}, {rr.rho_hi:.2f}]", fontsize=8.5)
+        ax.set_title(f"{title.get(m, m)}\nrho {rr.rho_pooled:.2f} [{rr.rho_lo:.2f}, {rr.rho_hi:.2f}]", fontsize=8.5)
         ax.set_xticks(sorted(gr.unique()))
         if r_ == 1: ax.set_xlabel("recorded grade (within-company ordinal; 0 = not recorded)", fontsize=8)
         if c_ == 0: ax.set_ylabel(f"% patches colored as {g}", fontsize=9)

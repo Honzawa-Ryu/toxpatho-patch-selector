@@ -19,17 +19,21 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings" / (sys.argv[1] if len(sys.argv) > 1 else "v3")
+RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings" / _RUN
 OUT = RUN / "severity"
-NAMES = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))["names_from"]
-MAPS = ["D_unsup", "C_lda", "B_sphering", "A_sphering_lda"]
+_RUN = sys.argv[1] if len(sys.argv) > 1 else "v4"
+_CFG = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))
+_CFG = {**_CFG, **_CFG.get("variants", {}).get(_RUN, {})}
+NAMES = _CFG["names_from"]
+MAPS = list(_CFG["maps"])
+_MAPS_OLD = ["D_unsup", "C_lda", "B_sphering", "A_sphering_lda"]
 TITLE = {"D_unsup": "D: unsup", "C_lda": "C: LDA only", "B_sphering": "B: Sphering", "A_sphering_lda": "A: Sphering + LDA"}
 N_BOOT = 2000
 
 
 def main():
     OUT.mkdir(exist_ok=True)
-    cfg = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))
+    cfg = _CFG
     findings = {f: b for f, b in cfg["findings"].items() if b}
     sl = pd.read_csv(RUN / "slides.csv", dtype={"slide_id": str})
     ctrl = sl.DOSE_LEVEL.eq("Control").to_numpy()
@@ -65,7 +69,7 @@ def main():
                          "rho_recorded_only": rho(g[g > 0], s[g > 0]), "n_recorded": int((g > 0).sum()), "n_grades": int(len(np.unique(g[g > 0]))),
                          "median_by_grade": {int(k): round(float(np.median(s[g == k])), 3) for k in np.unique(g)}})
         for a, bb in [("C_lda", "D_unsup"), ("A_sphering_lda", "B_sphering")]:
-            if (f, a) not in score:
+            if a not in MAPS or bb not in MAPS or (f, a) not in score:
                 continue
             sb = score.get((f, bb), np.zeros(len(sl)))   # 名前のないプロトタイプ: 相関0扱い
             d = np.array([rho(g, score[(f, a)], ii) - (rho(g, sb, ii) if sb.std() > 0 else 0.0) for ii in boots])
@@ -81,7 +85,7 @@ def main():
 
     # 図: 所見 × 表現。横軸は記録の程度、縦軸は名前付きプロトタイプの割合の増分（%）。灰は対照群
     F = list(findings)
-    fig, axes = plt.subplots(len(F), 4, figsize=(13, 2.7 * len(F)), sharey="row")
+    fig, axes = plt.subplots(len(F), len(MAPS), figsize=(3.3 * len(MAPS), 2.7 * len(F)), sharey="row", squeeze=False)
     for r_, f in enumerate(F):
         g = sl[f"grade__{f}"].to_numpy()
         for c_, m in enumerate(MAPS):
@@ -93,10 +97,10 @@ def main():
                 tr = ~ctrl
                 ax.scatter(g[tr] + jit[tr], s[tr], s=7, color="#0072B2", alpha=.6, label="treated" if (r_, c_) == (0, 0) else None)
                 rr = res[(res.finding == f) & (res["map"] == m)].iloc[0]
-                ax.set_title(f"{TITLE[m]}\nrho {rr.rho:.2f} [{rr.lo:.2f}, {rr.hi:.2f}]", fontsize=8.5)
+                ax.set_title(f"{TITLE.get(m, m)}\nrho {rr.rho:.2f} [{rr.lo:.2f}, {rr.hi:.2f}]", fontsize=8.5)
             else:
                 ax.text(.5, .5, "no prototype\nnamed " + findings[f], ha="center", va="center", transform=ax.transAxes, fontsize=8, color="#888888")
-                ax.set_title(TITLE[m], fontsize=8.5)
+                ax.set_title(TITLE.get(m, m), fontsize=8.5)
             ax.set_xticks(sorted(np.unique(g)))
             ax.axhline(0, color="#dddddd", lw=.8)
             ax.spines[["top", "right"]].set_visible(False)

@@ -143,7 +143,7 @@ def main() -> None:
     ex27 = load_module(project_root / "experiments" / cfg["exp0027"] / "experiment.py", "exp0027")
     cfg20 = yaml.safe_load(open(project_root / "experiments/0020_20261024_batch_robust_methods/config.yml"))
     prio = cfg20["label_priority"]
-    run26 = project_root / "outputs" / cfg["exp0026"]
+    run26 = project_root / cfg.get("proto_root", "outputs/" + cfg["exp0026"])   # プロトタイプ（重心・割り当て・系統樹）の置き場。既定は0026
 
     # 1. TG-GATEs: 0026 tree_v3と同じLDA（脂肪滴系の21枚のラベルを除く）を学び直す。プロトタイプの名前はBayerのラベルから
     src = project_root / "outputs" / cfg["exp0025"] / cfg["cache_from"]
