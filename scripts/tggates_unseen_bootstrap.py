@@ -17,14 +17,13 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
-RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings" / _RUN
-OUT = RUN / "bootstrap"
 _RUN = sys.argv[1] if len(sys.argv) > 1 else "v4"
 _CFG = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))
 _CFG = {**_CFG, **_CFG.get("variants", {}).get(_RUN, {})}
 NAMES = _CFG["names_from"]
 MAPS = list(_CFG["maps"])
-_MAPS_OLD = ["D_unsup", "C_lda", "B_sphering", "A_sphering_lda"]
+RUN = ROOT / "outputs/0030_20261028_tggates_unseen_findings" / _RUN
+OUT = RUN / "bootstrap"
 N_BOOT = 2000
 
 
