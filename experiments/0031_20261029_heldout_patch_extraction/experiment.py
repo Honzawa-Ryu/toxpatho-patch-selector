@@ -198,7 +198,7 @@ def main() -> None:
         L_f = len(np.unique(lab[tr][lab[tr] >= 0])) - 1   # 学習側にないラベルがあればLDAの次元は減る
         Lall = np.concatenate([tf(b_)[:, :L_f] for b_ in np.array_split(K, 40)]).astype(np.float32)
         fac = float(Sw[tr].std(0).mean() / Lall[tr].std(0).mean())
-        reps = {"D_unsup": U, "C_lda": Lall, "B_sphering": Sw, "A_sphering_lda": np.concatenate([Sw, cfg["lda_beta"] * fac * Lall], 1)}
+        reps = {"D_unsup": U, "D13_unsup13": U[:, :L_f], "C_lda": Lall, "B_sphering": Sw, "A_sphering_lda": np.concatenate([Sw, cfg["lda_beta"] * fac * Lall], 1)}
         for r_ in cfg["reps"]:
             X = torch.from_numpy(reps[r_]).to(device)
             _, cen = ex25.consensus_kmeans(X[torch.from_numpy(np.where(tr)[0]).to(device)], cfg["k"], cfg["consensus_runs"], cfg["fit_points"], cfg["seed"] + fi, device)
@@ -233,7 +233,7 @@ def main() -> None:
     res.to_csv(run_dir / "heldout_label_metrics.csv", index=False)
     nonpar = [i for i, n in enumerate(names_l) if n != "parenchyma"]
     diffs = []
-    for a, b in [("C_lda", "D_unsup"), ("A_sphering_lda", "B_sphering"), ("A_sphering_lda", "D_unsup"), ("B_sphering", "D_unsup")]:
+    for a, b in [(a_, b_) for a_, b_ in [("C_lda", "D_unsup"), ("C_lda", "D13_unsup13"), ("D13_unsup13", "D_unsup"), ("A_sphering_lda", "B_sphering"), ("A_sphering_lda", "D_unsup"), ("B_sphering", "D_unsup")] if a_ in B and b_ in B]:
         d_macro = np.nanmean(B[a][:, nonpar], 1) - np.nanmean(B[b][:, nonpar], 1)
         point = np.nanmean(M[a][nonpar, 2]) - np.nanmean(M[b][nonpar, 2])
         diffs.append({"comparison": f"{a} - {b}", "label": "macro F1 (all but parenchyma)", "diff": point, "lo": np.nanpercentile(d_macro, 2.5), "hi": np.nanpercentile(d_macro, 97.5), "p_le0": float(np.mean(d_macro <= 0))})
@@ -251,11 +251,11 @@ def main() -> None:
 
     # 5. 図: ラベルごとのF1（95%区間）
     fig, ax = plt.subplots(figsize=(9, 0.42 * nlab + 1.6))
-    mk = {"D_unsup": ("o", "#999999"), "C_lda": ("s", "#009E73"), "B_sphering": ("^", "#0072B2"), "A_sphering_lda": ("D", "#D55E00")}
+    mk = {"D_unsup": ("o", "#999999"), "D13_unsup13": ("v", "#555555"), "C_lda": ("s", "#009E73"), "B_sphering": ("^", "#0072B2"), "A_sphering_lda": ("D", "#D55E00")}
     order = [names_l[i] for i in np.argsort([-(y == i).sum() for i in range(nlab)])]
     for k_, r_ in enumerate(cfg["reps"]):
         t_ = res[res.rep == r_].set_index("label").reindex(order)
-        yy = np.arange(len(order)) + (k_ - 1.5) * 0.17
+        yy = np.arange(len(order)) + (k_ - (len(cfg["reps"]) - 1) / 2) * 0.17
         ax.errorbar(t_.F1, yy, xerr=[t_.F1 - t_.F1_lo, t_.F1_hi - t_.F1], fmt=mk[r_][0], color=mk[r_][1], ms=5, lw=1, capsize=0, label=r_)
     ax.set_yticks(range(len(order)), [f"{l} (n={int((y == names_l.index(l)).sum()):,})" for l in order], fontsize=8)
     ax.invert_yaxis()

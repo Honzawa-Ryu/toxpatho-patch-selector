@@ -194,7 +194,7 @@ def main() -> None:
     def as_rep(rep, U_, S_, L_):
         """表現の名前から、外部（またはTG-GATEsの対照群）の特徴を組み立てる"""
         return {"sphering_lda": lambda: np.concatenate([S_, sc["lda_beta"] * sc["lda_scale"] * L_], axis=1), "sphering": lambda: S_,
-                "lda": lambda: L_, "unsup": lambda: U_}[rep]().astype(np.float32)
+                "lda": lambda: L_, "unsup": lambda: U_, "unsup13": lambda: U_[:, :L]}[rep]().astype(np.float32)
     X = {mname: as_rep(rep, U, Sw, Lp) for mname, (run, rep, k) in cfg["maps"].items()}
     titles = cfg.get("titles", {"A_sphering_lda": "A: Sphering + LDA", "B_sphering": "B: Sphering"})
     cls = {}

@@ -68,7 +68,7 @@ def main():
             rows.append({"finding": f, "map": m, "rho": rho(g, s), "lo": np.nanpercentile(b, 2.5), "hi": np.nanpercentile(b, 97.5),
                          "rho_recorded_only": rho(g[g > 0], s[g > 0]), "n_recorded": int((g > 0).sum()), "n_grades": int(len(np.unique(g[g > 0]))),
                          "median_by_grade": {int(k): round(float(np.median(s[g == k])), 3) for k in np.unique(g)}})
-        for a, bb in [("C_lda", "D_unsup"), ("A_sphering_lda", "B_sphering")]:
+        for a, bb in [("C_lda", "D_unsup"), ("C_lda", "D13_unsup13"), ("A_sphering_lda", "B_sphering")]:
             if a not in MAPS or bb not in MAPS or (f, a) not in score:
                 continue
             sb = score.get((f, bb), np.zeros(len(sl)))   # 名前のないプロトタイプ: 相関0扱い

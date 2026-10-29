@@ -59,8 +59,9 @@ variants:
     names_from: v9
     maps:
       D_unsup: [., unsup, 100]
+      D13_unsup13: [., unsup13, 100]
       C_lda: [., lda, 100]
-    titles: {D_unsup: "D", C_lda: "C"}
+    titles: {D_unsup: "D (64d)", D13_unsup13: "D13 (13d)", C_lda: "C (LDA 13d)"}
     maps_tiles:
       n_per_finding: 2
       thumb: 1000

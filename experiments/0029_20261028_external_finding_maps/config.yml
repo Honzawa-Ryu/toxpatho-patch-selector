@@ -155,8 +155,9 @@ variants:
     proto_root: outputs/0032_20261029_bayer_only_prototypes/v1
     maps:
       D_unsup: [., unsup, 100]
+      D13_unsup13: [., unsup13, 100]
       C_lda: [., lda, 100]
-    titles: {D_unsup: "D: unsup (no labels)", C_lda: "C: LDA only (Bayer labels)"}
+    titles: {D_unsup: "D: unsup 64d (no labels)", D13_unsup13: "D13: unsup 13d (no labels)", C_lda: "C: LDA 13d (Bayer labels)"}
     thumb: 1000
     zoom:
       window_patches: 16

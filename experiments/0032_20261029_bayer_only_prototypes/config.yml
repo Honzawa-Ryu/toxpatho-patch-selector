@@ -9,7 +9,7 @@ cache_from: cache_v1
 combo_resid_dim: 16
 combo_resid_weight: 0.5
 lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # 脂肪滴系の所見がある21枚のラベルは、LDAにも名前付けにも使わない
-reps: [D_unsup, C_lda]
+reps: [D_unsup, D13_unsup13, C_lda]   # D13 = PCAの上位13次元（LDAと同じ次元数の対照）
 k: 100
 consensus_runs: 10
 fit_points: 800000             # 1回あたりの学習点（Bayerの325万patchから無作為）

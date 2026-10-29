@@ -232,7 +232,7 @@ def main() -> None:
         cm = sl.is_ctrl.to_numpy()[row]
         e_fix = np.where(np.isin(expn, expn[cm]), expn, -999)   # 対照群のない試験は全試験の対照群でまとめて白色化
         Sw = ex27.sphering(U, e_fix, np.r_[U[cm], U[cm]], np.r_[expn[cm], np.full(int(cm.sum()), -999)])
-        rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U}
+        rep_X = {"sphering_lda": lambda: np.concatenate([Sw, sc["lda_beta"] * sc["lda_scale"] * Lp], 1), "sphering": lambda: Sw, "lda": lambda: Lp, "unsup": lambda: U, "unsup13": lambda: U[:, :L]}
         logger.info(f"patches: {len(U):,}; {time.time() - t0:.0f}s")
 
     # 4. プロトタイプに割り当て、slideごとの構成比（同じ試験の対照群の平均を引く）
@@ -390,7 +390,7 @@ def main() -> None:
             e = r.EXP_ID
             Uc = ctrl_U(e)
             Sf = ex27.sphering(Uf, np.full(len(Uf), e), Uc, np.full(len(Uc), e)) if len(Uc) else ex27.sphering(Uf, np.full(len(Uf), -999), ctrl_U(None), np.full(len(ctrl_U(None)), -999))
-            Xf = {"sphering_lda": (lambda: np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1)), "sphering": (lambda: Sf), "lda": (lambda: Lf), "unsup": (lambda: Uf)}
+            Xf = {"sphering_lda": (lambda: np.concatenate([Sf, sc["lda_beta"] * sc["lda_scale"] * Lf], 1)), "sphering": (lambda: Sf), "lda": (lambda: Lf), "unsup": (lambda: Uf), "unsup13": (lambda: Uf[:, :L])}
             w = openslide.OpenSlide(r.svs_path)
             th = w.get_thumbnail((mt["thumb"], mt["thumb"])).convert("RGB")
             scl = th.width / w.dimensions[0]

@@ -72,7 +72,7 @@ def main():
     for f, blab in cfg["findings"].items():
         y = (sl[f"grade__{f}"].to_numpy() > 0).astype(int)
         for kind in ["readout", "named"]:
-            for a, bb in [("C_lda", "D_unsup"), ("A_sphering_lda", "B_sphering"), ("A_sphering_lda", "D_unsup")]:
+            for a, bb in [("C_lda", "D_unsup"), ("C_lda", "D13_unsup13"), ("D13_unsup13", "D_unsup"), ("A_sphering_lda", "B_sphering"), ("A_sphering_lda", "D_unsup")]:
                 if a not in MAPS or bb not in MAPS or (f, kind, a) not in scores:
                     continue
                 if (f, kind, bb) not in scores:   # ラベルなしの側に名前の付いたプロトタイプがない: そのプロトタイプでは当てられない（AUC 0.5扱い）
@@ -86,7 +86,7 @@ def main():
     # Bayerのラベルがある5所見の平均の差（同じ復元抽出で）
     fl = [f for f, b in cfg["findings"].items() if b]
     for kind in ["readout", "named"]:
-        for a, bb in [("C_lda", "D_unsup"), ("A_sphering_lda", "D_unsup")]:
+        for a, bb in [("C_lda", "D_unsup"), ("C_lda", "D13_unsup13"), ("A_sphering_lda", "D_unsup")]:
             if a not in MAPS or bb not in MAPS:
                 continue
             fs = [f for f in fl if (f, kind, a) in scores]

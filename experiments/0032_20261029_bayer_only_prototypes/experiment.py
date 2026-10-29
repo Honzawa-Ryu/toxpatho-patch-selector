@@ -144,7 +144,8 @@ def main() -> None:
 
     # 2. 表現: D = PCA256の上位64、C = Bayerのラベルで学んだLDAの13次元
     tf = ex26.fit_combo(K, lab_c, cfg, cfg["seed"])
-    reps = {"D_unsup": K[:, :64].astype(np.float32), "C_lda": np.concatenate([tf(b_)[:, :L] for b_ in np.array_split(K, 40)]).astype(np.float32)}
+    reps = {"D_unsup": K[:, :64].astype(np.float32), "D13_unsup13": K[:, :L].astype(np.float32),   # D13: LDAと同じ次元数（13）までPCAで落とした対照（2026-10-29ユーザー）
+            "C_lda": np.concatenate([tf(b_)[:, :L] for b_ in np.array_split(K, 40)]).astype(np.float32)}
     del K
 
     # 3. 表現ごとに: コンセンサスk-means → 全patchの割り当て → Ward法の系統樹 → 名前付け → 見た目

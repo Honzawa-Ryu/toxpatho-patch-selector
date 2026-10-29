@@ -25,3 +25,6 @@ consensus_runs: 5
 fit_points: 300000
 naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
 bootstrap: 2000                # 化合物を復元抽出
+variants:
+  v2:                          # 2026-10-29ユーザー: ①に必要最低限。D（64次元）、D13（PCAをLDAと同じ13次元まで落とした対照）、C（LDAのみ）
+    reps: [D_unsup, D13_unsup13, C_lda]
