@@ -1,0 +1,66 @@
+# 0033: 仮説②（Bayerにラベルのない所見も、①と同じ土台の表現でプロトタイプとして取り出せる）に使う表現を1つ決める。
+# 2026-11-01ユーザー: ①ではC（LDA）が最良、ラベルなし所見ではB（Sphering）・D13が最良で、両立する表現がまだない。候補を同じ手順で作り、3つの評価を1つの表に並べる。
+#   (a) 0031式: Bayerの230枚を化合物単位で5分割し、学習に入れない化合物のpatchの割り当てをポリゴンと照合（ラベルあり所見）
+#   (b) 0030式: 学習に使わないTG-GATEs 3,319枚で、記録の有無の読み出しAUC（ラベルなし5所見が本命。ラベルあり5所見は名前付きプロトタイプでも）
+#   (c) 0026式: 脂肪変性の3試験（CCl4・cholesterol食）で、脂肪変性ありslide由来の純度が0.9以上のプロトタイプ数と、程度との相関
+# 表現（土台はすべて slide内の順位 → 0021のPCA256）:
+#   D_unsup (PCA64) / D13_unsup13 (PCA13) / C_lda (LDA13) / B_sphering (試験ごとに対照群で白色化したPCA64) / A_sphering_lda (B ‖ LDA)
+#   E_unsup13_lda (D13 ‖ LDA: 次元を落とした元の表現にLDAを並べる) / F_combo (LDA ‖ 残差PCA16、重み0.5: 0025のcombo)
+# プロトタイプ（(b)(c)用）はBayerの230枚＋脂肪変性の3試験で作る（0026と同じ集合）。(a)は分割内で閉じる（0031と同じ）。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0029: 0029_20261028_external_finding_maps
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0031: 0031_20261029_heldout_patch_extraction
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_beta: 1.0
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # 脂肪滴系の所見がある21枚のラベルは、学習・名前付け・評価のどれにも使わない
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+patches_per_slide: 2048
+workers: 12
+reps: [D_unsup, D13_unsup13, C_lda, B_sphering, A_sphering_lda, E_unsup13_lda, F_combo]
+k: 100
+naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
+heldout:                       # (a) 0031 v2と同じ
+  folds: 5
+  consensus_runs: 5
+  fit_points: 300000
+  bootstrap: 2000
+proto:                         # (b)(c)のプロトタイプ。学習点はBayerと脂肪変性の試験から同数（0026と同じ）
+  consensus_runs: 10
+  fit_annot: 400000
+  fit_target: 400000
+  fit_points: 400000
+fatty:                         # (c) 0026と同じ
+  target_exps: [66, 67, 698]   # CCl4 単回・反復（小葉中心性）、cholesterol食（辺縁性）
+  fat_findings: ["Degeneration, fatty", "Vacuolization, cytoplasmic", "Deposit, lipid", "Degeneration, vacuolar"]
+  grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+  min_ctrl: 2
+  min_proto_patches: 200       # 0026は500（全patch）。ここは2,048 patch/slideに間引くので下げる
+unseen:                        # (b) 0030 v4と同じslide（Bayerの230枚と脂肪変性の3試験を除く、対象の所見がある試験の全slide）
+  exclude_exps: [66, 67, 698]
+  findings:
+    Necrosis: necrosis
+    Single cell necrosis: single_cell_necrosis
+    Cellular infiltration: inflammation
+    Increased mitosis: mitosis
+    Hematopoiesis, extramedullary: emh
+    Proliferation, bile duct: ""
+    Hypertrophy: ""
+    Change, eosinophilic: ""
+    Vacuolization, cytoplasmic: ""
+    Degeneration, granular, eosinophilic: ""
+  grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+  cv_splits: 5
+  bootstrap: 1000
+  features_from: ""            # 以前の実行で保存した features_unseen.npz（PCA256、2,048 patch/slide）。空なら読み直して保存する
+variants: {}                   # 上書きは浅い（unseen を変えるときは unseen 全体を書く）
