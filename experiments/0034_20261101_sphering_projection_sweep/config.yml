@@ -1,0 +1,66 @@
+# 0034: A（Sphering ‖ LDA）を超える表現を探す（2026-11-01ユーザー: LDAの次元を変えるなど、まだやっていないことを試す）。
+# LDAの次元はクラス数−1（13）が上限なので、(1) LDAを出力次元を増やせる教師あり射影（PLS-DA 32/64、NCA 32）に替える、(2) Aの β（LDAの重み）と白色化の次元（64 → 128）を振る。
+# 評価は0033と同じ3つ（(a) held-out patch F1、(b) 未学習3,319枚の読み出しAUC、(c) 脂肪変性の純度）。未学習slideの特徴は0033 v1の保存を読む。
+# 表現 = [土台（白色化したPCA64/128、またはなし）‖ β × fac × 教師あり射影]。fac は土台と射影の次元あたりの標準偏差をそろえる係数（0033のAと同じ）。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0029: 0029_20261028_external_finding_maps
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0031: 0031_20261029_heldout_patch_extraction
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv   # 脂肪滴系の所見がある21枚のラベルは、学習・名前付け・評価のどれにも使わない
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+patches_per_slide: 2048
+workers: 12
+reps:                          # 名前: {base: none|sph64|sph128, proj: none|lda|pls32|pls64|nca32, beta}
+  C_lda:              {base: none,   proj: lda,   beta: 1.0}   # 参照（0033のC）
+  B_sphering:         {base: sph64,  proj: none,  beta: 1.0}   # 参照（0033のB）
+  A_sphering_lda:     {base: sph64,  proj: lda,   beta: 1.0}   # 参照（0033のA）
+  A_beta0.5:          {base: sph64,  proj: lda,   beta: 0.5}
+  A_beta2:            {base: sph64,  proj: lda,   beta: 2.0}
+  A_beta4:            {base: sph64,  proj: lda,   beta: 4.0}
+  B128_sphering:      {base: sph128, proj: none,  beta: 1.0}
+  A128_sphering_lda:  {base: sph128, proj: lda,   beta: 1.0}
+  P32_sphering_pls32: {base: sph64,  proj: pls32, beta: 1.0}
+  P64_sphering_pls64: {base: sph64,  proj: pls64, beta: 1.0}
+  N32_sphering_nca32: {base: sph64,  proj: nca32, beta: 1.0}
+nca:                           # NCAは全組の距離を使うので、学習はクラスごとに上限を設けた部分集合で
+  per_class: 600
+  max_iter: 40
+k: 100
+naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
+heldout: {folds: 5, consensus_runs: 5, fit_points: 300000, bootstrap: 2000}   # (a) 0031 v2・0033と同じ
+proto: {consensus_runs: 10, fit_annot: 400000, fit_target: 400000, fit_points: 400000}   # (b)(c) 0033と同じ
+fatty:                         # (c) 0033と同じ
+  target_exps: [66, 67, 698]
+  fat_findings: ["Degeneration, fatty", "Vacuolization, cytoplasmic", "Deposit, lipid", "Degeneration, vacuolar"]
+  grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+  min_ctrl: 2
+  min_proto_patches: 200
+unseen:                        # (b) 0033と同じslide。特徴は0033 v1の保存（PCA256、2,048 patch/slide）
+  exclude_exps: [66, 67, 698]
+  findings:
+    Necrosis: necrosis
+    Single cell necrosis: single_cell_necrosis
+    Cellular infiltration: inflammation
+    Increased mitosis: mitosis
+    Hematopoiesis, extramedullary: emh
+    Proliferation, bile duct: ""
+    Hypertrophy: ""
+    Change, eosinophilic: ""
+    Vacuolization, cytoplasmic: ""
+    Degeneration, granular, eosinophilic: ""
+  grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+  cv_splits: 5
+  bootstrap: 1000
+  features_from: outputs/0033_20261101_labeled_unlabeled_tradeoff/v1/features_unseen.npz
+variants: {}                   # 上書きは浅い（reps を変えるときは reps 全体を書く）
