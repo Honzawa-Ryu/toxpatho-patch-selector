@@ -136,6 +136,9 @@ def main():
 
     slide_c = np.searchsorted(ci, r_c)                 # 対照群内のslide番号（0..）
     e_c, s_c = exp_code[r_c], scan_code[r_c]
+    # 2026-11-02ユーザー: 平面プロット（t-SNE）を描き直せるように、対照群の表現と属性を保存（scripts/batch_mixing_tsne_figure.py が読む）
+    np.savez_compressed(OUT / "reps_controls.npz", **{f"X_{r}": X[r] for r in REPS}, slide=slide_c, exp=e_c, scanner=s_c,
+                        exp_id=sl.EXP_ID.to_numpy()[ci].astype(str), slide_id=sl.slide_id.to_numpy()[ci].astype(str), compound=sl.COMPOUND_NAME.to_numpy()[ci].astype(str), scanner_names=np.array(SCANNERS))
     sm = s_c >= 0
     e_sl, s_sl = exp_code[ci], scan_code[ci]
     pair_kind = np.where(e_sl[:, None] == e_sl[None, :], "same_experiment",
