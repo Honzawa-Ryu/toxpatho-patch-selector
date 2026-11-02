@@ -65,7 +65,7 @@ def load_module(path, name):
     return mod
 
 
-COL = {"A_sphering_lda": "#E69F00", "A128_sphering_lda": "#0072B2"}   # Okabe-Ito
+COL = {"A_sphering_lda": "#E69F00", "A128_sphering_lda": "#0072B2", "B128_sphering": "#56B4E9", "B_sphering": "#009E73", "D_unsup": "#999999"}   # Okabe-Ito
 
 
 # ---------------- クラスタリングの部品 ----------------
@@ -266,7 +266,9 @@ def main() -> None:
         e_fix = np.where(np.isin(exp_p[mu], exp_p[cm]), exp_p[mu], -999)
         out[mu] = ex27.sphering(U[mu], e_fix, np.r_[U[cm], U[cm]], np.r_[exp_p[cm], np.full(int(cm.sum()), -999)])
         return out.astype(np.float32)
-    Sw = {d: sphere(d) for d in sorted(set(reps.values()))}
+    # reps の値: 整数 d = 白色化 d 次元 ‖ LDA（v1）。辞書 {sphere: d か 0, lda: true/false} = ラベルの効果を切り分けるための版（v2、2026-11-02ユーザー）
+    spec = {r: (v if isinstance(v, dict) else {"sphere": v, "lda": True}) for r, v in reps.items()}
+    Sw = {d: sphere(d) for d in sorted({s["sphere"] for s in spec.values() if s["sphere"]})}
     del Kc
     logger.info(f"sphering done ({sorted(Sw)}); {time.time() - t0:.0f}s")
 
@@ -277,9 +279,12 @@ def main() -> None:
         return np.concatenate([tf(b_)[:, :L_] for b_ in np.array_split(K_all, max(1, N // 200000))]).astype(np.float32)
 
     def rep_X(name, Lw):
-        d = reps[name]
-        fac = float(Sw[d].std(0).mean() / Lw.std(0).mean())
-        return np.concatenate([Sw[d], cfg["lda_beta"] * fac * Lw], 1).astype(np.float32)
+        d, use_lda = spec[name]["sphere"], spec[name]["lda"]
+        base = Sw[d] if d else K_all[:, :64].astype(np.float32)   # 白色化なし = slide 内の順位 → PCA の上位 64（D）
+        if not use_lda:
+            return base
+        fac = float(base.std(0).mean() / Lw.std(0).mean())
+        return np.concatenate([base, cfg["lda_beta"] * fac * Lw], 1).astype(np.float32)
 
     # ---------------- 方法 ----------------
     fl, sp, tr_cfg, ev = cfg["flat"], cfg["split"], cfg["tree"], cfg["eval"]
@@ -532,9 +537,10 @@ def main() -> None:
     for ax, (col, ttl) in zip(axes.ravel(), panels):
         for i, rname in enumerate(reps):
             s_ = summ[summ.rep == rname].set_index("method").reindex(methods)
-            ax.bar(xs + (i - 0.5) * 0.4, s_[col], width=0.4, color=COL[rname], label=rname)
+            bw = 0.8 / len(reps)
+            ax.bar(xs + (i - (len(reps) - 1) / 2) * bw, s_[col], width=bw, color=COL[rname], label=rname)
             if col in ("macro_coverage", "macro_F1"):
-                ax.errorbar(xs + (i - 0.5) * 0.4, s_[col], yerr=[s_[col] - s_[col + "_lo"], s_[col + "_hi"] - s_[col]], fmt="none", ecolor="black", lw=0.8)
+                ax.errorbar(xs + (i - (len(reps) - 1) / 2) * bw, s_[col], yerr=[s_[col] - s_[col + "_lo"], s_[col + "_hi"] - s_[col]], fmt="none", ecolor="black", lw=0.8)
         ax.set_xticks(xs)
         ax.set_xticklabels(methods, rotation=40, ha="right", fontsize=8)
         ax.set_title(ttl, fontsize=9)

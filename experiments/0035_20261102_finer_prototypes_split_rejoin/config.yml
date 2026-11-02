@@ -75,4 +75,9 @@ eval:
   heldout_folds: 5
   bootstrap: 500
   cv_splits: 5
-variants: {}
+variants:
+  v2:                          # 2026-11-02ユーザー: LDA なしで同様のプロトタイプを作り、ラベルの効果を切り分ける。v1 の A128 と同じ手順で、LDA を外した表現
+    reps:
+      B128_sphering: {sphere: 128, lda: false}   # A128 から LDA を外したもの
+      B_sphering: {sphere: 64, lda: false}       # A から LDA を外したもの
+      D_unsup: {sphere: 0, lda: false}           # 白色化もなし（slide 内の順位 → PCA64）
