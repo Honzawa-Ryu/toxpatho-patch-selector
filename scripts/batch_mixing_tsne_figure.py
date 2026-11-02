@@ -78,9 +78,9 @@ def main():
         for i, e in enumerate(sel):
             m = exp[pick2] == e
             s = int(np.bincount(scan[pick2][m]).argmax())
-            cp = comp[np.where(exp == e)[0][0]]
+            sl0 = z["slide"][np.where(exp == e)[0][0]]          # exp_id・compound は slide ごとの配列なので slide 番号で引く
             ax.scatter(Y[m, 0], Y[m, 1], s=9 if s == 0 else 14, alpha=0.6, color=EXP_COL[i], marker="o" if s == 0 else "x", linewidths=0 if s == 0 else 0.8,
-                       label=f"exp {exp_id[np.where(exp == e)[0][0]]} {cp[:14]} ({names[s]})")
+                       label=f"exp {exp_id[sl0]} {comp[sl0][:14]} ({names[s]})")
         style(ax, f"{TITLES[r]}\nkNN: other experiment {summ.loc[r, 'knn_other_experiment']:.2f} (fully mixed {summ.loc[r, 'knn_other_experiment_expected']:.2f})")
     axes[0].legend(loc="lower left", fontsize=7, frameon=False, markerscale=2)
     fig.suptitle(f"TG-GATEs control patches, {len(sel)} experiments ({N_SEL_PER_SCANNER} per scanner), {PER_EXP_SEL} patches each; colour = experiment, marker = scanner (o {names[0]}, x {names[1]})", fontsize=11)
