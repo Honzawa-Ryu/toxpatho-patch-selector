@@ -1,10 +1,11 @@
-"""0035 の脂肪変性プロトタイプを目で確かめる（2026-11-02ユーザー: 本当に脂肪変性か、CCl4（小葉中心性・大滴）と cholesterol 食（辺縁性・小滴）が分かれているか）。
+"""0035 の脂肪変性プロトタイプを目で確かめるタイルのシート（2026-11-02ユーザー: 本当に脂肪変性か、CCl4 と cholesterol 食が分かれているか。
+名前を付け、図ごとに何の図か分かるように）。
 
-0035 v1 の割り当て（assign_<rep>_<method>.npy）のうち脂肪変性の 3 試験（188枚、各 2,048 patch）の部分を使い、
-  tiles/<rep>_<method>_<化合物>.jpg : 化合物内の純度（脂肪変性ありの slide 由来の割合）が 0.9 以上のプロトタイプを大きい順に、各 12 枚のタイル（別々の slide を優先）
-  maps/<rep>_<method>_<slide>.jpg   : 脂肪変性の程度が高い slide（CCl4 2枚、cholesterol 2枚）のサムネイルに、CCl4 側の純プロトタイプ（橙）と cholesterol 側（青）の patch を重ねる
-  fatty_pure_prototypes.csv          : 選んだプロトタイプの一覧（n、純度、程度別の内訳、Bayer での名前）
-patch の座標は 0030 の _load_sub（slide ごとに決まる間引き）で読み直す。地図は 2,048 patch の位置だけなので疎。
+0035 v1 の割り当て（assign_<rep>_<method>.npy）のうち脂肪変性の 3 試験（188枚、各 2,048 patch）の部分を使う。
+名前は scripts/prototype_record_names.py の出力（prototype_names_<rep>_<method>.csv）を読む。先にそちらを実行すること。
+出力（outputs/0035_.../<版>/fatty_figures/）:
+  tiles_<method>_<化合物>.jpg : 化合物内の純度（脂肪変性ありの slide 由来の割合）0.9 以上のプロトタイプを大きい順に最大 6 個、各 12 枚のタイル
+  fatty_pure_prototypes.csv   : 選んだプロトタイプの一覧（名前、n、純度、程度別の内訳）
 usage: python scripts/fatty_prototype_sheets.py [版] [rep:method ...]  （コンテナ内、Slurm経由。既定は v1 と A128_sphering_lda:split_record A128_sphering_lda:flat_k1000）
 """
 import importlib.util
@@ -22,8 +23,12 @@ _RUN = sys.argv[1] if len(sys.argv) > 1 else "v1"
 PAIRS = [a.split(":") for a in sys.argv[2:]] or [["A128_sphering_lda", "split_record"], ["A128_sphering_lda", "flat_k1000"]]
 EXP = ROOT / "experiments/0035_20261102_finer_prototypes_split_rejoin"
 RUN = ROOT / "outputs/0035_20261102_finer_prototypes_split_rejoin" / _RUN
-TILES_PER_PROTO, MAX_PROTOS, MIN_N, PURITY, THUMB = 12, 6, 200, 0.9, 1200
-COL = {"CCl4": (230, 159, 0), "cholesterol": (0, 114, 178)}   # Okabe-Ito 橙・青
+OUT = RUN / "fatty_figures"
+TILES_PER_PROTO, MAX_PROTOS, MIN_N, PURITY = 12, 6, 200, 0.9
+FONT_JP = "/workspace/andre01/honzawa/.local/share/fonts/NotoSansCJKjp-Regular.otf"
+TILE, COLS = 192, 8
+METHOD_JP = {"split_record": "k=100 から、記録で純度の低いクラスタを 5 つに分ける操作を 2 回（887 クラスタ）", "flat_k1000": "k=1000 の k-means（コンセンサス）"}
+COMP_JP = {"CCl4": "CCl4（exp 66・67、記録は小葉中心性）", "cholesterol": "1% cholesterol + 0.25% sodium cholate 食（exp 698、記録は辺縁性）"}
 
 
 def load_module(path, name):
@@ -34,9 +39,55 @@ def load_module(path, name):
     return mod
 
 
-def main():
-    import openslide
+def wrap(text, font, width):
+    """font で描いたときの幅が width を超えないように、文字単位で折り返す。"""
+    lines, cur = [], ""
+    for ch in text:
+        if font.getlength(cur + ch) > width and cur:
+            lines.append(cur)
+            cur = ch.lstrip()
+        else:
+            cur += ch
+    return lines + [cur] if cur else lines
+
+
+def draw_sheet(banner, blocks, path):
+    """banner: 先頭の説明（行のリスト、1 行目が題）。blocks: [(見出し 2 行, タイルのリスト)]。タイルは ex17.read_tiles の出力。長い行は折り返す。"""
     from PIL import Image, ImageDraw, ImageFont
+    f_title, f_text, f_small = ImageFont.truetype(FONT_JP, 22), ImageFont.truetype(FONT_JP, 15), ImageFont.truetype(FONT_JP, 11)
+    W = COLS * TILE
+    LH = 21
+    ban = [wrap(b, f_text, W - 16) for b in banner[1:]]
+    hb = 42 + LH * sum(len(b) for b in ban) + 16
+    heads = [(wrap(h1, f_text, W - 16), wrap(h2, f_text, W - 16)) for (h1, h2), _ in blocks]
+    rows_h = [8 + LH * (len(a) + len(b)) + ((len(t) + COLS - 1) // COLS) * (TILE + 30) + 12 for (a, b), (_, t) in zip(heads, blocks)]
+    sheet = Image.new("RGB", (W, hb + sum(rows_h)), "white")
+    d = ImageDraw.Draw(sheet)
+    d.text((8, 8), banner[0], fill="black", font=f_title)
+    yy = 42
+    for b in ban:
+        for line in b:
+            d.text((8, yy), line, fill="#333333", font=f_text)
+            yy += LH
+    y = hb
+    for (a, b), (_, tiles) in zip(heads, blocks):
+        hh = 8 + LH * (len(a) + len(b))
+        d.rectangle([0, y, W, y + hh - 4], fill="#F2F2F2")
+        for k_, line in enumerate(a):
+            d.text((8, y + 2 + LH * k_), line, fill="#B34700", font=f_text)
+        for k_, line in enumerate(b):
+            d.text((8, y + 2 + LH * (len(a) + k_)), line, fill="#333333", font=f_text)
+        y += hh
+        for k, t in enumerate(tiles):
+            x0, y0 = (k % COLS) * TILE, y + (k // COLS) * (TILE + 30)
+            d.text((x0 + 3, y0 + 1), t["l1"], fill="black", font=f_small)
+            d.text((x0 + 3, y0 + 15), t["l2"], fill="#555555", font=f_small)
+            sheet.paste(t["image"], (x0, y0 + 30))
+        y += ((len(tiles) + COLS - 1) // COLS) * (TILE + 30) + 12
+    sheet.save(path, quality=88)
+
+
+def main():
     cfg = yaml.safe_load(open(EXP / "config.yml"))
     load_module(ROOT / "experiments" / cfg["exp0021"] / "experiment.py", "exp0021")
     load_module(ROOT / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
@@ -45,8 +96,7 @@ def main():
     ex27 = load_module(ROOT / "experiments" / cfg["exp0027"] / "experiment.py", "exp0027")
     ex30 = load_module(ROOT / "experiments" / cfg["exp0030"] / "experiment.py", "exp0030")
     pre_path = str(ROOT / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl")
-    (RUN / "tiles").mkdir(exist_ok=True)
-    (RUN / "maps").mkdir(exist_ok=True)
+    OUT.mkdir(exist_ok=True)
 
     # 脂肪変性の 3 試験の slide と patch（0035 と同じ順）。Bayer の patch 数 nb の後ろに並ぶ
     bayer = pd.read_csv(ROOT / "outputs" / cfg["exp0025"] / cfg["cache_from"] / "slides.csv", dtype=str)
@@ -64,17 +114,15 @@ def main():
     nf = len(row)
     del parts
     tgt["svs_ok"] = [Path(p).exists() for p in tgt.svs_path]
-    print(f"fatty slides {len(tgt)} (svs found {int(tgt.svs_ok.sum())}), patches {nf:,}; fatty > 0: {int((fat > 0).sum())}", flush=True)
     topo_fat = topo["Degeneration, fatty"].reindex(tgt.slide_id).fillna("").to_numpy() if "Degeneration, fatty" in topo else np.full(len(tgt), "")
     sdf = tgt[["slide_id", "svs_path", "compound", "dose", "period", "exp"]].copy()
-    lbl = lambda s_, q_: (f"{s_.slide_id} e{s_.exp} {s_.dose}", f"fatty grade {int(fat[row[q_]])} {str(topo_fat[row[q_]])[:12]}")
+    lbl = lambda s_, q_: (f"slide {s_.slide_id}  exp {s_.exp}  {s_.dose}", f"脂肪変性 grade {int(fat[row[q_]])} {str(topo_fat[row[q_]])[:14]}")
     rng = np.random.default_rng(0)
-    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
     rows_csv = []
     for rep, method in PAIRS:
         cl = np.load(RUN / f"assign_{rep}_{method}.npy").astype(np.int64)[nb:nb + nf]
+        names = pd.read_csv(RUN / f"prototype_names_{rep}_{method}.csv").set_index("prototype")
         K = int(cl.max()) + 1
-        pure = {}
         for cname in ("CCl4", "cholesterol"):
             m_ = cmpd[row] == cname
             n_c = np.bincount(cl[m_], minlength=K)
@@ -82,8 +130,7 @@ def main():
             fr = n_cf / np.maximum(n_c, 1)
             cand = np.where((n_c >= MIN_N) & (fr >= PURITY))[0]
             cand = cand[np.argsort(-n_c[cand])][:MAX_PROTOS]
-            pure[cname] = cand
-            sheet = []
+            blocks = []
             for j in cand:
                 idx = np.where((cl == j) & m_ & (fat[row] > 0) & tgt.svs_ok.to_numpy()[row])[0]
                 picks, seen = [], set()
@@ -94,45 +141,29 @@ def main():
                     if len(picks) >= TILES_PER_PROTO:
                         break
                 if len(picks) < TILES_PER_PROTO:
-                    extra = [int(q) for q in rng.permutation(idx) if q not in picks][:TILES_PER_PROTO - len(picks)]
-                    picks += extra
+                    picks += [int(q) for q in rng.permutation(idx) if q not in picks][:TILES_PER_PROTO - len(picks)]
                 gr = {g: int(((cl == j) & m_ & (fat[row] == g)).sum()) for g in (0, 1, 2, 3, 4)}
                 other = int(((cl == j) & ~m_).sum())
-                hdr = f"p{j:04d}  {cname}: {int(n_c[j]):,} patches, purity {fr[j]:.2f} (from fatty slides)   by grade 0/1/2/3/4: {gr[0]}/{gr[1]}/{gr[2]}/{gr[3]}/{gr[4]}   other compounds: {other:,}"
-                sheet.append((hdr, ex17.read_tiles(picks, row, xy, sdf, size0, lbl)))
-                rows_csv.append({"rep": rep, "method": method, "compound": cname, "prototype": int(j), "n": int(n_c[j]), "purity": float(fr[j]), **{f"n_grade{g}": v for g, v in gr.items()}, "n_other_compounds": other})
-            if sheet:
-                ex17.draw_sheet(f"{rep} {method}: {cname} prototypes with purity >= {PURITY} (n >= {MIN_N}), tiles from fatty-degeneration slides", sheet, RUN / "tiles" / f"{rep}_{method}_{cname}.jpg")
+                nm = names.loc[j]
+                rec = nm.record_name if isinstance(nm.record_name, str) and nm.record_name else "なし"
+                rec_s = f"{rec}（記録あり slide 由来 {nm.record_share:.0%}、基準の {nm.record_lift:.0f} 倍）" if rec != "なし" else "なし（基準に届かない）"
+                bay = nm.bayer_name if isinstance(nm.bayer_name, str) and nm.bayer_name else "なし"
+                top = nm.bayer_top_label if isinstance(nm.bayer_top_label, str) and nm.bayer_top_label else "-"
+                h1 = f"プロトタイプ p{j:04d}　記録による名前: {rec_s}　Bayer ラベルによる名前: {bay}（最多ラベル {top}）"
+                h2 = f"{cname} の patch {int(n_c[j]):,} 個、うち脂肪変性ありの slide 由来 {fr[j]:.0%}　程度 0/1/2/3/4 の内訳 {gr[0]}/{gr[1]}/{gr[2]}/{gr[3]}/{gr[4]}　他の化合物の patch {other:,} 個（全 3,737 枚中）"
+                blocks.append(((h1, h2), ex17.read_tiles(picks, row, xy, sdf, size0, lbl)))
+                rows_csv.append({"rep": rep, "method": method, "compound": cname, "prototype": int(j), "record_name": rec, "bayer_name": bay, "bayer_top_label": top,
+                                 "n": int(n_c[j]), "purity": float(fr[j]), **{f"n_grade{g}": v for g, v in gr.items()}, "n_other_compounds": other})
+            if blocks:
+                banner = [f"脂肪変性のプロトタイプのタイル: {COMP_JP[cname]}",
+                          f"何の図か: 0035 で作ったプロトタイプのうち、{cname} の slide の中で「脂肪変性の記録がある slide 由来の patch」が 90% 以上のもの（patch 200 個以上）を、patch の多い順に最大 {MAX_PROTOS} 個並べた。",
+                          f"作り方: 表現 A128（slide 内の順位 → PCA → 試験ごとに対照群で白色化した 128 次元 ‖ Bayer のラベルで学んだ LDA 13 次元）。クラスタ: {METHOD_JP.get(method, method)}。",
+                          f"タイル: 各プロトタイプから、脂肪変性の記録がある slide の patch を 12 枚（なるべく別の slide）。20 倍、1 枚 約 128 µm 四方。タイル上の 2 行は slide 番号・試験・用量群と、その slide の脂肪変性の程度・部位（記録）。",
+                          "名前: 「記録による名前」は TG-GATEs の病理記録（slide 単位）で、その所見の slide に偏るプロトタイプの意味（patch そのものがその所見とは限らない）。「Bayer ラベルによる名前」はポリゴンの注釈で付けたもの（Bayer に脂肪変性のラベルはない）。"]
+                draw_sheet(banner, blocks, OUT / f"tiles_{method}_{cname}.jpg")
             print(f"{rep} {method} {cname}: {len(cand)} prototypes", flush=True)
-        # 地図: 程度の高い slide（化合物ごとに 2 枚）。CCl4 側の純プロトタイプは橙、cholesterol 側は青
-        for cname in ("CCl4", "cholesterol"):
-            cand_s = np.where((cmpd == cname) & (fat > 0) & tgt.svs_ok.to_numpy())[0]
-            cand_s = cand_s[np.argsort(-fat[cand_s])][:2]
-            for i in cand_s:
-                r = tgt.iloc[i]
-                w = openslide.OpenSlide(r.svs_path)
-                th = w.get_thumbnail((THUMB, THUMB)).convert("RGB")
-                scl = th.width / w.dimensions[0]
-                w.close()
-                b_ = max(3, round(size0[r.slide_id] * scl))
-                ov = Image.new("RGBA", th.size, (0, 0, 0, 0))
-                d = ImageDraw.Draw(ov)
-                m_s = row == i
-                n_drawn = {}
-                for c2, color in COL.items():
-                    sel = m_s & np.isin(cl, pure[c2])
-                    n_drawn[c2] = int(sel.sum())
-                    for x0, y0 in xy[sel]:
-                        d.rectangle([x0 * scl, y0 * scl, x0 * scl + b_, y0 * scl + b_], fill=color + (230,))
-                canvas = Image.new("RGB", (th.width * 2 + 10, th.height + 48), "white")
-                canvas.paste(th, (0, 48))
-                canvas.paste(Image.alpha_composite(th.convert("L").convert("RGBA"), ov).convert("RGB"), (th.width + 10, 48))
-                dd = ImageDraw.Draw(canvas)
-                dd.text((4, 4), f"{r.slide_id}  {r.compound} {r.dose} {r.period} (exp {r.exp})  fatty grade {int(fat[i])} {topo_fat[i]}", fill="black", font=font)
-                dd.text((4, 24), f"{rep} {method}: orange = CCl4-pure prototypes ({n_drawn['CCl4']} of {int(m_s.sum())} sampled patches), blue = cholesterol-pure prototypes ({n_drawn['cholesterol']})", fill="black", font=font)
-                canvas.save(RUN / "maps" / f"{rep}_{method}_{cname}_{r.slide_id}.jpg", quality=85)
-        print(f"{rep} {method}: maps done", flush=True)
-    pd.DataFrame(rows_csv).to_csv(RUN / "fatty_pure_prototypes.csv", index=False)
+    pd.DataFrame(rows_csv).to_csv(OUT / "fatty_pure_prototypes.csv", index=False)
+    pd.DataFrame(rows_csv).to_csv(RUN / "fatty_pure_prototypes.csv", index=False)   # maps_full が読む
     print("done", flush=True)
 
 

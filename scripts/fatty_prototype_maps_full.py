@@ -1,8 +1,8 @@
 """0035 の脂肪変性プロトタイプの slide 上の分布（小葉中心性か辺縁性か）を、slide の全 patch で描く（2026-11-02。2,048 patch の地図は疎で読めなかった）。
 
 slide の全 patch を A128（Sphering128 ‖ LDA13）に写し、同じ slide の間引き 2,048 patch への 1 近傍で 0035 の割り当てを補間する（重心は保存していないため）。
-  maps_full/<rep>_<method>_<slide>.jpg : 左 原画像、中 化合物側の純プロトタイプ（CCl4 側 橙、cholesterol 側 青）、右 プロトタイプごとの色（その化合物側の上位 6 個）
-対象 slide と純プロトタイプは fatty_pure_prototypes.csv（scripts/fatty_prototype_sheets.py の出力）に合わせる。
+  fatty_figures/map_<method>_<化合物>_slide<番号>.jpg : 左 原画像、中 純プロトタイプ（CCl4 側 橙、cholesterol 側 青）、右 その化合物側の上位 6 個を 1 つずつ色分け。題・説明・凡例（記録による名前）入り
+対象 slide と純プロトタイプと名前は fatty_pure_prototypes.csv（scripts/fatty_prototype_sheets.py の出力）に合わせる。先にそちらを実行すること。
 usage: python scripts/fatty_prototype_maps_full.py [版] [rep:method ...]  （コンテナ内、Slurm経由。CPU、10分程度）
 """
 import importlib.util
@@ -23,6 +23,8 @@ PAIRS = [a.split(":") for a in sys.argv[2:]] or [["A128_sphering_lda", "split_re
 EXP = ROOT / "experiments/0035_20261102_finer_prototypes_split_rejoin"
 RUN = ROOT / "outputs/0035_20261102_finer_prototypes_split_rejoin" / _RUN
 THUMB, D = 2400, 128
+FONT_JP = "/workspace/andre01/honzawa/.local/share/fonts/NotoSansCJKjp-Regular.otf"
+METHOD_JP = {"split_record": "k=100 から記録で純度の低いクラスタを分けた 887 クラスタ", "flat_k1000": "k=1000 の k-means"}
 GROUP_COL = {"CCl4": (230, 159, 0), "cholesterol": (0, 114, 178)}
 PROTO_COL = [(230, 159, 0), (86, 180, 233), (0, 158, 115), (240, 228, 66), (0, 114, 178), (213, 94, 0)]
 
@@ -48,7 +50,8 @@ def main():
     cfg20 = yaml.safe_load(open(ROOT / "experiments/0020_20261024_batch_robust_methods/config.yml"))
     pre_path = str(ROOT / "outputs" / cfg["exp0021"] / "v3_maps/models.pkl")
     pre = pickle.loads(Path(pre_path).read_bytes())["pre"]
-    (RUN / "maps_full").mkdir(exist_ok=True)
+    OUTF = RUN / "fatty_figures"
+    OUTF.mkdir(exist_ok=True)
 
     def h5_of(sid):
         for d_ in cfg["features_dirs"]:
@@ -100,7 +103,7 @@ def main():
         return Sw, Lw
 
     pure_tab = pd.read_csv(RUN / "fatty_pure_prototypes.csv")
-    font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 16)
+    fjt, fj = ImageFont.truetype(FONT_JP, 26), ImageFont.truetype(FONT_JP, 18)
     tgt["svs_ok"] = [Path(p).exists() for p in tgt.svs_path]
     for rep, method in PAIRS:
         cl_f = np.load(RUN / f"assign_{rep}_{method}.npy").astype(np.int64)[nb:nb + nf]
@@ -153,14 +156,35 @@ def main():
                             d.rectangle([X0, Y0, X0 + b_, Y0 + b_], fill=col + (235,))
                     panels.append(Image.alpha_composite(gray, ov).convert("RGB"))
                 n_in = {cn: int(np.isin(cl_full, pure[cn]).sum()) for cn in GROUP_COL}
-                canvas = Image.new("RGB", (th.width * 3 + 20, th.height + 70), "white")
+                # 説明: 題、何の図か、パネルごとの見出し、右パネルの色の凡例（プロトタイプ番号と記録による名前）
+                PH = 34
+                lines = [(f"脂肪変性プロトタイプの slide 上の分布: slide {r.slide_id}（{r.compound}、{r.dose}、{r.period}、exp {r.exp}）", fjt),
+                         (f"この slide の記録: 脂肪変性 grade {int(fat[i])}、部位 {topo_fat[i] or '-'}。slide の全 {len(cl_full):,} patch を、0035 の間引き patch への 1 近傍で、"
+                          f"0035 のプロトタイプ（表現 A128、{METHOD_JP.get(method, method)}）に割り当てた。", fj),
+                         ("色を塗った patch は、tiles_*.jpg に並べた「化合物内で脂肪変性ありの slide 由来が 90% 以上」の純プロトタイプに入ったもの。四角 1 つが 1 patch（約 128 µm 四方）。", fj)]
+                hdr = 12 + sum(30 if f_ is fjt else 24 for _, f_ in lines) + 8
+                leg = pure_tab[(pure_tab.rep == rep) & (pure_tab.method == method) & (pure_tab.compound == cname)].set_index("prototype")
+                leg_lines = [f"p{p:04d}: {leg.record_name.get(p, '')}（{int(leg.n.get(p, 0)):,} patch）" for p in pure[cname][:len(PROTO_COL)]]
+                foot = 10 + 24 * len(leg_lines)
+                canvas = Image.new("RGB", (th.width * 3 + 20, hdr + PH + th.height + foot), "white")
                 dd = ImageDraw.Draw(canvas)
-                for j_, pn in enumerate(panels):
-                    canvas.paste(pn, (j_ * (th.width + 10), 70))
-                dd.text((6, 6), f"{r.slide_id}  {r.compound} {r.dose} {r.period} (exp {r.exp})  fatty grade {int(fat[i])} {topo_fat[i]}   {len(cl_full):,} patches", fill="black", font=font)
-                dd.text((6, 28), f"{rep} {method}: middle = orange CCl4-pure prototypes ({n_in['CCl4']:,} patches), blue cholesterol-pure ({n_in['cholesterol']:,})", fill="black", font=font)
-                dd.text((6, 48), f"right = {cname}-pure prototypes one colour each: " + ", ".join(f"p{p}" for p in pure[cname][:len(PROTO_COL)]), fill="black", font=font)
-                canvas.save(RUN / "maps_full" / f"{rep}_{method}_{cname}_{r.slide_id}.jpg", quality=85)
+                yy = 8
+                for t_, f_ in lines:
+                    dd.text((8, yy), t_, fill="black" if f_ is fjt else "#333333", font=f_)
+                    yy += 30 if f_ is fjt else 24
+                titles = ["原画像（H&E）",
+                          f"純プロトタイプの位置: 橙 = CCl4 側（{n_in['CCl4']:,} patch）、青 = cholesterol 食側（{n_in['cholesterol']:,} patch）",
+                          f"{cname} 側の純プロトタイプを 1 つずつ色分け（凡例は下）"]
+                for j_, (pn, tt) in enumerate(zip(panels, titles)):
+                    x_ = j_ * (th.width + 10)
+                    dd.text((x_ + 6, hdr + 4), tt, fill="black", font=fj)
+                    canvas.paste(pn, (x_, hdr + PH))
+                x_ = 2 * (th.width + 10)
+                for k_, (p, txt) in enumerate(zip(pure[cname][:len(PROTO_COL)], leg_lines)):
+                    yb = hdr + PH + th.height + 8 + 24 * k_
+                    dd.rectangle([x_ + 6, yb + 4, x_ + 22, yb + 20], fill=PROTO_COL[k_])
+                    dd.text((x_ + 30, yb), txt, fill="black", font=fj)
+                canvas.save(OUTF / f"map_{method}_{cname}_slide{r.slide_id}.jpg", quality=85)
                 print(f"{rep} {method} {r.slide_id}: {len(cl_full):,} patches, in pure {n_in}", flush=True)
     print("done", flush=True)
 
