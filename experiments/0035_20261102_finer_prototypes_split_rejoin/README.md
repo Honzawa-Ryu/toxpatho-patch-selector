@@ -34,3 +34,13 @@ A128 は (a) の coverage が A より低く（0.11〜0.18）、脂肪変性の�
 - 脂肪変性の「純度」は slide の記録で見たもの。patch が本当に脂肪変性かは目視していない。
 - seed は 1 つ。k=1000 のコンセンサスは 5 回。
 - 割り当て（`assign_*.npy`、全 patch、26 通り）を保存した。地図やタイルを作れる。
+
+## 目視（2026-11-02、`scripts/fatty_prototype_sheets.py`、`scripts/fatty_prototype_maps_full.py`）
+
+A128 の split_record と flat k=1000 について、化合物内の純度 0.9 以上のプロトタイプのタイル（`v1/tiles/`）と、slide の全 patch を 1 近傍で補間した地図（`v1/maps_full/`）を作った。一覧は `v1/fatty_pure_prototypes.csv`。
+
+- CCl4 側（6 個、ほぼ exp 67 の 29 日反復）は見た目が 3 種類: 大滴性（p0667・p0750）、小滴性（p0416・p0417）、空胞の目立たない淡い細胞質（p0330・p0647）。
+- cholesterol 食側（4 個、exp 698 高用量、記録は Peripheral）は小滴性の泡沫状（p0661・p0113・p0668）と、空胞の目立たない淡い細胞質（p0193）。
+- 同じ「脂肪変性」の記録でも CCl4 と cholesterol 食は別のプロトタイプに分かれ、CCl4 の中でも大滴と小滴が別になる。
+- 地図: CCl4（26526、grade 3、Centrilobular）では純プロトタイプの patch が小葉単位の網目状に並び、原画像の淡い部分（小葉中心）と一致する。cholesterol 食（66207、grade 4、Peripheral）では全体に広がり、grade 4 では帯状の分布は読めない。
+- 空胞の目立たないプロトタイプ（p0330・p0647・p0193）が純度 0.97 以上で入るのは、純度が slide 単位の記録で決まるため。病変の周りの実質を拾っている可能性がある。
