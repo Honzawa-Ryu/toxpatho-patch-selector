@@ -1,0 +1,78 @@
+# 0035: プロトタイプを細かくして純度を上げ、つなぎ直す（2026-11-02ユーザー: 階層を増やす＝純度の低いクラスタだけ再クラスタリング、k を増やして系統樹でつなぎ直す、の両方。
+#       データも他の試験を入れ、脂肪変性（強い所見）を他の所見と一緒に相対化する）。
+# 集合: Bayer 230枚（全patch）＋脂肪変性3試験 188枚＋0033の未学習 3,319枚（各2,048 patch）= 3,737枚、約1,040万patch。
+# 表現: A（Sphering64 ‖ LDA13）と A128（Sphering128 ‖ LDA13）。作り方は0033/0034と同じ。k-meansの学習点はBayerと他の試験から同数。
+# 方法（表現ごと）:
+#   flat   : コンセンサスk-means、k = 100 / 200 / 500 / 1000
+#   split  : flat k=100 から、純度が tau 未満のクラスタを k_sub に分ける操作を rounds 回。基準は
+#            label（Bayerの学習ラベルの最多割合）/ record（濃縮された所見について、記録ありslide由来の割合）/ dispersion（重心からの平均距離が上位の割合、ラベルなし）
+#   tree   : flat k=1000 の葉をWard法でつなぎ直す。plain（距離だけ）と guided_label / guided_record（両方の最多ラベル／最多記録所見が同じときだけつなぐ）。目標 100・200
+# 評価:
+#   (a) held-out: Bayerのラベル、化合物単位5分割（LDA・クラスタ・名前付けは学習側だけ）。ラベルごとに F1 と、学習側の適合率>=thr のプロトタイプに入る評価側patchの割合（coverage）と、その適合率
+#   (b) 未学習3,319枚の読み出しAUC（0033と同じ。参考）
+#   (c) 記録の純度（全3,737枚）: 所見ごとに、プロトタイプのpatchのうち記録ありslide由来の割合（share）の最大、基準率に対する倍率、share>=thr のプロトタイプに入る記録ありslideのpatchの割合（coverage）
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0029: 0029_20261028_external_finding_maps
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0031: 0031_20261029_heldout_patch_extraction
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_beta: 1.0
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+patches_per_slide: 2048
+workers: 12
+reps: {A_sphering_lda: 64, A128_sphering_lda: 128}   # 名前: 白色化の次元
+fatty_exps: [66, 67, 698]
+unseen_features_from: outputs/0033_20261101_labeled_unlabeled_tradeoff/v1/features_unseen.npz   # 0030/0033と同じ3,319枚（PCA256、2,048 patch/slide）
+findings:                      # 記録の純度 (c) と読み出し (b) の所見。bayer: 対応するBayerのラベル（ないものは ""）
+  Necrosis: necrosis
+  Single cell necrosis: single_cell_necrosis
+  Cellular infiltration: inflammation
+  Increased mitosis: mitosis
+  Hematopoiesis, extramedullary: emh
+  Proliferation, bile duct: ""
+  Hypertrophy: ""
+  Change, eosinophilic: ""
+  Vacuolization, cytoplasmic: ""
+  Degeneration, granular, eosinophilic: ""
+  Degeneration, fatty: ""
+grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+naming: {min_share: 0.2, min_lift: 3.0, min_n: 20}   # 0029と同じ
+flat:
+  k_list: [100, 200, 500, 1000]
+  consensus_runs: {100: 10, 200: 10, 500: 5, 1000: 5}   # 大きいkは回数を減らして時間を抑える
+  consensus_runs_heldout: 5
+  fit_points: 600000           # 1回あたり: Bayer 30万 ＋ 他の試験 30万
+split:
+  k_start: 100
+  k_sub: 5
+  rounds: 2
+  tau: 0.8
+  min_labeled: 50              # label 基準: ラベル付きpatchがこれ未満のクラスタは判定しない（分けない）
+  min_lift: 2.0                # record 基準: 倍率がこれ以上の所見があるクラスタだけ対象
+  min_patches: 2000            # これより小さいクラスタは分けない
+  dispersion_top: 0.3          # dispersion 基準: 重心からの平均距離が上位この割合のクラスタを分ける
+  fit_points: 100000
+tree:
+  k_leaves: 1000
+  targets: [100, 200]
+  modes: [plain, guided_label, guided_record]
+  min_labeled: 50
+  min_lift: 2.0
+eval:
+  precision_thr: 0.8
+  min_proto_patches: 200
+  heldout_folds: 5
+  bootstrap: 500
+  cv_splits: 5
+variants: {}
