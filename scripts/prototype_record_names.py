@@ -60,7 +60,8 @@ def main():
     row_t = np.repeat(np.arange(int(n_set["fatty"])), cfg["patches_per_slide"])
     off_t = int((S.set == "bayer").sum())
     off_u = off_t + int(n_set["fatty"])
-    pure = pd.read_csv(RUN / "fatty_pure_prototypes.csv")
+    pure_p = RUN / "fatty_pure_prototypes.csv"
+    pure = pd.read_csv(pure_p) if pure_p.exists() else pd.DataFrame(columns=["rep", "method", "compound", "prototype", "n", "purity"])   # 表示用。なければ省く
     for rep, method in PAIRS:
         cl = np.load(RUN / f"assign_{rep}_{method}.npy").astype(np.int64)
         assert len(cl) == nb + nf + nu, (len(cl), nb, nf, nu)
