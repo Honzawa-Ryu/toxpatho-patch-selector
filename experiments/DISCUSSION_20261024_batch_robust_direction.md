@@ -28,6 +28,13 @@
   こちらでの読み替え案: slide＝画像、UNI2-hのpatch特徴＝token、slideの所見の記録＝画像単位のラベル。同じ試験のControl slideを「抑制」側の手がかりにする。
   比較: 従来のattention/CAMによるpatch選択 vs 抑制＋活性化。評価はBayerのポリゴンとの一致（網羅的でないので、描かれていない場所を陰性とみなさない）。
   注意: 試験＝化合物の交絡で、所見ではなく試験の違いを活性化しうる（同じ試験のControlとの対比で抑える）。ラベルを使う手法なので、主に終着点(2)寄り。: #14
+- 【Todo、2026-11-01ユーザー】GraphTox に関連するアプローチを試す。特に**画像の階層性（5×・10×・20×）と隣接性（patch 間のグラフ）の取り入れ**はいずれやりたい。
+  論文: Li L, Shelton L, Forest T, et al. "Unsupervised Anomaly Detection on Preclinical Liver H&E Whole Slide Images using Graph based Feature Distillation." MICCAI 2025（2025-09-19 公開、査読済み）。DOI: 10.1007/978-3-032-05162-2_64
+  要点: ラット肝 WSI で、正常組織だけで学んだ Feature Distillation の誤差から異常領域を検出する。5×・10×・20× を組み合わせ、patch 間の空間関係をグラフにする。270 万 patch で事前学習した倍率対応の基盤モデルを使う。独立テストで、非グラフ型の最良手法より AUC +11.1%、UNIv2 を使うグラフ型より +8.1%。コードは著者へのメール請求（公開リポジトリは未確認）。
+  こちらでの意味: 毒性病理では周囲の組織構造が判断材料になる（肝細胞肥大は細胞の形態だけでなく、小葉内の分布や周囲との関係）。patch の異常度に空間構造と倍率の情報を組み込む参考。
+  試したい実験: 同じ Ctrl/投与群の分割で、patch 単体の kNN 異常検知、単一倍率の Feature Distillation、マルチ倍率の Graph Distillation を比べ、異常 patch の Recall@K と slide 単位の AUROC で評価する。
+  限界: 比較ベースラインが限られ、他の病理 FM や MIL 手法に対する優位は未確立。
+  関連: 隣接性は 0025 の「境界を保つ伝播」（patch のグリッド近傍、2 hop）で一部試した。位置情報の組込みは #9。倍率の階層性は未着手（特徴は 20× のみ）。
 
 ## 評価に使えるもの
 
