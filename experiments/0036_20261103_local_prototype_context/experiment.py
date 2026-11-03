@@ -343,11 +343,18 @@ def main() -> None:
         Xall = np.concatenate([Xb] + Xt_parts)
         del Xb, Xt_parts
 
+        # v5: 周囲の平均から、脂肪変性・空胞化の記録名が付いたプロトタイプの patch を除く（周りも脂肪変性なので、その見た目を読んでいないかの確かめ）
+        excl_rec = cfg["lobular"].get("exclude_neighbor_records", [])
+        rec_names = pd.read_csv(R35 / f"prototype_names_{cfg['rep']}_{cfg['method']}.csv").set_index("prototype").record_name.reindex(range(Kf)).fillna("").to_numpy()
+        excl_p = np.isin(qf, np.where(np.isin(rec_names, excl_rec))[0]) if excl_rec else np.zeros(n_all, bool)
+        nb_support = np.zeros(n_all, dtype=np.int32)
+
         def nbmean(nbm):
             out_ = np.zeros_like(Xall)
             for s in range(0, n_all, 500000):
                 nn = nbm[s:s + 500000]
-                ok = nn >= 0
+                ok = (nn >= 0) & ~excl_p[np.where(nn >= 0, nn, 0)]
+                nb_support[s:s + 500000] += ok.sum(1)
                 acc_ = np.zeros((len(nn), Xall.shape[1]), dtype=np.float32)
                 for k in range(nn.shape[1]):
                     acc_ += np.where(ok[:, k:k + 1], Xall[np.where(ok[:, k], nn[:, k], 0)].astype(np.float32), 0)
@@ -368,12 +375,16 @@ def main() -> None:
         pred = np.concatenate([model.predict(np.concatenate([f_[s:s + 500000] for f_ in Fm], 1).astype(np.float32)) for s in range(0, n_all, 500000)])
         del Fm, Ftr, Xall
         zl = np.empty(n_all)
+        if excl_rec:
+            pred = np.where(nb_support >= 3, pred, np.nan)   # 除いた後に周囲が 3 個未満なら位置なし
+            logger.info(f"lobular: excluded {excl_p.mean():.3f} of patches as neighbours ({excl_rec}); position undefined for {np.mean(nb_support < 3):.3f}")
         for i in range(len(sl)):
             a, b = starts[i], starts[i + 1]
             if b > a:
-                zl[a:b] = pd.Series(pred[a:b]).rank(pct=True).to_numpy()
+                zl[a:b] = pd.Series(pred[a:b]).rank(pct=True).to_numpy()   # NaN は NaN のまま
         # 目印の確かめ（試験を分けた予測ではないので、Bayer は学習に含まれる。参考）
         mk_ = np.isin(lab_b_names, ["central_vein", "portal_tract"])
+        mk_ = mk_ & np.isfinite(zl[:nb])
         auc_l = float(roc_auc_score(lab_b_names[mk_] == "portal_tract", zl[:nb][mk_]))
         lob = {"n_target_patches": int(pm.sum()), "n_target_slides": int(len(np.unique(row_b[pm]))), "oof_r2_leave_experiment_out": float(r2), "oof_spearman": float(rho),
                "auc_portal_vs_central_labels_in_sample": auc_l}
