@@ -138,25 +138,17 @@ def main() -> None:
     nb = len(Kb)
     tgt = ex26.target_slides({**cfg, "target_exps": cfg["fatty_exps"], "features_dir": cfg["features_dirs"][0]}, project_root)
     tgt = tgt[~tgt.slide_id.isin(bayer.slide_id)].reset_index(drop=True)
+    # 2026-11-04: メモリを抑えるため、全 patch をまとめて持たず、集合ごとに白色化・LDA をかけて標準偏差の和だけを集める（0035 と同じ値になる）
     with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(pre_path, cfg["patches_per_slide"])) as ex:
         Kt_s = np.concatenate([p_[0] for p_ in ex.map(ex30._load_sub, tgt.h5, chunksize=4)]).astype(np.float16)
-    z = np.load(project_root / cfg35["unseen_features_from"], allow_pickle=True)
-    Ku, row_u = z["K"], z["row"]
-    del z
     S = pd.read_csv(R35 / "slides.csv", dtype={"slide_id": str})
     nt_s = len(Kt_s)
-    row_t_s = np.repeat(np.arange(len(tgt)), cfg["patches_per_slide"])
-    assert len(row_t_s) == nt_s
-    off_t, off_u = len(bayer), len(bayer) + len(tgt)
-    slide_of = np.r_[row_b, row_t_s + off_t, row_u + off_u]
-    exp_p = S.exp.to_numpy()[slide_of]
-    set_of = np.r_[np.zeros(nb, np.int8), np.ones(nt_s, np.int8), np.full(len(row_u), 2, np.int8)]
-    K_all = np.concatenate([Kb, Kt_s, Ku]).astype(np.float16)
-    del Kt_s, Ku
-    N = len(K_all)
+    assert nt_s == len(tgt) * cfg["patches_per_slide"]
+    exp_b = bayer.EXP_ID.fillna("-1").astype(int).to_numpy()[row_b]
+    exp_ts = np.repeat(tgt.exp.to_numpy(), cfg["patches_per_slide"])
     q = pd.read_csv(cfg["qc_catalog"], dtype=str)
     q = q[q.EXP_ID.notna() & (q.EXP_ID != "")].copy()
-    qc = q[(q.DOSE_LEVEL == "Control") & q.EXP_ID.astype(int).isin(set(exp_p[set_of < 2]))].copy()
+    qc = q[(q.DOSE_LEVEL == "Control") & q.EXP_ID.astype(int).isin(set(exp_b) | set(exp_ts))].copy()
     qc["h5"] = [h5_of(x) for x in qc.slide_id]
     qc = qc[qc.h5 != ""]
     with ProcessPoolExecutor(max_workers=cfg["workers"], initializer=ex27._init_ctrl, initargs=(pre_path, cfg["patches_per_slide"])) as ex:
@@ -169,21 +161,39 @@ def main() -> None:
         e_fix = np.where(np.isin(e, exp_c), e, -999)
         return ex27.sphering(U, e_fix, np.r_[Kc, Kc], np.r_[exp_c, np.full(len(exp_c), -999)]).astype(np.float32)
 
-    U = K_all[:, :128].astype(np.float32)
-    Sw = np.empty_like(U)
-    m = set_of < 2
-    Sw[m] = sphere_known(U[m], exp_p[m])
-    mu = set_of == 2
-    cm = mu & S.is_ctrl.to_numpy()[slide_of]
-    e_fix = np.where(np.isin(exp_p[mu], exp_p[cm]), exp_p[mu], -999)
-    Sw[mu] = ex27.sphering(U[mu], e_fix, np.r_[U[cm], U[cm]], np.r_[exp_p[cm], np.full(int(cm.sum()), -999)])
-    del U
-    tf = ex26.fit_combo(K_all[:nb], lab, cfg, cfg["seed"])
+    tf = ex26.fit_combo(Kb, lab, cfg, cfg["seed"])
     L = len(keep) - 1
-    Lw = np.concatenate([tf(b_)[:, :L] for b_ in np.array_split(K_all, max(1, N // 200000))]).astype(np.float32)
-    fac = float(Sw.std(0).mean() / Lw.std(0).mean())
-    Xb = np.concatenate([Sw[:nb], cfg["lda_beta"] * fac * Lw[:nb]], 1).astype(np.float32)
-    del Sw, Lw, K_all
+
+    def lda(K_):
+        return np.concatenate([tf(b_)[:, :L] for b_ in np.array_split(K_, max(1, len(K_) // 200000))]).astype(np.float32)
+    acc = {"n": 0, "s_sw": 0.0, "q_sw": 0.0, "s_l": 0.0, "q_l": 0.0}
+
+    def add(Sw_, Lw_):
+        acc["n"] += len(Sw_)
+        acc["s_sw"] = acc["s_sw"] + Sw_.astype(np.float64).sum(0); acc["q_sw"] = acc["q_sw"] + (Sw_.astype(np.float64) ** 2).sum(0)
+        acc["s_l"] = acc["s_l"] + Lw_.astype(np.float64).sum(0); acc["q_l"] = acc["q_l"] + (Lw_.astype(np.float64) ** 2).sum(0)
+    Sw_b, Lw_b = sphere_known(Kb[:, :128].astype(np.float32), exp_b), lda(Kb)
+    add(Sw_b, Lw_b)
+    add(sphere_known(Kt_s[:, :128].astype(np.float32), exp_ts), lda(Kt_s))
+    del Kt_s
+    z = np.load(project_root / cfg35["unseen_features_from"], allow_pickle=True)
+    Ku, row_u = z["K"], z["row"]
+    del z
+    sl_u = S[S.set == "unseen"].reset_index(drop=True)
+    exp_u = sl_u.exp.to_numpy()[row_u]
+    cm = sl_u.is_ctrl.to_numpy()[row_u]
+    Uu = Ku[:, :128].astype(np.float32)
+    e_fix = np.where(np.isin(exp_u, exp_u[cm]), exp_u, -999)
+    Sw_u = ex27.sphering(Uu, e_fix, np.r_[Uu[cm], Uu[cm]], np.r_[exp_u[cm], np.full(int(cm.sum()), -999)])
+    del Uu
+    add(Sw_u, lda(Ku))
+    del Sw_u, Ku
+    N = acc["n"]
+    sd = lambda s, q_: np.sqrt(np.maximum(q_ / N - (s / N) ** 2, 0)).mean()
+    fac = float(sd(acc["s_sw"], acc["q_sw"]) / sd(acc["s_l"], acc["q_l"]))
+    Xb = np.concatenate([Sw_b, cfg["lda_beta"] * fac * Lw_b], 1).astype(np.float32)
+    del Kb
+    del Sw_b, Lw_b
     (run_dir / "a128_scale.json").write_text(json.dumps({"fac": fac, "lda_beta": cfg["lda_beta"]}))
     logger.info(f"A128 rebuilt for {N:,} patches; fac {fac:.4f}; {time.time() - t0:.0f}s")
 
