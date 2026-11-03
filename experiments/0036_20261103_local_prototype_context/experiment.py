@@ -353,7 +353,8 @@ def main() -> None:
                     acc_ += np.where(ok[:, k:k + 1], Xall[np.where(ok[:, k], nn[:, k], 0)].astype(np.float32), 0)
                 out_[s:s + 500000] = (acc_ / np.maximum(ok.sum(1, keepdims=True), 1)).astype(np.float16)
             return out_
-        Fm = [Xall, nbmean(nb1), nbmean(nb2)]
+        feats_ = cfg["lobular"].get("features", ["self", "ring1", "ring2"])   # v4: 中心の patch を除いた版（周囲だけ）
+        Fm = ([Xall] if "self" in feats_ else []) + ([nbmean(nb1)] if "ring1" in feats_ else []) + ([nbmean(nb2)] if "ring2" in feats_ else [])
         pos = ex21.lobular_position(bayer, row_b, xy_b, dict(zip(bayer.slide_id, size0_b)), project_root, cfg["lobular"]["max_dist"])
         pm = np.isfinite(pos)
         Ftr = np.concatenate([f_[:nb][pm] for f_ in Fm], 1).astype(np.float32)
@@ -399,6 +400,23 @@ def main() -> None:
                 zrows.append({"compound": cn, "group": grp, "kind": kind, "n_patches": int(ok.sum()), "n_slides": int(len(per_slide)), "z_mean_of_slides": float(per_slide.mean()) if len(per_slide) else np.nan,
                               "lo": float(np.nanpercentile(bs, 2.5)), "hi": float(np.nanpercentile(bs, 97.5)), "z_median_patches": float(np.median(zz[ok])) if ok.any() else np.nan})
     ztab = pd.DataFrame(zrows)
+    # slide ごとの差（純プロトタイプ − 同じ slide のその他）: 記録どおりの向き（CCl4 は負、cholesterol 食は正）の slide の割合
+    prow = []
+    for kind, zz in [("real", zr)] + ([("lobular_model", zl)] if zl is not None else []):
+        for cn, ps in pure_sets.items():
+            inpure = np.isin(qf, list(ps))
+            base_ = (cmpd_p == cn) & fat_p & np.isfinite(zz)
+            a_ = pd.Series(zz[base_ & inpure]).groupby(row[base_ & inpure]).agg(["mean", "size"])
+            b_ = pd.Series(zz[base_ & ~inpure]).groupby(row[base_ & ~inpure]).mean()
+            a_ = a_[a_["size"] >= 50]
+            d_ = (a_["mean"] - b_.reindex(a_.index)).dropna()
+            want = -1 if cn == "CCl4" else 1
+            bs = [d_.sample(len(d_), replace=True, random_state=s).mean() for s in range(cfg["bootstrap"])] if len(d_) > 1 else [np.nan]
+            prow.append({"kind": kind, "compound": cn, "n_slides": int(len(d_)), "mean_diff": float(d_.mean()) if len(d_) else np.nan,
+                         "lo": float(np.nanpercentile(bs, 2.5)), "hi": float(np.nanpercentile(bs, 97.5)), "share_slides_expected_direction": float((np.sign(d_) == want).mean()) if len(d_) else np.nan})
+    ptab = pd.DataFrame(prow)
+    ptab.to_csv(run_dir / "zonation_paired_by_slide.csv", index=False)
+    logger.info("zonation paired by slide (pure - other):\n" + ptab.round(3).to_string(index=False))
     ztab.to_csv(run_dir / "zonation_fatty.csv", index=False)
     logger.info("zonation of fatty pure prototypes:\n" + ztab.round(3).to_string(index=False))
     # 目印そのものの確かめ: Bayer の中心静脈・門脈域のラベルが付いた patch の z（目印は同じラベルで名前を付けたプロトタイプなので循環を含む）
@@ -558,7 +576,7 @@ def main() -> None:
     ax.set(xlim=(0, 1), xlabel="小葉内の位置（0 = 中心静脈側、1 = 門脈域側）",
            title="脂肪変性の純プロトタイプは小葉のどこにあるか（記録: CCl4 は小葉中心性、cholesterol 食は辺縁性）\n点 = slide ごとの平均の平均、線 = slide を単位にした 95% ブートストラップ区間")
     ax.axvline(0.5, color="black", lw=0.6, ls=":")
-    ax.legend(frameon=False, loc="lower right", fontsize=8)
+    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(1.01, 1), fontsize=8)
     fig.savefig(figs / "F4_zonation_fatty.png", dpi=180)
     plt.close(fig)
     logger.info(f"figures F1-F4; {time.time() - t0:.0f}s")

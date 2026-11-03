@@ -48,3 +48,7 @@ variants:
     zonation: {cv_name: central_vein, pt_name: portal_tract, max_dist_patches: 40, min_cluster: 2}
     context_split: {min_patches: 300, max_sample: 6000, k_sub: 3, min_eff_slides_sub: 5, min_eff_experiments_sub: 2, min_r2_gain: 0.05, top_n_mosaic: 8, exclude_own_parent: true}
     lobular: {max_dist: 1500, folds: 5}
+  v4:                           # 2026-11-04: v3 の回帰から中心の patch を除き、周囲（1 周目・2 周目の平均）だけで小葉内の位置を推定する（脂肪変性の見た目そのものを読んでいないかの確かめ）
+    zonation: {cv_name: central_vein, pt_name: portal_tract, max_dist_patches: 40, min_cluster: 2}
+    context_split: {min_patches: 300, max_sample: 6000, k_sub: 3, min_eff_slides_sub: 5, min_eff_experiments_sub: 2, min_r2_gain: 0.05, top_n_mosaic: 8, exclude_own_parent: true}
+    lobular: {max_dist: 1500, folds: 5, features: [ring1, ring2]}
