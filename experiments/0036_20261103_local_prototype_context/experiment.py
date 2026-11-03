@@ -206,7 +206,9 @@ def main() -> None:
     def assign(X):
         return torch.cat([torch.cdist(torch.from_numpy(x).to(device), cen).argmin(1) for x in np.array_split(X, max(1, len(X) // 65536))]).cpu().numpy()
     qb = assign(Xb)
-    del Xb
+    keep_X = bool(cfg.get("lobular"))   # v3: 小葉内の位置の回帰に表現を使う
+    Xb = Xb.astype(np.float16) if keep_X else None
+    Xt_parts = []
     cl35 = np.load(R35 / f"assign_{cfg['rep']}_{cfg['method']}.npy").astype(np.int64)[:nb]
     agree = float((qb == cl35).mean())
     logger.info(f"Bayer: nearest-centroid vs 0035 assignment agreement {agree:.3f}; {time.time() - t0:.0f}s")
@@ -220,6 +222,8 @@ def main() -> None:
         Sw_ = sphere_known(K_[:, :128], np.full(len(K_), e))
         X_ = np.concatenate([Sw_, cfg["lda_beta"] * fac * tf(K_)[:, :L]], 1).astype(np.float32)
         qt.append(assign(X_))
+        if keep_X:
+            Xt_parts.append(X_.astype(np.float16))
         xy_t.append(p_["xy"])
         row_t.append(np.full(len(K_), i))
     size0_t = np.array([p_["size0"] for p_ in parts])
@@ -288,6 +292,7 @@ def main() -> None:
                              "same_parent_share_real": [Pr[a, par == par[a]].sum() for a in range(Kf)], "same_parent_share_shuffled": [Ps[a, par == par[a]].sum() for a in range(Kf)]})
     logger.info(f"cooc: median self share real {self_tab.self_share_real[n_f >= 300].median():.3f} vs shuffled {self_tab.self_share_shuffled[n_f >= 300].median():.3f}; {time.time() - t0:.0f}s")
 
+    from sklearn.metrics import roc_auc_score
     # 6. (c) 中心静脈・門脈域までの距離（patch 単位）と小葉内の位置の指標 z = d_cv / (d_cv + d_pt)（0 = 中心静脈側、1 = 門脈域側）
     from scipy.spatial import cKDTree
     names = pd.read_csv(R35 / f"prototype_names_{cfg['rep']}_{cfg['method']}.csv").set_index("prototype").bayer_name.reindex(range(Kf)).fillna("").to_numpy()
@@ -326,6 +331,55 @@ def main() -> None:
     _, _, zs = zonation(q_sh)
     logger.info(f"zonation: index defined for {np.isfinite(zr).mean():.3f} of patches; {time.time() - t0:.0f}s")
 
+    # v3: 小葉内の位置を回帰で推定（0023 の考え方）。正解 = Bayer の中心静脈・門脈域ポリゴンからの距離の比、特徴 = A128 ＋ 1 周目・2 周目の平均。
+    #     試験ごとに分けた 5 分割で Bayer を評価し、全 Bayer で学んだモデルで脂肪変性の slide を予測する。slide 内の順位（0 = 中心静脈側）にして使う
+    lab_b_names = np.array([cfg20["label_priority"][k] if k >= 0 else "" for k in laba])
+    zl = None
+    if cfg.get("lobular"):
+        from scipy.stats import spearmanr
+        from sklearn.linear_model import RidgeCV
+        from sklearn.model_selection import GroupKFold
+        ex21 = sys.modules["exp0021"]
+        Xall = np.concatenate([Xb] + Xt_parts)
+        del Xb, Xt_parts
+
+        def nbmean(nbm):
+            out_ = np.zeros_like(Xall)
+            for s in range(0, n_all, 500000):
+                nn = nbm[s:s + 500000]
+                ok = nn >= 0
+                acc_ = np.zeros((len(nn), Xall.shape[1]), dtype=np.float32)
+                for k in range(nn.shape[1]):
+                    acc_ += np.where(ok[:, k:k + 1], Xall[np.where(ok[:, k], nn[:, k], 0)].astype(np.float32), 0)
+                out_[s:s + 500000] = (acc_ / np.maximum(ok.sum(1, keepdims=True), 1)).astype(np.float16)
+            return out_
+        Fm = [Xall, nbmean(nb1), nbmean(nb2)]
+        pos = ex21.lobular_position(bayer, row_b, xy_b, dict(zip(bayer.slide_id, size0_b)), project_root, cfg["lobular"]["max_dist"])
+        pm = np.isfinite(pos)
+        Ftr = np.concatenate([f_[:nb][pm] for f_ in Fm], 1).astype(np.float32)
+        exp_tr = sl.exp.to_numpy()[row_b[pm]]
+        oof = np.full(pm.sum(), np.nan)
+        for tr, te in GroupKFold(n_splits=cfg["lobular"]["folds"]).split(Ftr, groups=exp_tr):
+            oof[te] = RidgeCV(alphas=np.logspace(-2, 4, 10)).fit(Ftr[tr], pos[pm][tr]).predict(Ftr[te])
+        r2 = 1 - ((pos[pm] - oof) ** 2).sum() / ((pos[pm] - pos[pm].mean()) ** 2).sum()
+        rho = spearmanr(pos[pm], oof)[0]
+        model = RidgeCV(alphas=np.logspace(-2, 4, 10)).fit(Ftr, pos[pm])
+        pred = np.concatenate([model.predict(np.concatenate([f_[s:s + 500000] for f_ in Fm], 1).astype(np.float32)) for s in range(0, n_all, 500000)])
+        del Fm, Ftr, Xall
+        zl = np.empty(n_all)
+        for i in range(len(sl)):
+            a, b = starts[i], starts[i + 1]
+            if b > a:
+                zl[a:b] = pd.Series(pred[a:b]).rank(pct=True).to_numpy()
+        # 目印の確かめ（試験を分けた予測ではないので、Bayer は学習に含まれる。参考）
+        mk_ = np.isin(lab_b_names, ["central_vein", "portal_tract"])
+        auc_l = float(roc_auc_score(lab_b_names[mk_] == "portal_tract", zl[:nb][mk_]))
+        lob = {"n_target_patches": int(pm.sum()), "n_target_slides": int(len(np.unique(row_b[pm]))), "oof_r2_leave_experiment_out": float(r2), "oof_spearman": float(rho),
+               "auc_portal_vs_central_labels_in_sample": auc_l}
+        (run_dir / "lobular_model.json").write_text(json.dumps(lob, indent=2))
+        np.save(run_dir / "lobular_rank.npy", zl.astype(np.float32))
+        logger.info(f"lobular model: {lob}; {time.time() - t0:.0f}s")
+
     # 純プロトタイプ（0035 の目視で確かめたもの）での比較: 同じ化合物の slide の中で、純プロトタイプの patch とそれ以外の patch の z
     pure = pd.read_csv(R35 / "fatty_figures" / "fatty_pure_prototypes.csv")
     pure = pure[(pure.rep == cfg["rep"]) & (pure.method == cfg["method"])]
@@ -337,7 +391,7 @@ def main() -> None:
         inpure = np.isin(qf, list(ps))
         for grp, msk in [("pure prototypes", inpure), ("other patches, fatty slides", ~inpure)]:
             sel = (cmpd_p == cn) & fat_p & msk
-            for kind, zz in (("real", zr), ("shuffled", zs)):
+            for kind, zz in [("real", zr), ("shuffled", zs)] + ([("lobular_model", zl)] if zl is not None else []):
                 ok = sel & np.isfinite(zz)
                 per_slide = pd.Series(zz[ok]).groupby(row[ok]).mean()
                 per_slide = per_slide[pd.Series(ok).groupby(row).sum().reindex(per_slide.index) >= 50]
@@ -348,9 +402,7 @@ def main() -> None:
     ztab.to_csv(run_dir / "zonation_fatty.csv", index=False)
     logger.info("zonation of fatty pure prototypes:\n" + ztab.round(3).to_string(index=False))
     # 目印そのものの確かめ: Bayer の中心静脈・門脈域のラベルが付いた patch の z（目印は同じラベルで名前を付けたプロトタイプなので循環を含む）
-    lab_b_names = np.array([cfg20["label_priority"][k] if k >= 0 else "" for k in laba])
     zcheck = pd.DataFrame([{"bayer_label": nm_, "n": int(np.isfinite(zr[:nb][lab_b_names == nm_]).sum()), "z_median": float(np.nanmedian(zr[:nb][lab_b_names == nm_]))} for nm_ in ["central_vein", "portal_tract", "parenchyma", "necrosis", "inflammation"]])
-    from sklearn.metrics import roc_auc_score
     mk_ = np.isin(lab_b_names, ["central_vein", "portal_tract"]) & np.isfinite(zr[:nb])
     auc_lm = float(roc_auc_score(lab_b_names[mk_] == "portal_tract", zr[:nb][mk_])) if mk_.any() else np.nan
     zcheck = pd.concat([zcheck, pd.DataFrame([{"bayer_label": "AUC portal vs central (z)", "n": int(mk_.sum()), "z_median": auc_lm}])], ignore_index=True)
@@ -481,22 +533,29 @@ def main() -> None:
     fig.savefig(figs / "F3_context_split.png", dpi=180)
     plt.close(fig)
 
-    # F4: 小葉内の位置（z）: 脂肪変性の純プロトタイプ vs 同じ slide のその他、実際とシャッフル（slide 単位の平均と 95% 区間）
-    fig, ax = plt.subplots(figsize=(7.5, 4), layout="constrained")
+    # F4: 小葉内の位置: 脂肪変性の純プロトタイプ vs 同じ slide のその他。指標ごとに（目印の z、目印をシャッフルした z、回帰による slide 内の順位）。slide 単位の平均と 95% 区間
+    kinds = [("real", "目印までの距離の比 z", OI["blue"], "o"), ("shuffled", "目印をシャッフルした z（対照）", OI["gray"], "s")] + ([("lobular_model", "回帰による小葉内の位置（slide 内の順位）", OI["vermillion"], "D")] if zl is not None else [])
+    fig, ax = plt.subplots(figsize=(8, 4.8), layout="constrained")
     ypos, labels_ = [], []
     yy = 0
+    seen_k = set()
     for cn in ("CCl4", "cholesterol"):
         for grp in ("pure prototypes", "other patches, fatty slides"):
-            for kind, col, mk in (("real", OI["blue"], "o"), ("shuffled", OI["gray"], "s")):
+            y_start = yy
+            for kind, klab, col, mk in kinds:
                 r_ = ztab[(ztab.compound == cn) & (ztab.group == grp) & (ztab.kind == kind)].iloc[0]
-                ax.errorbar(r_.z_mean_of_slides, yy, xerr=[[r_.z_mean_of_slides - r_.lo], [r_.hi - r_.z_mean_of_slides]], fmt=mk, color=col, ms=6, capsize=3, label={"real": "実際の目印", "shuffled": "シャッフルした目印（対照）"}[kind] if yy < 2 else None)
-                yy += 0.35
-            labels_.append(f"{cn}: {'純プロトタイプ' if grp == 'pure prototypes' else 'その他の patch'}（{int(r_.n_slides)} 枚）")
-            ypos.append(yy - 0.52)
+                if np.isfinite(r_.z_mean_of_slides):
+                    ax.errorbar(r_.z_mean_of_slides, yy, xerr=[[r_.z_mean_of_slides - r_.lo], [r_.hi - r_.z_mean_of_slides]], fmt=mk, color=col, ms=6, capsize=3,
+                                label=klab if kind not in seen_k else None)
+                    seen_k.add(kind)
+                yy += 0.3
+            n_s = int(ztab[(ztab.compound == cn) & (ztab.group == grp) & (ztab.kind == kinds[-1][0])].iloc[0].n_slides)
+            labels_.append(f"{cn}: {'純プロトタイプ' if grp == 'pure prototypes' else 'その他の patch'}（{n_s} 枚）")
+            ypos.append((y_start + yy - 0.3) / 2)
             yy += 0.5
     ax.set_yticks(ypos, labels_)
     ax.invert_yaxis()
-    ax.set(xlim=(0, 1), xlabel="小葉内の位置の指標 z = d(中心静脈) / (d(中心静脈) + d(門脈域))　0 = 中心静脈側、1 = 門脈域側",
+    ax.set(xlim=(0, 1), xlabel="小葉内の位置（0 = 中心静脈側、1 = 門脈域側）",
            title="脂肪変性の純プロトタイプは小葉のどこにあるか（記録: CCl4 は小葉中心性、cholesterol 食は辺縁性）\n点 = slide ごとの平均の平均、線 = slide を単位にした 95% ブートストラップ区間")
     ax.axvline(0.5, color="black", lw=0.6, ls=":")
     ax.legend(frameon=False, loc="lower right", fontsize=8)
