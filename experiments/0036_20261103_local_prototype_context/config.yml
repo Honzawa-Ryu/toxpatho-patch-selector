@@ -1,0 +1,43 @@
+# 0036: 局所プロトタイプ・ヒストグラムで空間文脈を調べる（第 1 段階: 解析のみ、再クラスタリングなし）。#9 の前段、#15 の手前。
+# 2026-11-03ユーザー: 他のモデルと相談した方針（H2T の Pattern Co-localization を patch 単位の文脈に応用）で進める。脂肪変性の 3 試験も全 patch で入れる。中心静脈・門脈域までの距離も足す。
+# 対象: Bayer 230 枚（全 patch）＋ 脂肪変性 3 試験 188 枚（全 patch。0035 の A128 の split_record の重心に割り当て直す）。
+# プロトタイプ: 0035 v1 の A128（白色化128 ‖ LDA13）、split_record（細、876 個）と、その k=100 の親（粗）。表現と重みは 0035 と同じ手順で作り直す。
+# 解析: 3×3（1 周目 8 個）と 5×5（2 周目 16 個）の近傍。共起行列、プロトタイプ内の文脈の分かれ方、中心静脈・門脈域までの距離（小葉内の位置）。対照は slide 内で割当をシャッフルしたもの。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0035: 0035_20261102_finer_prototypes_split_rejoin
+exp0035_run: v1
+rep: A128_sphering_lda
+method: split_record
+cache_from: cache_v1
+combo_resid_dim: 16
+combo_resid_weight: 0.5
+lda_beta: 1.0
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+fatty_exps: [66, 67, 698]
+patches_per_slide: 2048
+workers: 12
+min_support_ring1: 5            # 1 周目の有効な近傍がこれ未満の patch は文脈の解析から外す（数は記録する）
+context_split:
+  min_patches: 300              # 文脈の分かれ方を見るプロトタイプの最小 patch 数（有効な patch）
+  max_sample: 6000
+  k_sub: 3
+  min_eff_slides_sub: 5         # 子が複数 slide に出るか（正味の slide 枚数）
+  top_n_mosaic: 6
+zonation:
+  cv_name: central_vein
+  pt_name: portal_tract
+  max_dist_patches: 40          # これより遠い（約 5 mm 超）ときは距離なしとみなす
+maps:
+  extra_slides: []              # 地図を描く slide を追加するとき
+  thumb: 2400
+bootstrap: 2000
+variants: {}
