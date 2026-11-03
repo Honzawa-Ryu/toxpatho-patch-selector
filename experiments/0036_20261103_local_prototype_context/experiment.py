@@ -264,6 +264,7 @@ def main() -> None:
     sup2 = (nb2 >= 0).sum(1)
     valid = sup1 >= cfg["min_support_ring1"]
     pd.DataFrame({"set": sl.set.to_numpy()[row], "support_ring1": sup1, "support_ring2": sup2}).groupby(["set", "support_ring1"]).size().rename("n").reset_index().to_csv(run_dir / "neighbor_support.csv", index=False)
+    np.savez(run_dir / "arrays.npz", qf=qf.astype(np.int16), q_sh=q_sh.astype(np.int16), row=row.astype(np.int32), xy=xy.astype(np.int32), nb1=nb1.astype(np.int32), nb2=nb2.astype(np.int32))   # 2026-11-04: 解析を作り直しなしで回すため
     logger.info(f"neighbors: max grid residual {max(resid):.3f} patch; ring1 support 8 for {np.mean(sup1 == 8):.3f}, >= {cfg['min_support_ring1']} for {valid.mean():.3f}; {time.time() - t0:.0f}s")
 
     # 5. (a) 共起行列（1 周目）: 実際とシャッフル。観測/期待
@@ -294,16 +295,29 @@ def main() -> None:
     is_cv, is_pt = names == zc["cv_name"], names == zc["pt_name"]
     logger.info(f"zonation landmarks: {int(is_cv.sum())} central-vein prototypes {list(np.where(is_cv)[0])}, {int(is_pt.sum())} portal-tract prototypes {list(np.where(is_pt)[0])}")
 
+    def landmark_masks(lbl):
+        """patch ごとの目印（中心静脈・門脈域）。min_cluster > 0 なら、同じ種類の目印が 1 周目に min_cluster 個以上ある patch だけ（血管の断面のまとまり）"""
+        out_m = []
+        for msk in (is_cv, is_pt):
+            m_ = msk[lbl]
+            if zc.get("min_cluster", 0) > 0:
+                okn = nb1 >= 0
+                cnt = (okn & m_[np.where(okn, nb1, 0)]).sum(1)
+                m_ = m_ & (cnt >= zc["min_cluster"])
+            out_m.append(m_)
+        return out_m
+
     def zonation(lbl):
+        m_cv, m_pt = landmark_masks(lbl)
         d_cv, d_pt = np.full(n_all, np.nan), np.full(n_all, np.nan)
         for i in range(len(sl)):
             a, b = starts[i], starts[i + 1]
             g = (xy[a:b] - xy[a:b].min(0)) / int(sl.size0[i])
-            for msk, d in ((is_cv, d_cv), (is_pt, d_pt)):
-                pts = g[msk[lbl[a:b]]]
+            for mm, d in ((m_cv, d_cv), (m_pt, d_pt)):
+                own = mm[a:b]
+                pts = g[own]
                 if len(pts) >= 3:
                     dd, _ = cKDTree(pts).query(g, k=2)
-                    own = msk[lbl[a:b]]
                     d[a:b] = np.where(own, dd[:, 1], dd[:, 0])   # 自分自身が目印のときは次に近い目印
         d_cv[d_cv > zc["max_dist_patches"]] = np.nan
         d_pt[d_pt > zc["max_dist_patches"]] = np.nan
@@ -336,6 +350,10 @@ def main() -> None:
     # 目印そのものの確かめ: Bayer の中心静脈・門脈域のラベルが付いた patch の z（目印は同じラベルで名前を付けたプロトタイプなので循環を含む）
     lab_b_names = np.array([cfg20["label_priority"][k] if k >= 0 else "" for k in laba])
     zcheck = pd.DataFrame([{"bayer_label": nm_, "n": int(np.isfinite(zr[:nb][lab_b_names == nm_]).sum()), "z_median": float(np.nanmedian(zr[:nb][lab_b_names == nm_]))} for nm_ in ["central_vein", "portal_tract", "parenchyma", "necrosis", "inflammation"]])
+    from sklearn.metrics import roc_auc_score
+    mk_ = np.isin(lab_b_names, ["central_vein", "portal_tract"]) & np.isfinite(zr[:nb])
+    auc_lm = float(roc_auc_score(lab_b_names[mk_] == "portal_tract", zr[:nb][mk_])) if mk_.any() else np.nan
+    zcheck = pd.concat([zcheck, pd.DataFrame([{"bayer_label": "AUC portal vs central (z)", "n": int(mk_.sum()), "z_median": auc_lm}])], ignore_index=True)
     zcheck.to_csv(run_dir / "zonation_landmark_check.csv", index=False)
     logger.info("zonation landmark check:\n" + zcheck.round(3).to_string(index=False))
 
@@ -343,14 +361,16 @@ def main() -> None:
     cs = cfg["context_split"]
     from lib.clustering import kmeans_lloyd
 
-    def hist_coarse(idx, lbl_c):
+    def hist_coarse(idx, lbl_c, own_parent=None):
         H = np.zeros((len(idx), 2 * Kc_), dtype=np.float32)
         for off, nbm in ((0, nb1), (Kc_, nb2)):
             nn = nbm[idx]
             ok = nn >= 0
             rr = np.repeat(np.arange(len(idx)), nn.shape[1])[ok.ravel()]
             np.add.at(H, (rr, off + lbl_c[nn[ok]]), 1)
-            H[:, off:off + Kc_] /= np.maximum(ok.sum(1, keepdims=True), 1)
+            if cs.get("exclude_own_parent") and own_parent is not None:
+                H[:, off + own_parent] = 0   # 周囲の「自分の親」を数えない（病変の中心か縁かだけで分かれるのを避ける）
+            H[:, off:off + Kc_] /= np.maximum(H[:, off:off + Kc_].sum(1, keepdims=True), 1)
         return np.sqrt(H)
 
     def r2_split(H, seed):
@@ -368,8 +388,8 @@ def main() -> None:
             continue
         if len(idx) > cs["max_sample"]:
             idx = np.sort(rng.choice(idx, cs["max_sample"], replace=False))
-        r2r, lab_k = r2_split(hist_coarse(idx, qc_), cfg["seed"] + a)
-        r2s, _ = r2_split(hist_coarse(idx, qc_sh), cfg["seed"] + a)
+        r2r, lab_k = r2_split(hist_coarse(idx, qc_, par[a]), cfg["seed"] + a)
+        r2s, _ = r2_split(hist_coarse(idx, qc_sh, par[a]), cfg["seed"] + a)
         effs, sizes, exps_ = [], [], []
         for k in range(cs["k_sub"]):
             rk = row[idx[lab_k == k]]
@@ -390,7 +410,7 @@ def main() -> None:
     stab = pd.DataFrame(srows)
     rec = pd.read_csv(R35 / f"prototype_names_{cfg['rep']}_{cfg['method']}.csv").set_index("prototype").record_name
     stab["record_name"] = rec.reindex(stab.prototype).fillna("").to_numpy()
-    stab["candidate"] = (stab.r2_gain > 0) & (stab.min_sub_size >= 0.1) & (stab.min_sub_eff_slides >= cs["min_eff_slides_sub"])
+    stab["candidate"] = (stab.r2_gain >= cs.get("min_r2_gain", 0)) & (stab.min_sub_size >= 0.1) & (stab.min_sub_eff_slides >= cs["min_eff_slides_sub"]) & (stab.min_sub_eff_experiments >= cs.get("min_eff_experiments_sub", 0))
     stab = stab.merge(self_tab[["prototype", "self_share_real", "self_share_shuffled"]], on="prototype")
     stab.sort_values("r2_gain", ascending=False).to_csv(run_dir / "context_split.csv", index=False)
     logger.info(f"context split: {len(stab)} prototypes analysed, median R2 real {stab.r2_real.median():.3f} vs shuffled {stab.r2_shuffled.median():.3f}, candidates {int(stab.candidate.sum())}; {time.time() - t0:.0f}s")
@@ -554,7 +574,7 @@ def main() -> None:
             ik = idx[lab_k == k]
             if len(ik) == 0:
                 continue
-            Hk = hist_coarse(ik, qc_) ** 2
+            Hk = hist_coarse(ik, qc_, par[a]) ** 2
             top_par = np.argsort(-Hk[:, :Kc_].mean(0))[:3]
             desc = "、".join(f"親 {int(t_)}（{Hk[:, t_].mean():.0%}）" for t_ in top_par)
             picks, seen = [], set()

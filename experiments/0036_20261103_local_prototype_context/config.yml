@@ -40,4 +40,7 @@ maps:
   extra_slides: []              # 地図を描く slide を追加するとき
   thumb: 2400
 bootstrap: 2000
-variants: {}
+variants:
+  v2:                           # 2026-11-04: v1 で目印が散らばり z が機能しなかった、候補が緩すぎた、を直す
+    zonation: {cv_name: central_vein, pt_name: portal_tract, max_dist_patches: 40, min_cluster: 2}   # 同じ種類の目印が隣に 2 個以上ある patch だけを目印に
+    context_split: {min_patches: 300, max_sample: 6000, k_sub: 3, min_eff_slides_sub: 5, min_eff_experiments_sub: 2, min_r2_gain: 0.05, top_n_mosaic: 8, exclude_own_parent: true}
