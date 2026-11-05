@@ -73,7 +73,7 @@ def main():
         if names is not None:
             tab["record_name"] = names.record_name.reindex(range(K)).fillna("").to_numpy()
             tab["bayer_name"] = names.bayer_name.reindex(range(K)).fillna("").to_numpy()
-        min_exps = max(3, int(np.ceil(MIN_EXPS_FRAC * len(exps))))
+        min_exps = max(2, int(np.ceil(MIN_EXPS_FRAC * len(exps))))
         sel_all = (n_up >= min_exps) & (LR.mean(0) >= LR_UP)
         tab["selected_all_exps"] = sel_all
         tab.sort_values(["n_exps_up2x", "mean_log2_ratio"], ascending=False).to_csv(OUT / f"prototypes_{rep}_{method}.csv", index=False)
@@ -86,7 +86,7 @@ def main():
         for f in range(FOLDS):
             tr = [i for i, e in enumerate(exps) if fold_of[comp_of_exp[e]] != f]
             te = [e for e in exps if fold_of[comp_of_exp[e]] == f]
-            me = max(3, int(np.ceil(MIN_EXPS_FRAC * len(tr))))
+            me = max(2, int(np.ceil(MIN_EXPS_FRAC * len(tr))))
             sel = ((LR[tr] >= LR_UP).sum(0) >= me) & (LR[tr].mean(0) >= LR_UP)
             n_sel.append(int(sel.sum()))
             for e in te:
