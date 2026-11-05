@@ -7,7 +7,7 @@
   (a) 試験ごとの AUC（e の対照群か、他の試験の対照群か）の分布、(b) 最もスコアの高い試験を予測にしたときの正解率（偶然 = 1/試験数）
 スキャナ（SS1601 / SS1598）でも同じ（2 クラス）。表現は所見の解析と同じ 3 つ。
 出力: outputs/0035_20261102_finer_prototypes_split_rejoin/control_study_identification/
-usage: python scripts/control_study_identification.py   （コンテナ内、Slurm経由。CPU、10 分程度）
+usage: python scripts/control_study_identification.py [0030v4]   （0030v4 で、0030 v4 の C・D・D13 の割当を使う。コンテナ内、Slurm経由。CPU、10 分程度）
 """
 from pathlib import Path
 
@@ -22,6 +22,61 @@ REPS = [("v1", "A128_sphering_lda", "split_record", "A128（白色化128 ‖ LDA
         ("v1", "A128_sphering_lda", "flat_k1000", "A128、k=1000")]
 MIN_CTRL, LR_UP, FOLDS, SEED = 6, 1.0, 5, 0
 FONT_JP = "/workspace/andre01/honzawa/.local/share/fonts/NotoSansCJKjp-Regular.otf"
+
+
+def main_0030v4():
+    """0030 v4 の割当（未学習 3,319 枚の 2,048 patch、0032 の Bayer だけの重心: C = LDA 13、D = PCA 64、D13 = PCA 13）で同じ確かめをする（2026-11-05ユーザー:
+    LDA で試験間差がつぶせる、が理想の主張。A128 は白色化 128 ‖ LDA なので、LDA だけの C で確かめる）"""
+    from sklearn.metrics import roc_auc_score
+    R = ROOT / "outputs/0030_20261028_tggates_unseen_findings/v4"
+    out = OUT / "0030v4"
+    out.mkdir(parents=True, exist_ok=True)
+    S = pd.read_csv(R / "slides.csv", dtype={"slide_id": str})
+    S["exp"] = S.EXP_ID.astype(int)
+    S["is_ctrl"] = S.DOSE_LEVEL.eq("Control")
+    S["scanner"] = S.scanscope_id
+    A = np.load(R / "assignments.npz")
+    slide_of = A["row"]
+    ns = len(S)
+    nct = S[S.is_ctrl].groupby("exp").size()
+    exps = sorted(e for e, n in nct.items() if n >= MIN_CTRL)
+    C = S[S.is_ctrl & S.exp.isin(exps)].copy()
+    rng = np.random.default_rng(SEED)
+    C["fold"] = rng.permutation(np.arange(len(C)) % FOLDS)
+    print(f"0030 v4 controls: {len(C)} slides in {len(exps)} experiments", flush=True)
+    rows, per = [], []
+    for key, title in (("C_lda", "C（LDA 13 次元のみ）"), ("D13_unsup13", "D13（PCA 13 次元、ラベルなし）"), ("D_unsup", "D（PCA 64 次元、ラベルなし）")):
+        cl = A[f"cl_{key}"].astype(np.int64)
+        K = int(cl.max()) + 1
+        P = np.bincount(cl * ns + slide_of, minlength=K * ns).reshape(K, ns).T.astype(float)
+        P /= np.maximum(P.sum(1, keepdims=True), 1)
+        Pc = P[C.index.to_numpy()]
+        sc_ = np.where(np.isin(C.scanner.fillna("?").to_numpy(), ["SS1601", "SS1598"]), C.scanner.fillna("?").to_numpy(), "?")
+        for label_name, lab in (("experiment", C.exp.to_numpy()), ("scanner", sc_)):
+            classes = [c for c in np.unique(lab) if c != "?"]
+            score = np.full((len(C), len(classes)), np.nan)
+            for f in range(FOLDS):
+                tr, te = (C.fold != f).to_numpy(), (C.fold == f).to_numpy()
+                for j, c in enumerate(classes):
+                    a_, b_ = tr & (lab == c), tr & (lab != c)
+                    if a_.sum() and b_.sum():
+                        sel = np.log2((Pc[a_].mean(0) + 1e-4) / (Pc[b_].mean(0) + 1e-4)) >= LR_UP
+                        score[te, j] = Pc[te][:, sel].sum(1)
+            aucs = []
+            for j, c in enumerate(classes):
+                y = (lab == c).astype(int)
+                ok = np.isfinite(score[:, j])
+                if len(set(y[ok])) == 2:
+                    aucs.append(roc_auc_score(y[ok], score[ok, j]))
+                    per.append({"representation": title, "label": label_name, "class": c, "auc": aucs[-1]})
+            known = lab != "?"
+            pred = np.array(classes)[np.nanargmax(np.where(np.isfinite(score), score, -np.inf), 1)]
+            rows.append({"representation": title, "label": label_name, "n_classes": len(classes), "K": K, "top1_accuracy": float((pred[known] == lab[known]).mean()),
+                         "chance": 1 / len(classes) if label_name == "experiment" else float(pd.Series(lab[known]).value_counts(normalize=True).max()),
+                         "auc_median": float(np.median(aucs)), "auc_q25": float(np.percentile(aucs, 25)), "auc_q75": float(np.percentile(aucs, 75))})
+            print(rows[-1], flush=True)
+    pd.DataFrame(rows).to_csv(out / "summary.csv", index=False)
+    pd.DataFrame(per).to_csv(out / "auc_per_class.csv", index=False)
 
 
 def main():
@@ -110,4 +165,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    main_0030v4() if "0030v4" in sys.argv[1:] else main()
