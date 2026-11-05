@@ -164,6 +164,83 @@ def main():
     print("done", flush=True)
 
 
+def identify(Pc, lab, fold, folds=FOLDS):
+    """slide 単位の分割で、各クラス（試験）の対照群に 2 倍以上多いプロトタイプを学習側で選び、伏せた slide でその割合から判別。クラスごとの AUC と正解率を返す。"""
+    from sklearn.metrics import roc_auc_score
+    classes = list(np.unique(lab))
+    score = np.full((len(lab), len(classes)), np.nan)
+    for f in range(folds):
+        tr, te = fold != f, fold == f
+        for j, c in enumerate(classes):
+            a_, b_ = tr & (lab == c), tr & (lab != c)
+            if a_.sum() and b_.sum():
+                sel = np.log2((Pc[a_].mean(0) + 1e-4) / (Pc[b_].mean(0) + 1e-4)) >= LR_UP
+                score[te, j] = Pc[te][:, sel].sum(1)
+    aucs = {}
+    for j, c in enumerate(classes):
+        y = (lab == c).astype(int)
+        ok = np.isfinite(score[:, j])
+        if len(set(y[ok])) == 2:
+            aucs[c] = roc_auc_score(y[ok], score[ok, j])
+    pred = np.array(classes)[np.nanargmax(np.where(np.isfinite(score), score, -np.inf), 1)]
+    return aucs, float((pred == lab).mean())
+
+
+def main_blocks():
+    """0015 の対照群のクラスタリングで決めた試験の塊（cut 0.72）の中だけで、対照群から試験を当てられるか（2026-11-05ユーザー:
+    試験内でやるなら LDA はいらない。潜在表現の事後補正がやりたいことの一つ。塊の中でのみ解析するとどうか）。0035（A128・B128・k=1000）と 0030 v4（C・D13・D）の両方で。"""
+    blocks = pd.read_csv(ROOT / "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.72/exp_blocks.csv").set_index("exp_id").block
+    out = OUT / "blocks"
+    out.mkdir(parents=True, exist_ok=True)
+    cfg = yaml.safe_load(open(ROOT / "experiments/0035_20261102_finer_prototypes_split_rejoin/config.yml"))
+    sources = []
+    # 0035
+    S = pd.read_csv(R35 / "v1/slides.csv", dtype={"slide_id": str})
+    row_b = np.load(ROOT / "outputs" / cfg["exp0025"] / cfg["cache_from"] / "cache.npz")["row"]
+    nfs = int((S.set == "fatty").sum())
+    row_u = np.load(ROOT / cfg["unseen_features_from"], allow_pickle=True)["row"]
+    off_t = int((S.set == "bayer").sum())
+    so = np.r_[row_b, np.repeat(np.arange(nfs), cfg["patches_per_slide"]) + off_t, row_u + off_t + nfs]
+    w = 1.0 / np.maximum(np.bincount(so, minlength=len(S)), 1)
+    for run, rep, method, title in REPS:
+        cl = np.load(R35 / run / f"assign_{rep}_{method}.npy").astype(np.int64)
+        K = int(cl.max()) + 1
+        P = np.bincount(cl * len(S) + so, weights=w[so], minlength=K * len(S)).reshape(K, len(S)).T
+        sources.append(("0035", title, S[["exp", "is_ctrl"]].copy(), P))
+    # 0030 v4
+    R = ROOT / "outputs/0030_20261028_tggates_unseen_findings/v4"
+    S2 = pd.read_csv(R / "slides.csv", dtype={"slide_id": str})
+    S2["exp"] = S2.EXP_ID.astype(int)
+    S2["is_ctrl"] = S2.DOSE_LEVEL.eq("Control")
+    A = np.load(R / "assignments.npz")
+    for key, title in (("C_lda", "C（LDA 13 次元のみ）"), ("D13_unsup13", "D13（PCA 13、ラベルなし）"), ("D_unsup", "D（PCA 64、ラベルなし）")):
+        cl = A[f"cl_{key}"].astype(np.int64)
+        K = int(cl.max()) + 1
+        P = np.bincount(cl * len(S2) + A["row"], minlength=K * len(S2)).reshape(K, len(S2)).T.astype(float)
+        P /= np.maximum(P.sum(1, keepdims=True), 1)
+        sources.append(("0030v4", title, S2[["exp", "is_ctrl"]].copy(), P))
+    rows, per = [], []
+    rng = np.random.default_rng(SEED)
+    for src, title, SS, P in sources:
+        nct = SS[SS.is_ctrl].groupby("exp").size()
+        exps = [e for e, n in nct.items() if n >= MIN_CTRL and e in blocks.index]
+        C = SS[SS.is_ctrl & SS.exp.isin(exps)].copy()
+        C["block"] = blocks.reindex(C.exp).to_numpy()
+        C["fold"] = rng.permutation(np.arange(len(C)) % FOLDS)
+        Pc = P[C.index.to_numpy()]
+        scopes = [("all", np.ones(len(C), bool))] + [(f"block {b}", (C.block == b).to_numpy()) for b in sorted(C.block.unique()) if C[C.block == b].exp.nunique() >= 5]
+        for sname, m in scopes:
+            aucs, acc = identify(Pc[m], C.exp.to_numpy()[m], C.fold.to_numpy()[m])
+            v = np.array(list(aucs.values()))
+            ne = len(aucs)
+            rows.append({"source": src, "representation": title, "scope": sname, "n_experiments": ne, "n_slides": int(m.sum()), "auc_median": float(np.median(v)),
+                         "auc_q25": float(np.percentile(v, 25)), "auc_q75": float(np.percentile(v, 75)), "top1_accuracy": acc, "chance": 1 / ne})
+            per += [{"source": src, "representation": title, "scope": sname, "exp": e, "auc": a} for e, a in aucs.items()]
+            print({k: (round(x, 3) if isinstance(x, float) else x) for k, x in rows[-1].items()}, flush=True)
+    pd.DataFrame(rows).to_csv(out / "summary.csv", index=False)
+    pd.DataFrame(per).to_csv(out / "auc_per_exp.csv", index=False)
+
+
 if __name__ == "__main__":
     import sys
-    main_0030v4() if "0030v4" in sys.argv[1:] else main()
+    main_blocks() if "blocks" in sys.argv[1:] else (main_0030v4() if "0030v4" in sys.argv[1:] else main())
