@@ -144,7 +144,7 @@ def main():
     ax.invert_yaxis()
     ax.axvline(0.5, color="black", lw=0.6, ls=":")
     ax.set(xlim=(0.3, 1.05), xlabel="AUC（伏せた化合物の slide で、選んだプロトタイプの割合から記録の有無を判別）",
-           title=f"{FINDING}: 学習側の化合物で選んだ「所見のプロトタイプ」は、伏せた化合物でも記録の有無を当てるか\n{len(exps)} 試験。線 = 化合物を単位にした 95% ブートストラップ区間")
+           title=f"{FINDING}: 学習側の化合物で選んだ「所見のプロトタイプ」は、\n伏せた化合物でも記録の有無を当てるか（{len(exps)} 試験。線 = 化合物を単位にした 95% ブートストラップ区間）")
     fig.savefig(OUT / "F1_heldout_auc.png", dpi=180)
     plt.close(fig)
     # F2: 試験ごとの log2 比（主表現、選んだプロトタイプ上位 12 個）
