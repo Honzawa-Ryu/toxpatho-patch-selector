@@ -17,6 +17,7 @@ tier1_coords_dir: "outputs/0009_20260919_tier1_corpus_clustering/features_tier1_
 added_ctrl_list: "outputs/target_slide_list/ctrl_repeat_missing.csv"
 added_treated_list: "outputs/target_slide_list/block_largest_cut072_missing.csv"   # 2026-10-17転送: 最大の塊の31試験の投与群1,828枚                           # 追加Control 1,979枚（99化合物）
 added_annot_list: "outputs/target_slide_list/annot_fatty_ctrl_missing.csv"   # 2026-10-27: ＋Bayerの試験でControlの特徴量がない38試験のControl 185枚（Spheringのため、1試験5枚、時点に散らす）。抽出済みはskip
+added_group_list: "outputs/target_slide_list/group3_26_treated_missing.csv"   # 2026-11-06: 0035 control_similarity のまとまり3・26（28試験）の投与群で特徴量がない1,641枚。svsは外付けHDD（00-utils/hdd）を直接指す。phase coords_group → sub_group（2,048 patch）
 wsi_dir: "data/TGGATEs/WSI/Liver"
 
 # --- 参照染色 ---

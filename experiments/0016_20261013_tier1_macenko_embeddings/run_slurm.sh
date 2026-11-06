@@ -63,7 +63,7 @@ GRID_ARGS=(
     "--chunk"
 )
 GRID_VALUES=(
-    "full_annot"
+    "coords_group"
     "0 1 2 3"
 )
 

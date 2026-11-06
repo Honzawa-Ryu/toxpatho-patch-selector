@@ -58,7 +58,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")
     parser.add_argument("--phase", choices=["coords", "coords_treated", "ctrl", "treated", "full", "full_block3", "full_added_treated",
-                                            "coords_annot", "full_annot"], required=True)
+                                            "coords_annot", "full_annot", "coords_group", "sub_group"], required=True)
     parser.add_argument("--chunk", type=int, required=True)   # 0..n_chunks-1（array task）
     return parser.parse_args()
 
@@ -99,6 +99,14 @@ def build_slides(project_root: Path, config: dict) -> pd.DataFrame:
         a3["is_ctrl"], a3["added"], a3["annot"], a3["annot_row"] = a3.DOSE_LEVEL == "Control", True, True, True
         slides.loc[slides.slide_id.isin(a3.slide_id), "annot"] = True
         slides = pd.concat([slides, a3[~a3.slide_id.isin(slides.slide_id)][cols + ["annot", "annot_row"]]], ignore_index=True)
+    # 対照群で見分けられない試験のまとまり（0035 control_similarity）の投与群（2026-11-06、外付けHDDから直接読む）。2,048 patchで抽出する。
+    slides["group_row"] = False
+    if config.get("added_group_list"):
+        a4 = pd.read_csv(project_root / config["added_group_list"], dtype={"slide_id": str}).rename(
+            columns={"COMPOUND_NAME": "compound_name", "EXP_ID": "exp_id"})
+        a4 = a4[~a4.slide_id.isin(slides.slide_id)]
+        a4["is_ctrl"], a4["added"], a4["annot"], a4["annot_row"], a4["group_row"] = False, True, False, False, True
+        slides = pd.concat([slides, a4[cols + ["annot", "annot_row", "group_row"]]], ignore_index=True)
     return slides.sort_values("slide_id").reset_index(drop=True)
 
 
@@ -229,14 +237,15 @@ def main() -> None:
     logger.info(f"Starting: {exp_name} / {variant_key}")
 
     slides = build_slides(project_root, config)
-    old = slides[~slides.annot_row]   # 以前の段は、アノテーションの一覧で足した行を含めない
+    old = slides[~slides.annot_row & ~slides.group_row]   # 以前の段は、アノテーション・まとまりの一覧で足した行を含めない
     target = {"coords": old[old.added], "coords_treated": old[old.added & ~old.is_ctrl], "ctrl": old[old.is_ctrl], "treated": old[~old.is_ctrl],
               "full": slides[slides.exp_id.isin(config.get("full_exp_ids", []))],
               "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
               "full_added_treated": old[old.added & ~old.is_ctrl],
-              "coords_annot": slides[slides.annot], "full_annot": slides[slides.annot]}[args.phase]
+              "coords_annot": slides[slides.annot], "full_annot": slides[slides.annot],
+              "coords_group": slides[slides.group_row], "sub_group": slides[slides.group_row]}[args.phase]
     chunk = target.iloc[args.chunk::config["n_chunks"]]
-    if args.phase in ("coords", "coords_treated", "coords_annot"):   # 座標がまだないslideだけ
+    if args.phase in ("coords", "coords_treated", "coords_annot", "coords_group"):   # 座標がまだないslideだけ
         # 2026-10-19修正: 以前はchunkに分ける前に絞っていたため、他chunkの進み具合で割り振りがずれ、
         # 遅れて始まったchunkで60枚が抜けた。分けてから絞る。
         def has_coords(sid):
@@ -248,7 +257,7 @@ def main() -> None:
         chunk = chunk[~chunk.slide_id.map(has_coords)]
     logger.info(f"phase {args.phase}: {len(target)} slides in total, {len(chunk)} in this chunk")
 
-    if args.phase in ("coords", "coords_treated", "coords_annot"):
+    if args.phase in ("coords", "coords_treated", "coords_annot", "coords_group"):
         res = run_coords(project_root, config, exp_name, chunk, args.chunk, run_dir, logger)
         (run_dir / "results.json").write_text(json.dumps(res, indent=2))
         if res["n_with_coords"] < res["n_slides"]:
@@ -262,7 +271,7 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     encoder = encoder_factory(config["patch_encoder"])
     encoder.to(device).eval()
-    sub_n = config["ctrl_patches_per_slide"] if args.phase == "ctrl" else 0
+    sub_n = config["ctrl_patches_per_slide"] if args.phase in ("ctrl", "sub_group") else 0
     features_dir = project_root / "outputs" / exp_name / config["ctrl_features_subdir" if sub_n else "features_subdir"]
     features_dir.mkdir(parents=True, exist_ok=True)
 
@@ -293,7 +302,7 @@ def main() -> None:
         t_wait = time.time() - t_slide
         coords, attrs = exp0005.read_coords(coords_path(project_root, config, exp_name, sid))
         n_total = len(coords)
-        if sub_n and n_total > sub_n:   # ctrl phase: slide固有の乱数で無作為抽出（座標順は保つ）
+        if sub_n and n_total > sub_n:   # ctrl / sub_group phase: slide固有の乱数で無作為抽出（座標順は保つ）
             keep = np.sort(np.random.default_rng([config["seed"], int(sid), 1]).choice(n_total, size=sub_n, replace=False))
             coords = coords[keep]
         patch_size = int(attrs.get("patch_size_level0", attrs.get("patch_size", 256)))
