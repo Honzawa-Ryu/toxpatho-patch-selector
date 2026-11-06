@@ -100,13 +100,17 @@ def build_slides(project_root: Path, config: dict) -> pd.DataFrame:
         slides.loc[slides.slide_id.isin(a3.slide_id), "annot"] = True
         slides = pd.concat([slides, a3[~a3.slide_id.isin(slides.slide_id)][cols + ["annot", "annot_row"]]], ignore_index=True)
     # 対照群で見分けられない試験のまとまり（0035 control_similarity）の投与群（2026-11-06、外付けHDDから直接読む）。2,048 patchで抽出する。
-    slides["group_row"] = False
+    slides["group_row"], slides["group"] = False, False   # group_row: この一覧で足した行、group: この一覧の slide
     if config.get("added_group_list"):
         a4 = pd.read_csv(project_root / config["added_group_list"], dtype={"slide_id": str}).rename(
             columns={"COMPOUND_NAME": "compound_name", "EXP_ID": "exp_id"})
+        # 既に一覧にある slide（tier1・追加投与群で、特徴量を作っていなかったもの）は行を足さず、印を付けて svs の場所を HDD に向ける
+        hit = slides.slide_id.isin(a4.slide_id)
+        slides.loc[hit, "group"] = True
+        slides.loc[hit, "svs_path"] = slides.loc[hit, "slide_id"].map(a4.set_index("slide_id").svs_path)
         a4 = a4[~a4.slide_id.isin(slides.slide_id)]
-        a4["is_ctrl"], a4["added"], a4["annot"], a4["annot_row"], a4["group_row"] = False, True, False, False, True
-        slides = pd.concat([slides, a4[cols + ["annot", "annot_row", "group_row"]]], ignore_index=True)
+        a4["is_ctrl"], a4["added"], a4["annot"], a4["annot_row"], a4["group_row"], a4["group"] = False, True, False, False, True, True
+        slides = pd.concat([slides, a4[cols + ["annot", "annot_row", "group_row", "group"]]], ignore_index=True)
     return slides.sort_values("slide_id").reset_index(drop=True)
 
 
@@ -243,7 +247,7 @@ def main() -> None:
               "full_block3": slides[slides.exp_id.isin(config.get("full_exp_ids_block3", []))],
               "full_added_treated": old[old.added & ~old.is_ctrl],
               "coords_annot": slides[slides.annot], "full_annot": slides[slides.annot],
-              "coords_group": slides[slides.group_row], "sub_group": slides[slides.group_row]}[args.phase]
+              "coords_group": slides[slides.group], "sub_group": slides[slides.group]}[args.phase]
     chunk = target.iloc[args.chunk::config["n_chunks"]]
     if args.phase in ("coords", "coords_treated", "coords_annot", "coords_group"):   # 座標がまだないslideだけ
         # 2026-10-19修正: 以前はchunkに分ける前に絞っていたため、他chunkの進み具合で割り振りがずれ、
