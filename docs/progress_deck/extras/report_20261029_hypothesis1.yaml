@@ -1,0 +1,35 @@
+id: report_20261029_hypothesis1
+date: '2026-10-29'
+title: 仮説①検証レポート（0032/0031 v2/0030 v4/0029 v9）
+status: 完了（報告済み）
+purpose: Bayerラベルで学んだ表現のプロトタイプが、未学習の化合物・slide・施設で所見・構造を取り出せるかを検証する。
+method: C(LDA13次元)・D(PCA64)・D13(PCA13)の3表現でBayer230枚のみからk=100コンセンサスk-meansプロトタイプを作り、patch単位(化合物held-out)、slide単位(未学習TG-GATEs 3,319枚)、外部(塩野義・エーザイ78枚)で比較、化合物bootstrap 2,000回の95%区間。
+results:
+- 'patch単位平均F1: C−D +0.18[0.14,0.20]、C−D13 +0.22[0.18,0.24]、壊死F1 C0.74/D0.57、核分裂像0.71/0.33（index.html, 0031 v2）'
+- '未学習TG-GATEs学習なしAUC平均: C−D +0.22[0.13,0.29]、核分裂像C0.93 vs D0.30、壊死・単細胞壊死はC≒D（index.html, 0030 v4）'
+- '外部: 会社偏りプロトタイプD28個→C4個、TG-GATEs近傍の外部割合25%→43%、壊死程度相関C0.75 vs D0.42（index.html, 0029 v9）'
+- Bayerにない所見への外挿ではC≒D、仮説①の範囲外（index.html §7）
+figures:
+- path: outputs/report_20261029_hypothesis1/fig/P1_heldout_f1.png
+  caption: 化合物held-outでのラベル別patch F1（95%CI）。C_ldaが実質・壊死・核分裂像・中心静脈・結合組織・artifactでD/D13を上回る
+  representative: true
+- path: outputs/report_20261029_hypothesis1/fig/domain_tsne_C_lda.png
+  caption: 'C表現の対照群patch t-SNE: TG-GATEs・塩野義・エーザイがほぼ混ざる'
+  representative: true
+- path: outputs/report_20261029_hypothesis1/fig/F1_finding_auc.png
+  caption: 未学習TG-GATEsでの所見分類AUC（読み出し/学習なし）
+  representative: false
+- path: outputs/report_20261029_hypothesis1/fig/domain_tsne_D_unsup.png
+  caption: D表現の対照群t-SNE（データセットごとに塊）
+  representative: false
+- path: outputs/report_20261029_hypothesis1/fig/domain_tsne_D13_unsup13.png
+  caption: D13表現の対照群t-SNE（13次元でも塊が残る）
+  representative: false
+- path: outputs/report_20261029_hypothesis1/fig/S1_severity.png
+  caption: 外部78枚の色面積と記録程度
+  representative: false
+- path: outputs/report_20261029_hypothesis1/fig/S2_severity_tggates.png
+  caption: 未学習TG-GATEsの名前付きプロトタイプ面積と程度
+  representative: false
+chart: null
+notes: ''

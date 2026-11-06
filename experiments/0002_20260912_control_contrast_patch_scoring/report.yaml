@@ -1,0 +1,13 @@
+title: Control対比によるパッチ異常スコア
+status: 完了
+purpose: Control群のpatch埋め込み分布からの逸脱で所見を含むスライドをどこまで拾えるかを判定する。
+method: Control bank（同一実験5枚 or 全160枚）に対するkNN距離・Mahalanobis距離をpatchごとに算出し、上位k%平均をスライドスコアとしてControl vs HighのAUROCとgradeとのSpearmanで評価。
+results:
+- knn_matched top10%で所見ありAUROC 0.879、knn_globalも0.879でbank単位の差なし、randomは0.509（plan.md, control_contrast/results.json）
+- maha_matched 0.824、maha_global 0.691、global_mean_distは0.305で素朴な外れ値度は逆向き（plan.md）
+- gradeとのSpearmanは最大0.20（p=0.13）で有意でない（plan.md）
+- 化合物別のHigh平均順位はethambutol 5.0に対しphenobarbital 166.6（ほぼ最下位）で、びまん性肥大が系統的な盲点（plan.md）
+- 219枚ではHigh 58/59が所見あり・Control 157/160が所見なしで、所見と投与群が交絡（EXPERIMENT_NOTES.md）
+figures: []
+chart: null
+notes: ''

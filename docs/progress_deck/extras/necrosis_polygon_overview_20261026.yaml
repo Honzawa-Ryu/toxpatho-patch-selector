@@ -1,0 +1,20 @@
+id: necrosis_polygon_overview_20261026
+date: '2026-10-26'
+title: Bayer壊死ポリゴンの面積概観
+status: 完了
+purpose: Bayerの「Necrosis (area)」ポリゴンの大きさをpatchサイズと比較する。
+method: 0019のannotations.parquetから壊死ポリゴン1,576個（120枚）の面積・化合物・時点を集計。
+results:
+- 1,576個の大半はpatch1枚（約128µm角=16,384µm²）より小さく中央値約3,000µm²（report_20261027/index.html, provenance.json）
+figures:
+- path: outputs/necrosis_polygon_overview_20261026/N1_area_hist.png
+  caption: 壊死ポリゴン面積のlog10ヒストグラム、patch1枚/10枚の目安線つき
+  representative: true
+- path: outputs/necrosis_polygon_overview_20261026/N2_area_by_compound.png
+  caption: 化合物別の壊死ポリゴン面積（ファイル名より）
+  representative: false
+- path: outputs/necrosis_polygon_overview_20261026/N3_compound_time.png
+  caption: 化合物×時点ごとのポリゴン数（ファイル名より）
+  representative: false
+chart: null
+notes: ''

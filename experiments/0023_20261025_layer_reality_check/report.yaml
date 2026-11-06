@@ -1,0 +1,26 @@
+title: 層別化の現実との突き合わせ
+status: 完了（external_v1のcompletion.jsonはrunningのまま、v3で再実行済み）
+purpose: 形態・小葉位置・領域の層が実際の組織と所見記録に結びつくかを、リークを断ってTG-GATEsと外部で確かめる。
+method: ラベルなし表現+周辺平均から小葉位置を試験ごと5分割で回帰(lobular_v1)、TG-GATEsで学習した層を外部78枚にそのまま適用(external_v1-v3、v3はNaN修正後)、形態・小葉・領域の3層を記録と比較(three_layers_v1)。
+results:
+- 小葉位置の回帰は学習外試験でR²0.25・順位相関0.45、病変の予測位置は記録分布と7件中6件一致(allyl alcohol壊死のみ不一致0.33)（README.md, lobular_v1/results.json）
+- 外部で壊死プロトタイプ割合は対照0.1〜1.4%、thioacetamide 4〜11%、acetaminophen 7〜18%、ブロモベンゼン7〜15%（README.md, external_v1/external_layers.csv）
+- '3層: 壊死プロトタイプ割合と記録の壊死程度の順位相関 TG-GATEs0.68/外部0.70、領域層は−0.16で結びつかない（README.md, L1_three_layers_vs_records.png）'
+figures:
+- path: outputs/0023_20261025_layer_reality_check/external_v3/figures/X1_external_necrosis.png
+  caption: '外部78枚: 記録の中心静脈側壊死grade別に壊死プロトタイプ割合(記録あり群で高い)と予測小葉位置(多くが中心静脈側)'
+  representative: true
+- path: outputs/0023_20261025_layer_reality_check/lobular_v1/figures/R1_lesion_lobular_position.png
+  caption: 試験外で学習した小葉位置回帰による病変patchの予測位置(化合物別箱ひげ、記録の分布で色分け)。OOF R²0.25・Spearman0.45
+  representative: true
+- path: outputs/0023_20261025_layer_reality_check/three_layers_v1/figures/L1_three_layers_vs_records.png
+  caption: 3層(形態・領域・小葉位置)と記録の対応。形態層の壊死割合はSpearman TG-GATEs0.68/外部0.70、領域層は-0.16で結びつかない
+  representative: true
+- path: outputs/0023_20261025_layer_reality_check/external_v1/figures/X1_external_necrosis.png
+  caption: '[external_v1] 外部データの壊死プロトタイプ割合と予測小葉位置'
+  representative: false
+- path: outputs/0023_20261025_layer_reality_check/external_v2/figures/X1_external_necrosis.png
+  caption: '[external_v2] 外部データの壊死プロトタイプ割合と予測小葉位置'
+  representative: false
+chart: null
+notes: ''

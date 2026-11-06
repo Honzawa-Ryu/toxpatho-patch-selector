@@ -1,0 +1,39 @@
+title: バッチ頑健な表現の比較
+status: 完了
+purpose: Bayerアノテーションを物差しに、試験・slide差を抑えつつ所見・構造の区別を保つ表現を探す。
+method: raw/PCA、slide内の中心化・標準化・順位、stripe中心化、CORAL、Harmony、MNN対照学習、BBKNNなど13手法を61枚(compare, compare_v2)と132枚(compare_132)で比較し、LDA部分空間を試験ごとの交差検証で評価した(supervised_v1/_132)。
+results:
+- '61枚(57,476 patch): 別試験kNN balanced acc raw0.346、rank_slide0.342、harmony_slide0.275。近傍が別試験の割合 raw9%→rank_slide34%→harmony65%（README.md, compare/metrics.csv）'
+- '132枚(127,218 patch): raw 別slide kNN0.421/別試験0.387/試験外線形分類AUC0.953/NMI0.34、rank_slide 0.413/0.363/0.907/0.37、mnn_contrast_rank 0.437/0.374/0.834/0.37、harmony_slide 0.340/0.289/0.862/0.25（README.md, compare_132/metrics.csv）'
+- Bayerラベル学習のLDA(試験ごとCV)で学習外試験のNMI 0.44・別試験kNN0.397・別試験近傍57%（PCA同条件はNMI0.32・kNN0.226）（README.md, supervised_132/supervised_metrics.csv）
+- Harmony/CORALは補正しすぎで核分裂像の再現率0.74→約0.3に低下（README.md）
+figures:
+- path: outputs/0020_20261024_batch_robust_methods/compare_132/figures/M1_mixing_vs_conservation.png
+  caption: 132枚で13手法の混ざり具合(別slide/別試験の近傍割合)とラベル保持(別slide/別試験kNN)の散布図。Harmony/CORALは混ざるが区別を失う
+  representative: true
+- path: outputs/0020_20261024_batch_robust_methods/compare/figures/M1_mixing_vs_conservation.png
+  caption: '[compare] バッチ混ざり具合とラベル保持の手法別散布図'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare/figures/M2_recall_per_label.png
+  caption: '[compare] ラベル別の別slide/別試験kNN再現率'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare/figures/M3_tsne_per_method.png
+  caption: '[compare] 手法別t-SNE'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare_132/figures/M2_recall_per_label.png
+  caption: '[compare_132] ラベル別の別slide/別試験kNN再現率'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare_132/figures/M3_tsne_per_method.png
+  caption: '[compare_132] 手法別t-SNE'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M1_mixing_vs_conservation.png
+  caption: '[compare_v2] バッチ混ざり具合とラベル保持の手法別散布図'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M2_recall_per_label.png
+  caption: '[compare_v2] ラベル別の別slide/別試験kNN再現率'
+  representative: false
+- path: outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M3_tsne_per_method.png
+  caption: '[compare_v2] 手法別t-SNE'
+  representative: false
+chart: null
+notes: ''

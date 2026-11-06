@@ -1,0 +1,12 @@
+title: 試験内クラスタリングと同試験Controlとの比較(パイロット)
+status: 完了(パイロット。README・考察なし)
+purpose: 化合物×時点の試験ごとにクラスタリングし、同じ試験のControl・所見ラベルとだけ比べることで試験間差を避けられるかを試す。
+method: CCl4・WY-14643・thioacetamide・ethionamideの4化合物×4時点=16試験で、0009のPCA64埋め込みをk=10/20/30/50/100でk-means。クラスタ占有率をControlと順位検定、所見有無とも検定してBH補正し、画像シートを作成。
+results:
+- 16試験×5k、計3,360クラスタを評価(outputs/.../pilot/results.json)
+- Controlとq<0.05で差のあるクラスタ数(16試験合計)はk=10で43、k=30で132、k=100で403。投与群内で所見と対応(q<0.05)するのはk=10で17、k=30で59、k=100で168(pilot/summary.csv)
+- k=30でControl差ありはWY-14643 61・CCl4 38・thioacetamide 22・ethionamide 11、投与群内所見対応はそれぞれ8・11・26・14(pilot/summary.csv)
+- README・結果の考察文書はなく、DISCUSSION_20261012では『既存0014との関係は実装前に整理』と記載(DISCUSSION_20261012_next_experiments.md)
+figures: []
+chart: null
+notes: ''

@@ -1,0 +1,15 @@
+title: Sphering・射影のスイープ(A超え探索)
+status: 完了
+purpose: 0033で最良だったA(Sphering64‖LDA13)を上回る表現があるかを探す。
+method: LDA重みβ(0.5/1/2/4)、白色化次元128、LDAの代わりにPLS-DA32/64・NCA32を並べた11表現を0033と同じ3評価で比較(v1)。
+results:
+- Aを全評価で上回る表現はなし(README.md)
+- 'A_beta2: held-out F1 0.431(A比+0.056)、ラベルなしAUC 0.704(−0.033、区間内)(v1/summary.csv, v1/differences.csv)'
+- 'A128: 脂肪変性純プロトタイプ12/5(最多)、程度との相関 CCl4 0.89・chol 0.92、名前付きAUC 0.840(v1/summary.csv)'
+- PLS/NCA置換は名前付きAUCが大きく低下(P32 0.745、P64 0.669、N32 0.655 vs A 0.842)(v1/summary.csv)
+figures:
+- path: outputs/0034_20261101_sphering_projection_sweep/v1/F1_tradeoff.png
+  caption: '11表現(β・Sphering次元・PLS/NCA)のトレードオフ図: βでF1とラベルなしAUCが入れ替わり、A128/B128で脂肪変性純プロトタイプが最多'
+  representative: true
+chart: null
+notes: ''

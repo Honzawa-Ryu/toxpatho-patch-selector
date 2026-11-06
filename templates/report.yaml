@@ -1,0 +1,12 @@
+# 進捗スライド用の記録。`make progress_deck` がこれを読んで 1 実験 = 1 スライドにする。
+# 実験が終わったら埋める（未記入のままでもスライドには「未記入」として載る）。
+# パスはリポジトリのルートからの相対パス。
+title: ""          # スライドの見出し（空なら実験名）
+status: ""         # 完了 / 実行中 / 失敗 / 中止 など
+purpose: ""        # 何を確かめるための実験か（1文）
+method: ""         # 何をしたか（1〜2文）
+results: []        # - "数値つきの結果（出典: outputs/.../metrics.csv）"
+figures: []        # - {path: outputs/.../fig.png, caption: "図が実際に示すこと", representative: true}
+                   #   representative: true の図（最大3枚）がスライドに載る。他はノートに列挙
+chart: null        # 図が無く数値だけのとき任意: {title: "...", series: ["前", "後"], rows: [["手法A", 0.8], ["手法B", [0.7, 0.75]]]}
+notes: ""          # スピーカーノートに足したいこと

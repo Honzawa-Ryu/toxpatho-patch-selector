@@ -1,0 +1,12 @@
+title: 反復投与全ControlとtierI投与群のMacenko正規化埋め込み
+status: 部分実行(主要phaseは完了、sub_group段が未実行で継続中)
+purpose: 染色正規化を必須とする方針に合わせ、反復投与の全Controlと投与群のMacenko正規化UNI2-h特徴量を抽出する。
+method: 追加Control 1,979枚の座標をTRIDENTで作成し、全Controlから推定した参照染色(reference.json)でMacenko正規化してUNI2-h抽出。Controlは1枚2,048patchのサブサンプル、塊内の投与群やBayer注釈slideなどは全patchをphase(chunk 0〜3)ごとに追加抽出。
+results:
+- 'ctrl段: 2,890枚を2,048patchサブサンプルで抽出、失敗0(ctrl_chunk0-3/results.json; features_uni_v2_macenko_sub2048に2,890ファイル)'
+- '全patch抽出: full 1,020枚(最大の塊13試験)、full_added_treated 1,828枚、full_block3 853枚、full_annot(Bayer注釈slide)複数回、いずれも失敗0。features_uni_v2_macenkoに計4,237ファイル(full_*/results.json)'
+- 2026-10-17投入のcoordsは完了記録の誤判定で何もせず、抽出はエラーなのに正常終了表示(slurm_entry.shの不具合)。coords_treated段を追加して対処(plan.md)
+- '2026-11-06: 対照類似グループ3・26の投与群用coords_group段(950枚)は完了、続くsub_group段(2,048patch)は未実行(coords_group_chunk*/results.json, run_slurm.sh, git log)'
+figures: []
+chart: null
+notes: ''

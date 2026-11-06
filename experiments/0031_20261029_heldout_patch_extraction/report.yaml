@@ -1,0 +1,17 @@
+title: 化合物held-outのpatch単位抽出評価
+status: 完了
+purpose: 仮説①をpatch単位で検証し、学習に入れていない化合物のpatchがBayerポリゴンと一致するかを表現間で比べる。
+method: Bayer 230枚を化合物単位で5分割し、各分割の学習側だけでLDA→k-means(k=100)→命名を行い、評価側patchをポリゴン正解と照合、化合物bootstrap 2000回。v1はA〜D、v2はD・D13・C。
+results:
+- 'v1 macro F1(実質除く): C 0.434、A 0.373、B 0.311、D 0.263。C−Dは+0.17 [0.14,0.20](v1/results.json)'
+- 'v2 macro F1: C 0.440、D 0.263、D13 0.223。C−D13 +0.22 [0.18,0.24]、D13−Dは−0.04(次元を落とすだけでは上がらない)(v2/results.json)'
+- 'v2 ラベル別のC−D差: 核分裂+0.38、炎症+0.21、壊死+0.16、濃い肝細胞+0.23(v2/heldout_differences.csv)'
+figures:
+- path: outputs/0031_20261029_heldout_patch_extraction/v2/P1_heldout_f1.png
+  caption: '化合物held-outのpatch単位F1(Bayerポリゴン正解)をラベル別にD・D13・Cで比較: Cが壊死・核分裂・中心静脈・炎症などで明確に高い'
+  representative: true
+- path: outputs/0031_20261029_heldout_patch_extraction/v1/P1_heldout_f1.png
+  caption: 化合物held-outのpatch単位F1(ラベル別) [v1]
+  representative: false
+chart: null
+notes: ''

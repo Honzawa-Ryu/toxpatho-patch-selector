@@ -1,0 +1,11 @@
+title: 外部製薬WSIのUNI2-h特徴量抽出
+status: 完了
+purpose: エーザイ・シオノギの外部WSIをTG-GATEsと同条件で埋め込み、層別化の外部検証に使えるようにする。
+method: 肝臓ROI内を物理視野126µm四方(シオノギ285px、エーザイ250px)の重ならない格子で切り出し、0016のControl由来参照でMacenko正規化後UNI2-hで埋め込んだ(default)。外部は評価専用で学習に使わない約束。
+results:
+- 78枚(エーザイ18・シオノギ60)すべて抽出成功 n_ok=78（default/results.json, default/extraction.csv）
+- 合計885,028 patch、エーザイ149,636(中央値8,794/枚)、シオノギ735,392(中央値12,462/枚)（default/extraction.csv）
+- 出力h5 78個 features_uni_v2_macenko/（ls）。README・図なし
+figures: []
+chart: null
+notes: ''

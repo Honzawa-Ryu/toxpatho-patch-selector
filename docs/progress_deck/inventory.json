@@ -1,0 +1,2747 @@
+{
+ "title": "toxpatho-patch-selector 実験一覧",
+ "goal": "TG-GATEsラット肝WSIをUNI2-hでpatch埋め込みし、所見（壊死・核分裂像・脂肪変性など）と正常構造（中心静脈・門脈域など）に対応するプロトタイプ（代表patchクラスタ）を作る。試験間・スキャナ間のバッチ差に頑健で、Bayerのpatchラベルによる弱教師ありで未学習の化合物・施設・未ラベル所見へ外挿できるかを検証する。",
+ "repo": "toxpatho-patch-selector",
+ "experiments": [
+  {
+   "id": "0001",
+   "date": "2026-09-07",
+   "name": "0001_20260907_extract_wsi_embeddings",
+   "title": "TRIDENTによるWSI埋め込み抽出（UNI2-h）",
+   "status": "完了",
+   "purpose": "TG-GATEsラット肝WSIからpatch埋め込みを作り、後続のpatch選択・クラスタリングの土台にする。",
+   "method": "TRIDENT v0.3.2（hest segmenter）で組織分割→20倍・256px・重なり0のパッチ座標→UNI2-h（uni_v2）特徴量を一括実行。壊れたconsole scriptはvendoringで回避し、スライドmanifest（化合物・用量・時点）を作成。",
+   "results": [
+    "初回run（2026-09-08）で219枚（4/8/15/29日、Control 160・High 59）を完了、合計3,260,413 patch（0002 plan.mdに記載）（trident_job/summary.md, plan.md of 0002）",
+    "2026-09-13の再runで590枚（Low/Middle追加）まで拡張し、seg/coords/uni_v2特徴量が590枚すべてcompleted（trident_job/summary.md, trident_all_slides/results.json n_slides=590）",
+    "features_uni_v2に590ファイル（outputs/0001.../trident_job/20x_256px_0px_overlap/features_uni_v2）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1770
+  },
+  {
+   "id": "0002",
+   "date": "2026-09-12",
+   "name": "0002_20260912_control_contrast_patch_scoring",
+   "title": "Control対比によるパッチ異常スコア",
+   "status": "完了",
+   "purpose": "Control群のpatch埋め込み分布からの逸脱で所見を含むスライドをどこまで拾えるかを判定する。",
+   "method": "Control bank（同一実験5枚 or 全160枚）に対するkNN距離・Mahalanobis距離をpatchごとに算出し、上位k%平均をスライドスコアとしてControl vs HighのAUROCとgradeとのSpearmanで評価。",
+   "results": [
+    "knn_matched top10%で所見ありAUROC 0.879、knn_globalも0.879でbank単位の差なし、randomは0.509（plan.md, control_contrast/results.json）",
+    "maha_matched 0.824、maha_global 0.691、global_mean_distは0.305で素朴な外れ値度は逆向き（plan.md）",
+    "gradeとのSpearmanは最大0.20（p=0.13）で有意でない（plan.md）",
+    "化合物別のHigh平均順位はethambutol 5.0に対しphenobarbital 166.6（ほぼ最下位）で、びまん性肥大が系統的な盲点（plan.md）",
+    "219枚ではHigh 58/59が所見あり・Control 157/160が所見なしで、所見と投与群が交絡（EXPERIMENT_NOTES.md）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0003",
+   "date": "2026-09-12",
+   "name": "0003_20260912_control_absent_cluster_mining",
+   "title": "Controlに現れないクラスタの探索",
+   "status": "完了",
+   "purpose": "patch埋め込みをクラスタリングし、Controlにほぼ出ないクラスタで所見特有の形態を取り出せるか検証する。",
+   "method": "PCA後にMiniBatchKMeans（k=100/500/2000）でクラスタ化し、control占有率の低いクラスタをアーティファクト除去のうえ候補とし、Fisher検定で所見と対応付け、化合物を伏せるLOCO AUROCで評価。後にCCl4追加・Macenko版・min_treated_presence撤廃の変種を実行。",
+   "results": [
+    "219枚: k=100で候補8、in-sample AUROC 0.903に対しLOCO 0.635、k=500でLOCO 0.664、k=2000でLOCO 0.474（plan.md, cluster_mining/results.json）",
+    "k=100の化合物別LOCOでphenobarbital 1.00（0002では最下位）、ethambutol 0.94、cholesterol 0.512（plan.md）",
+    "k=100 cluster 45が`Degeneration, granular, eosinophilic`とOR=594、q=4.9e-16で対応（plan.md）",
+    "CCl4追加（319枚・512万patch）で`Degeneration, fatty`はcholesterolとCCl4で別クラスタに分離（交差ゼロ）、CCl4側は複合centrilobular障害シグネチャと解釈（plan.md）",
+    "min_treated_presence撤廃でk=100の候補10→19、LOCO 0.560→0.836（k=2000は0.443→0.412に悪化）（plan.md, cluster_mining_ccl4_no_presence_filter）",
+    "CCl4のクラスタ被覆率は用量に単調増加（Control 0.5%→Low 35%→Middle 61%→High 80%）（plan.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00045.png",
+     "caption": "k=100 cluster 45の代表パッチ：好酸性顆粒状の肝細胞が並び、一部に組織辺縁や血管周囲パッチが混じる",
+     "representative": true
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00225.png",
+     "caption": "k=500 cluster 225の代表パッチ：類洞内の赤血球充満（うっ血・出血）像で、組織辺縁の白背景入りパッチも多い",
+     "representative": true
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26594_cluster_map_allclusters.png",
+     "caption": "CCl4スライド26594の全クラスタ割当マップ：組織内で特定クラスタが帯状・斑状に集まる",
+     "representative": true
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00012.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 12 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00016.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 16 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00020.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 20 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00042.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 42 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00043.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 43 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00063.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 63 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00087.png",
+     "caption": "cluster_mining/exemplars_k100 の cluster 87 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26461_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド26461上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26594_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド26594上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26647_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド26647上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/29514_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド29514上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/29647_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド29647上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/66179_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド66179上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/66207_cluster_map.png",
+     "caption": "CCl4コーパスでのスライド66207上の候補クラスタの空間マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00000.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 0 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00004.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 4 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00005.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 5 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00014.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 14 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00025.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 25 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00052.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 52 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00055.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 55 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00062.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 62 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00067.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 67 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00077.png",
+     "caption": "cluster_mining_ccl4/exemplars の cluster 77 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00063.png",
+     "caption": "cluster_mining/exemplars の cluster 63 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00156.png",
+     "caption": "cluster_mining/exemplars の cluster 156 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00255.png",
+     "caption": "cluster_mining/exemplars の cluster 255 代表パッチ一覧",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 257
+  },
+  {
+   "id": "0004",
+   "date": "2026-09-13",
+   "name": "0004_20260913_finding_label_granularity",
+   "title": "所見名の粒度と形態クラスタのずれ",
+   "status": "完了",
+   "purpose": "所見名（およびTOPOGRAPHY_TYPE）とpatchクラスタの対応のずれが部位で説明できるかを検証する。",
+   "method": "k=100クラスタで、化合物ごとにHighと自群Controlの占有率を比べて富化クラスタを取り、Centrilobular Hypertrophyを持つ3化合物（H1）と他部位化合物（H2）の共有を検定。control群を実験でラベル付けしたsilhouetteでバッチ効果も測定。",
+   "results": [
+    "H2成立：胆管・Ito細胞・Kupffer細胞の化合物ではCentrilobular群の富化クラスタ占有率がすべて0.000（plan.md）",
+    "H1棄却：phenobarbital・promethazine・thioacetamideの富化クラスタ上位4の共通部分が全ペアで空（plan.md, label_granularity/results.json）",
+    "所見の無いcontrol 160枚が実験で分離（silhouette 0.175, z=31.9）、時点では分離せず（z=2.7）、投与群の化合物分離は0.566（plan.md）",
+    "Macenko正規化後もH1は棄却のまま（共有はcluster 94のみ）、control分離は0.175→0.153（plan.md 追記）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0005",
+   "date": "2026-09-13",
+   "name": "0005_20260913_stain_normalized_embeddings",
+   "title": "Macenko染色正規化した埋め込みの再抽出",
+   "status": "完了",
+   "purpose": "染色バッチ差を減らした埋め込みで0003/0004の結論が変わるかを確かめる。",
+   "method": "0001の座標を再利用し、controlから推定した参照濃度でMacenko正規化したパッチをUNI2-hで再埋め込みし、0003/0004をmacenko版として再実行。",
+   "results": [
+    "正規化前の染色濃度は実験間で1.5〜1.9倍の差（max_c_h 1.425〜2.775、max_c_e 1.208〜1.828）（plan.md, stain_fits.parquet）",
+    "正規化あり/なし埋め込みのcos類似度0.958、正規化オフ時は0001と1.0000で抽出経路一致（EXPERIMENT_NOTES.md）",
+    "LOCO AUROCはk=100で0.635→0.741、k=500で0.664→0.750に改善（plan.md）",
+    "バッチ上限（control 160枚の実験分離）は0.175→0.153でほぼ不変、処置信号は0.099→0.106で保存（plan.md）",
+    "化合物別LOCOでthioacetamide 0.54→1.00に改善、vitamin Aは0.88→0.51に低下（plan.md）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0006",
+   "date": "2026-09-15",
+   "name": "0006_20260915_clustering_method_comparison",
+   "title": "クラスタリング手法比較（k-means/Leiden/DBSCAN）",
+   "status": "完了",
+   "purpose": "k-means以外のクラスタリング（kNNグラフ+Leiden、DBSCAN）で所見形態がより良く取れるかを比べる。",
+   "method": "Macenko正規化済み219枚・326万patchをPCA64次元にし、同じ20万patch部分集合でクラスタを決めkNN多数決で全体へ伝播、解析部（lib/cluster_analysis.py）を共通にしてLOCO AUROCで比較。粒度合わせ版と空間隣接Leiden版も実行。",
+   "results": [
+    "k-means k=100がLOCO 0.747・候補7で最良、Leiden r=0.5〜2.0は0.681〜0.653、DBSCANは0.510〜0.539でノイズ率24〜66%（plan.md, method_comparison/results.json）",
+    "粒度合わせ版でもk-means（k=20/29/43/100でLOCO 0.808/0.832/0.703/0.747）がLeiden（r=5/10/20、90/156/275クラスタでLOCO 0.666/0.596/0.592）を上回った（method_comparison_matched/results.json）",
+    "空間隣接付きLeidenはクラスタ28→14に粗くなり候補0、LOCO 0.510（0003 plan.md, spatial_leiden_ccl4）",
+    "解釈：patch埋め込み空間は離散的な塊でなく連続体（plan.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0006_20260915_clustering_method_comparison/method_comparison/embedding_scatter_2d.png",
+     "caption": "共通t-SNE上のk-means k100（98）・Leiden r1.0（24）・DBSCAN q0.5（16、灰色ノイズ多数）のクラスタ色分け比較",
+     "representative": true
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1
+  },
+  {
+   "id": "0007",
+   "date": "2026-09-17",
+   "name": "0007_20260917_ccl4_fatty_degeneration_embeddings",
+   "title": "CCl4脂肪変性スライドの埋め込み抽出",
+   "status": "完了",
+   "purpose": "脂肪変性の比較用にcarbon tetrachloride（CCl4）のLiver WSIの埋め込みを追加する。",
+   "method": "0001と同じTRIDENT設定（hest, 20倍256px, uni_v2）でCCl4のスライドを4チャンクに分けて抽出。",
+   "results": [
+    "4チャンク×25枚=100枚、全チャンクcompleted（chunk_*/results.json, completion.json）",
+    "features_uni_v2は各チャンク25ファイル（trident_job_chunk*/20x_256px_0px_overlap/features_uni_v2）",
+    "0003のCCl4比較（319枚・512万patch）と0009のtier1コーパスに投入（0003 plan.md, 0009 plan.md）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 300
+  },
+  {
+   "id": "0008",
+   "date": "2026-09-18",
+   "name": "0008_20260918_tier1_corpus_embeddings",
+   "title": "tier1コーパス全体の埋め込み抽出",
+   "status": "完了（4枚の特徴量欠損あり）",
+   "purpose": "0001・0007以外のtier1化合物のLiver WSIを埋め込み化し、大規模クラスタリング用コーパスを揃える。",
+   "method": "NFSからscratchへ30枚単位でstagingしつつ、0001/0007で抽出済みのスライドを除外して同じTRIDENT設定で4チャンク抽出。",
+   "results": [
+    "manifestは689/689/689/688枚（計2,755枚）、全4チャンクcompleted（chunk_*/results.json, completion.json）",
+    "features_uni_v2は688/688/688/687ファイル（計2,751）で4枚欠損（features_uni_v2ディレクトリ、0009 plan.md）",
+    "0001+0007と合わせ3,441スライド・44化合物・5,502万patchのtier1コーパスを構成（0009 plan.md）"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 8253
+  },
+  {
+   "id": "0009",
+   "date": "2026-09-19",
+   "name": "0009_20260919_tier1_corpus_clustering",
+   "title": "tier1コーパス（3,441枚）でのクラスタリング",
+   "status": "完了（2026-09-25に監査・再評価あり）",
+   "purpose": "0006の候補クラスタ選定をtier1コーパス全体に適用し、所見に対応するパッチ集を作る。",
+   "method": "k-meansをk=100〜2000で振り、閾値をコーパス規模に合わせて見直し（min_treated_presence=0、min_compounds撤廃、組織割合≥0.85）、保有内率でクラスタを順位付けしてexemplarを出力。",
+   "results": [
+    "0006設定のままでは候補0・LOCO 0.500、原因はmin_treated_presence=0.1で、撤廃後LOCO 0.871（plan.md）",
+    "候補158個中98.7%が所見と有意に対応、5枚以上ある36所見中35種を捕捉（plan.md）",
+    "採用k=2000：候補329、保有内率中央値0.682、保有内率0.8以上かつ20枚以上が100個（plan.md）",
+    "脂肪変性はcholesterolとCCl4で別クラスタ（スライド重なりJaccard 0.00、重心距離0.90）（plan.md, fatty_degeneration_clusters.csv）",
+    "巣状所見は頭打ち（Single cell necrosis 0.750、Necrosis 0.696）、びまん性所見は最大1.00（plan.md）",
+    "2026-09-25監査でmanifestにindividual未対応80枚を発見、除外後LOCOは0.8707→0.8587（EXPERIMENT_NOTES.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r004_p1.00_n41_DUP2_cluster_00147_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 147（CCl4 100%）：大小の脂肪滴空胞が肝細胞に充満、Degeneration, fatty保有内率100%（41/41）",
+     "representative": true
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_granular_eosinophilic/r001_p1.00_n52_cluster_01412_WY-14643.png",
+     "caption": "k=2000 cluster 1412（WY-14643 96%）：好酸性顆粒状細胞質の肝細胞、granular eosinophilic保有内率100%（52/52）",
+     "representative": true
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0041.png",
+     "caption": "exemplars_review_k2000/ の cluster 41 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0104.png",
+     "caption": "exemplars_review_k2000/ の cluster 104 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0147.png",
+     "caption": "exemplars_review_k2000/ の cluster 147 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0215.png",
+     "caption": "exemplars_review_k2000/ の cluster 215 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0301.png",
+     "caption": "exemplars_review_k2000/ の cluster 301 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0375.png",
+     "caption": "exemplars_review_k2000/ の cluster 375 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0429.png",
+     "caption": "exemplars_review_k2000/ の cluster 429 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0943.png",
+     "caption": "exemplars_review_k2000/ の cluster 943 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1026.png",
+     "caption": "exemplars_review_k2000/ の cluster 1026 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1089.png",
+     "caption": "exemplars_review_k2000/ の cluster 1089 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1298.png",
+     "caption": "exemplars_review_k2000/ の cluster 1298 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1412.png",
+     "caption": "exemplars_review_k2000/ の cluster 1412 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1566.png",
+     "caption": "exemplars_review_k2000/ の cluster 1566 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1625.png",
+     "caption": "exemplars_review_k2000/ の cluster 1625 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1626.png",
+     "caption": "exemplars_review_k2000/ の cluster 1626 代表パッチ一覧",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r027_p0.96_n54_DUP2_cluster_01625_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 1625（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位27・保有内率0.96・保有54枚・DUPフラグ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r043_p0.93_n59_cluster_00943_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 943（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位43・保有内率0.93・保有59枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r087_p0.85_n66_cluster_00697_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 697（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位87・保有内率0.85・保有66枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r096_p0.82_n73_cluster_00902_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 902（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位96・保有内率0.82・保有73枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r106_p0.80_n74_cluster_01479_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 1479（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位106・保有内率0.80・保有74枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r119_p0.78_n77_cluster_00876_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 876（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位119・保有内率0.78・保有77枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r130_p0.75_n80_cluster_00052_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 52（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位130・保有内率0.75・保有80枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Cellular_infiltration/r143_p0.71_n38_cluster_01469_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 1469（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位143・保有内率0.71・保有38枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r165_p0.67_n90_cluster_00539_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 539（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位165・保有内率0.67・保有90枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r171_p0.66_n91_cluster_01581_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 1581（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位171・保有内率0.66・保有91枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r172_p0.66_n90_cluster_00931_carbon_tetrachloride.png",
+     "caption": "k=2000 cluster 931（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位172・保有内率0.66・保有90枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Cellular_infiltration/r267_p0.45_n83_cluster_00346_clofibrate.png",
+     "caption": "k=2000 cluster 346（clofibrate）のパッチ一覧、所見Degeneration_fattyの順位267・保有内率0.45・保有83枚",
+     "representative": false
+    },
+    {
+     "path": "outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Change_eosinophilic/r297_p0.33_n60_cluster_00012_ethinylestradiol.png",
+     "caption": "k=2000 cluster 12（ethinylestradiol）のパッチ一覧、所見Degeneration_fattyの順位297・保有内率0.33・保有60枚",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1625
+  },
+  {
+   "id": "0010",
+   "date": "2026-09-25",
+   "name": "0010_20260925_pathology_benchmark_subset",
+   "title": "病理所見評価用subsetとラベル監査",
+   "status": "完了(subsetは暫定。ROI確認・施設対応表は未着手)",
+   "purpose": "クラスタリング評価用に交絡を抑えた所見別slide subsetを固定し、既存ラベル・集計の誤りを監査する。",
+   "method": "tier1 3,441枚で候補3所見の分布を監査し、同一実験・時点のtriplet(陽性/投与陰性/Control)で顆粒状好酸性変性90枚(v1)とNecrosis@Hepatocyte 54枚(v2)を固定。individual非対応80枚と個体重複4枚を除外した3,357枚で既存k=2000候補選定LOCOを再評価し、拡大前後のクラスタ移動を可視化。",
+   "results": [
+    "顆粒状好酸性変性@Hepatocyteでfenofibrate/gemfibrozil/lomustine各10組=90枚(v1)を固定。facility不明・用量・併存所見の交絡が残る暫定subset(README.md)",
+    "individual metadata非対応80枚(CCl4 exp67:20, acetaminophen exp42:21, exp707:39)をunknown扱いに。評価対象は3,357枚(FOLLOWUP.md, label_audit/sensitivity.csv)",
+    "候補選定LOCOのpooled AUROCは旧条件0.8707(329候補)→unknown・個体重複除外0.8587(330候補)(label_audit/sensitivity.csv, FOLLOWUP.md)",
+    "同用量ペアは顆粒状好酸性変性で3組しか作れず、代替のNecrosis@Hepatocyte 6化合物×9枚=54枚をv2に固定。陽性18枚中12枚はSP_FLG=True(FOLLOWUP.md, snapshot_v2/)",
+    "54枚×6ランダムpatch=324patchの一次目視(Codex)では巣状壊死を確認/否定できず全54件uncertain(assistant_screening_v2.csv, FOLLOWUP.md)",
+    "k2000品質表のgrade_passed/best_rhoがk1000からの誤結合だったため除去(FOLLOWUP.md, EXPERIMENT_NOTES.md)",
+    "旧42/53脂肪変性patchの77.7%はk=2000の4クラスタへ移るが、全コーパスではどれもq<0.05を通らない(scale_visualization_20261009/fatty_candidate_loss.png)",
+    "k=2000で旧コホートと共通に選定114、追加216、消失114クラスタ(scale_trace/scale_trace_summary.png)"
+   ],
+   "figures": [
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/clustering_before_after.png",
+     "caption": "同じ319枚由来12,760 patchの共通t-SNE上で、拡大前(319枚k=100)と拡大後(3,441枚k=100/k=2000)のクラスタ割当と選定候補(19/6/330クラスタ、表示patchの約20%)を比較",
+     "representative": true
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/fatty_candidate_loss.png",
+     "caption": "旧cholesterol脂肪変性候補(旧42/53)のpatchの77.7%がk=2000の4クラスタ(1356/846/703/535)へ移るが、全コーパスでは4つともq<0.05の候補選定を通らない",
+     "representative": true
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_trace/scale_trace_summary.png",
+     "caption": "319枚の同一patch 5,111,952個の追跡: 旧19クラスタの移動先数、k=2000で両方選定114/追加216/消失114、保有内率、slide数と選定クラスタ数の関係",
+     "representative": true
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/clustering_before_after.pdf",
+     "caption": "clustering_before_after.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/fatty_candidate_loss.pdf",
+     "caption": "fatty_candidate_loss.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_trace/scale_trace_summary.pdf",
+     "caption": "scale_trace_summary.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/corpus_expansion.png",
+     "caption": "コーパス拡大(319枚→3,441枚)の構成変化(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/corpus_expansion.pdf",
+     "caption": "corpus_expansion.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/original_cluster_splitting.png",
+     "caption": "旧クラスタが拡大後のk=2000でどう分割されたか(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/original_cluster_splitting.pdf",
+     "caption": "original_cluster_splitting.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R001.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R001(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R002.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R002(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R003.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R003(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R004.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R004(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R005.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R005(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R006.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R006(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R007.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R007(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R008.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R008(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R009.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R009(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R010.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R010(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R011.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R011(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R012.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R012(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R013.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R013(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R014.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R014(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R015.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R015(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R016.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R016(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R017.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R017(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R018.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R018(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R019.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R019(ラベル非表示)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0010_20260925_pathology_benchmark_subset/review_v2/R020.png",
+     "caption": "snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R020(ラベル非表示)",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 60
+  },
+  {
+   "id": "0011",
+   "date": "2026-09-25",
+   "name": "0011_20260925_stratified_candidate_selection",
+   "title": "層別した候補選定条件の比較とパッチ一覧",
+   "status": "完了(探索的。ギャラリーの人手レビューは未実施)",
+   "purpose": "大規模化で旧形態(脂肪変性候補など)が消えたのはクラスタリングか候補選定条件のせいかを切り分ける。",
+   "method": "0009のk=2000割当を固定し、全体MWU(A)・実験時点内比較+化合物内Control希少性(B1)・同+全体Control希少性(B2)の3方式を組織割合フィルタ有無で比較。3方式の和集合489クラスタ×24patchのギャラリーを作成。",
+   "results": [
+    "組織割合フィルタありの候補数はA 312 / B1 303 / B2 382、所見保有内率中央値は69.5% / 66.7% / 59.3%(ablation_summary_all_variants.csv, README.md)",
+    "B1/B2は旧fatty change候補につながる1356/846/703/535の4つを回収(Aは0)(ablation_summary_all_variants.csv)",
+    "旧42/53由来patchの保持はAの0.02%/0.16%→B2で96.0%/81.4%に改善、一方旧29/81は95.4%/99.6%→29.5%/57.0%に低下(old_patch_retention_with_tissue.csv, README.md)",
+    "489クラスタ×24枚=11,736patchのギャラリーを切り出しエラー0で作成(outputs/.../gallery/index.html, execution_manifest.json)",
+    "結論: 従来設定(A)の全面置換はせず、組織割合フィルタは維持(EXPERIMENT_NOTES.md)"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 979
+  },
+  {
+   "id": "0012",
+   "date": "2026-09-28",
+   "name": "0012_20260928_compare_clustering_methods_at_scale",
+   "title": "大規模版でのクラスタリング手法・粒度・seed比較",
+   "status": "完了",
+   "purpose": "候補選定を固定し、クラスタリング手法・k・seed・部分集合の違いで候補クラスタがどれだけ再現するかを調べる。",
+   "method": "0009のPCA64キャッシュ(3,441枚)上でMiniBatch/Lloyd/Leiden/Ward/コンセンサスをk=250〜10000、seed・部分集合を変えて計111割当を作り、方式Aで候補選定してARI・Jaccard・保有内率・LOCOを比較。",
+   "results": [
+    "k=2000で個々の候補クラスタの最良対応Jaccard中央値は0.25〜0.33、ARI 0.26〜0.31。候補patch集合全体のJaccardは約0.72(README.md, summary/stability_pairs.csv)",
+    "約3000クラスタでLeiden r=256はARI 0.49・Jaccard 0.50、k-means k=3000は0.25〜0.29/0.23〜0.29。タスク指標は同程度(保有内率0.73〜0.75、LOCO 0.83〜0.84)(README.md)",
+    "保有内率中央値はk=250で0.55、2000で0.70、10000で0.85〜0.89と単調増加するが、90%以上単一化合物のクラスタも約40→650〜900に急増。LOCOはk≥1000で0.84〜0.86で頭打ち(README.md)",
+    "旧cholesterol脂肪変性patch(旧42/53)はどの設定でも候補にほぼ残らない(0〜0.2%)(README.md)",
+    "採用中0009 k=2000のLOCO 0.859はseed違い5runの平均0.843より高い側(README.md)"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0013",
+   "date": "2026-09-29",
+   "name": "0013_20260929_stable_candidate_layer_review",
+   "title": "run横断の投票率による候補patchの層分けと目視",
+   "status": "完了(L3層は未実行・不要と判断)",
+   "purpose": "0012の多数runをまたいで安定に候補となるpatchを、投票率で層分けして目視し、選定指標を決める。",
+   "method": "0012の110 runで各patchが同じ所見の候補クラスタに入った割合(投票率、分母110)を計算し、層・0.1刻み区間ごとの所見別画像シートを作成。q値・一貫性との関係も確認。",
+   "results": [
+    "選定指標は投票率(分母110)のみとし、閾値は所見ごとに決める方針(閾値は未決)(README.md, EXPERIMENT_NOTES.md)",
+    "q値と投票率の順位相関はpatch単位-0.42、slide単位-0.23。投票率はクラスタの大きさとも+0.44で相関しq値は選定に使わない(q_vote/q_vote_correlation.csv, README.md)",
+    "一貫性(最多所見回数/候補回数)は切り分けが弱く不採用(README.md)",
+    "投票率≥0.05のpatchはHypertrophy 61,855、顆粒状好酸性変性50,374、脂肪変性12,358など17所見。顆粒状好酸性変性・脂肪変性は投票率0.9以上に集中、Hypertrophyは広く分布(vote_fraction_by_finding_counts.png)",
+    "110 runは手法混在(MiniBatch 48, Lloyd 36, Leiden 15, Ward 6, コンセンサス 5)で同一条件の再現率ではない(README.md)"
+   ],
+   "figures": [
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_counts.png",
+     "caption": "最多所見別の投票率ヒストグラム(17所見、110 run): 顆粒状好酸性変性・脂肪変性は1.0付近に集中、Hypertrophy・Swellingは中間に広がる",
+     "representative": true
+    },
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_pooled.png",
+     "caption": "全patchをまとめた投票率の分布(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_percent.png",
+     "caption": "最多所見別の投票率分布を割合表示(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_counts.pdf",
+     "caption": "vote_fraction_by_finding_counts.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_pooled.pdf",
+     "caption": "vote_fraction_pooled.pngのPDF版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_percent.pdf",
+     "caption": "vote_fraction_by_finding_percent.pngのPDF版",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 47
+  },
+  {
+   "id": "0014",
+   "date": "2026-10-01",
+   "name": "0014_20261001_within_study_ctrl_clustering",
+   "title": "試験内クラスタリングと同試験Controlとの比較(パイロット)",
+   "status": "完了(パイロット。README・考察なし)",
+   "purpose": "化合物×時点の試験ごとにクラスタリングし、同じ試験のControl・所見ラベルとだけ比べることで試験間差を避けられるかを試す。",
+   "method": "CCl4・WY-14643・thioacetamide・ethionamideの4化合物×4時点=16試験で、0009のPCA64埋め込みをk=10/20/30/50/100でk-means。クラスタ占有率をControlと順位検定、所見有無とも検定してBH補正し、画像シートを作成。",
+   "results": [
+    "16試験×5k、計3,360クラスタを評価(outputs/.../pilot/results.json)",
+    "Controlとq<0.05で差のあるクラスタ数(16試験合計)はk=10で43、k=30で132、k=100で403。投与群内で所見と対応(q<0.05)するのはk=10で17、k=30で59、k=100で168(pilot/summary.csv)",
+    "k=30でControl差ありはWY-14643 61・CCl4 38・thioacetamide 22・ethionamide 11、投与群内所見対応はそれぞれ8・11・26・14(pilot/summary.csv)",
+    "README・結果の考察文書はなく、DISCUSSION_20261012では『既存0014との関係は実装前に整理』と記載(DISCUSSION_20261012_next_experiments.md)"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 80
+  },
+  {
+   "id": "0015",
+   "date": "2026-10-12",
+   "name": "0015_20261012_ctrl_batch_structure",
+   "title": "無所見Ctrlの試験間差(バッチ構造)の評価",
+   "status": "完了",
+   "purpose": "全試験の無所見Ctrlを共通クラスタリングし、正常背景が試験間で共有されるか、試験・scanner固有のクラスタがあるかを測る。",
+   "method": "無所見Ctrl(main: 830枚・44実験、正規化なし0009埋め込み)を1枚512patchでk=50/100のk-means 40 run、slide占有率のJS距離を同試験同時点/同試験別時点/別試験の4段階で比較し並べ替え検定。正規化有無(s219_raw/macenko 157枚)と全反復投与Ctrl Macenko版(allctrl_macenko 2,659枚・143実験)も実施し、実験の塊を判定。",
+   "results": [
+    "main k=100の占有率JS距離: 同試験同時点0.37 / 同試験別時点0.44 / 別試験同時点0.92、全40 runでp=0.001(main/level_summary.csv)",
+    "外れ度は全44試験で0.96〜1.06に収まり、少数の外れ試験でなく全試験が互いに離れている(main/exp_outlier.csv, DISCUSSION_20261012)",
+    "157枚で正規化の有無を比較: 試験差−個体差は平均埋め込みで0.63→0.42、占有率k=100で0.43→0.39。正規化でも試験差は支配的(s219_raw・s219_macenko/level_summary.csv)",
+    "scanner混在8群・39枚で別scanner間はやや遠い程度(0.42対0.37、p=0.02〜0.20)(DISCUSSION_20261012)",
+    "allctrl_macenko(2,659枚・143実験)k=100: 同試験同時点0.44 / 別試験0.87、試験差−個体差0.43(allctrl_macenko/level_summary.csv)",
+    "143実験をcut 0.72で6塊(最大44実験)、cut 0.7で7塊に分割。後続0016/0017の対象に(exp_blocks_preview_allctrl_macenko_20261016_cut0.72/exp_blocks.csv)"
+   ],
+   "figures": [
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.72/exp_blocks_preview.png",
+     "caption": "反復投与の無所見Ctrl 2,659枚・143実験(Macenko)の実験間JS距離の階層クラスタリングとcut 0.72での塊(6塊)の共所属率、scanner帯付き",
+     "representative": true
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/1b_tsne_by_experiment_main.png",
+     "caption": "正規化なし830枚・44実験: 実験ごとのCtrl patchをt-SNE上で表示。各実験が別々の領域に固まる(外れ度0.96〜1.06)",
+     "representative": true
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/4_blocks_main.png",
+     "caption": "main(830枚)の実験の塊を色分けしたクラスタリング図(ファイル名・コミットから)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/1a_tsne_cluster_time_scanner.png",
+     "caption": "main: t-SNEをクラスタ・時点・scannerで色分け(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/2_occupancy_heatmap.png",
+     "caption": "main: slide×クラスタ占有率のヒートマップ(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/3_slide_mds.png",
+     "caption": "main: slide占有率距離のMDS(ファイル名から)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/1a_tsne_cluster_time_scanner.png",
+     "caption": "s219_raw/macenko: t-SNEをクラスタ・時点・scannerで色分け(正規化有無の並置)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/1b_tsne_by_experiment.png",
+     "caption": "s219_raw/macenko: 実験ごとのCtrl patch分布(正規化有無の並置)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/2_occupancy_heatmap.png",
+     "caption": "s219_raw/macenko: 占有率ヒートマップ(正規化有無の並置)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/3_slide_mds.png",
+     "caption": "s219_raw/macenko: slide間距離のMDS(正規化有無の並置)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_main_20261013/exp_blocks_preview.png",
+     "caption": "main(830枚・44実験)の実験の塊プレビュー",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261015/exp_blocks_preview.png",
+     "caption": "allctrl_macenko(2,659枚)の実験の塊プレビュー初版",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.7/exp_blocks_preview.png",
+     "caption": "allctrl_macenkoのcut 0.7での塊プレビュー(7塊)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.7/slide_occupancy_by_block.png",
+     "caption": "cut 0.7の塊ごとのslide占有率",
+     "representative": false
+    },
+    {
+     "path": "experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.72/slide_occupancy_by_block.png",
+     "caption": "cut 0.72の塊ごとのslide占有率",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 8
+  },
+  {
+   "id": "overview_20261012",
+   "date": "2026-10-12",
+   "name": "overview_20261012",
+   "title": "データセット概観（tier1評価集合）",
+   "status": "完了",
+   "purpose": "反復投与肝WSIの評価集合の規模・所見分布を把握する。",
+   "method": "tier1コーパスのslide manifestと病理所見表を集計し、枚数・用量×時点・所見種・共起を図示（実験ディレクトリ外の補助出力）。",
+   "results": [
+    "評価集合3,357枚=44化合物×4時点×4用量群、所見ありは1,287枚(38%)（01_overview.png）",
+    "ローカル.svs 3,445→individual metadata無し80枚・重複個体4枚を除外（01_overview.png, EXPERIMENT_NOTES.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/dataset_overview_20261012/01_overview.png",
+     "caption": "(a)WSI枚数の絞り込み3,445→3,357、(b)時点×用量群ごとの所見ありslide数（Highで大半が所見あり）",
+     "representative": true
+    },
+    {
+     "path": "outputs/dataset_overview_20261012/02_compound_heatmap.png",
+     "caption": "化合物別の所見ありslideのヒートマップ（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/dataset_overview_20261012/03_findings_per_slide.png",
+     "caption": "slideあたり所見数の分布（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/dataset_overview_20261012/04_finding_types.png",
+     "caption": "所見種別の件数（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/dataset_overview_20261012/05_cooccurrence.png",
+     "caption": "所見の共起行列（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/dataset_overview_20261012/06_combinations.png",
+     "caption": "所見の組合せ頻度（ファイル名より）",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0016",
+   "date": "2026-10-13",
+   "name": "0016_20261013_tier1_macenko_embeddings",
+   "title": "反復投与全ControlとtierI投与群のMacenko正規化埋め込み",
+   "status": "部分実行(主要phaseは完了、sub_group段が未実行で継続中)",
+   "purpose": "染色正規化を必須とする方針に合わせ、反復投与の全Controlと投与群のMacenko正規化UNI2-h特徴量を抽出する。",
+   "method": "追加Control 1,979枚の座標をTRIDENTで作成し、全Controlから推定した参照染色(reference.json)でMacenko正規化してUNI2-h抽出。Controlは1枚2,048patchのサブサンプル、塊内の投与群やBayer注釈slideなどは全patchをphase(chunk 0〜3)ごとに追加抽出。",
+   "results": [
+    "ctrl段: 2,890枚を2,048patchサブサンプルで抽出、失敗0(ctrl_chunk0-3/results.json; features_uni_v2_macenko_sub2048に2,890ファイル)",
+    "全patch抽出: full 1,020枚(最大の塊13試験)、full_added_treated 1,828枚、full_block3 853枚、full_annot(Bayer注釈slide)複数回、いずれも失敗0。features_uni_v2_macenkoに計4,237ファイル(full_*/results.json)",
+    "2026-10-17投入のcoordsは完了記録の誤判定で何もせず、抽出はエラーなのに正常終了表示(slurm_entry.shの不具合)。coords_treated段を追加して対処(plan.md)",
+    "2026-11-06: 対照類似グループ3・26の投与群用coords_group段(950枚)は完了、続くsub_group段(2,048patch)は未実行(coords_group_chunk*/results.json, run_slurm.sh, git log)"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 15444
+  },
+  {
+   "id": "0017",
+   "date": "2026-10-16",
+   "name": "0017_20261016_block_consensus_patterns",
+   "title": "塊内のk-meansコンセンサスによるpatch pattern(コア)抽出",
+   "status": "完了",
+   "purpose": "0015で背景が近いと判定した試験の塊内で、k-means複数runの共所属から安定なpatchのまとまり(コア)が取れるかを判断する。",
+   "method": "0016のMacenko全patch特徴量をL2正規化+PCA64し、k=50/100/200×抽出seed5×初期化seed4=60 runのk-meansの共所属率をkNNグラフに付けてτ=0.8・Leidenでコア抽出。pilot・block3から最大の塊44試験(block6_all)、QC済みA_clean(block6_clean)、slide平均を引いた版(centered)へ拡張。",
+   "results": [
+    "kを混ぜたコンセンサス(Leiden, τ=0.8): pilot 81コア・覆う割合62%・Control<5%コア25、block3 76コア・60%・15(README.md)",
+    "kごとのコンセンサスでpilotはk50: 49コア/92%/一致度0.87、k100: 80/82%/0.79、k200: 132/64%/0.72。kを混ぜたことが不安定さの主因で、以後kごとに取る方針(README.md, pilot/per_k/per_k_overview_tau0.8.png)",
+    "Control<5%のコアは所見と対応するが多くは1〜3化合物に偏る(PPARα作動薬の顆粒状好酸性変性など)(README.md)",
+    "k=200のコア/Control<5%/全粒度入れ子かつControl<5%: block6_all 140/20/9、block6_clean 133/27/10、block6_clean_centered 122/5/1(README.md)",
+    "slide平均を引くとコア内最多化合物の割合中央値が0.2前後→0.12〜0.16で化合物をまたぐが、Controlとの分離は弱まる(README.md, DISCUSSION_20261024)",
+    "block6_cleanでもnitrosodiethylamineのControlなどに縦の帯が残る(README.md)"
+   ],
+   "figures": [
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/A_tsne_overview_leiden_tau0.8.png",
+     "caption": "block6_clean(39試験・105,410 patch)のt-SNE: 80コア・未割当40%、所見ありslideのpatchは左側に集まり、他は実験ごとに混在",
+     "representative": true
+    },
+    {
+     "path": "outputs/0017_20261016_block_consensus_patterns/pilot/per_k/per_k_overview_tau0.8.png",
+     "caption": "pilot: kごとのコンセンサス(k50:49コア, k100:80, k200:132)のControl割合×最多実験割合×一致度と、k間の入れ子度ヒストグラム",
+     "representative": true
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/A2_tsne_by_finding.png",
+     "caption": "block6_clean: 所見別のt-SNE",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/B_tsne_by_experiment_leiden_tau0.8.png",
+     "caption": "block6_clean: 実験ごとのt-SNE",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/C_core_map_leiden_tau0.8.png",
+     "caption": "block6_clean: コアマップ(Leiden τ=0.8)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/C2_core_map_per_k.png",
+     "caption": "block6_clean: kごとのコアマップ",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D_tsne_per_k_cores.png",
+     "caption": "block6_clean: kごとのコアのt-SNE",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D2_tsne_nested_and_low_control.png",
+     "caption": "block6_clean: 全粒度入れ子かつControl<5%のコア",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D3_tsne_low_control_cores_each.png",
+     "caption": "block6_clean: Control<5%コアを個別表示",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/E_low_control_core_composition.png",
+     "caption": "block6_clean: Control<5%コアの化合物・所見構成",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O1_findings.png",
+     "caption": "block6_clean: 所見の内訳",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O2_experiments.png",
+     "caption": "block6_clean: 試験の内訳",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O3_finding_by_experiment.png",
+     "caption": "block6_clean: 試験×所見",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O4_findings_dose_time.png",
+     "caption": "block6_clean: 所見×用量×時点",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/A_tsne_overview_leiden_tau0.8.png",
+     "caption": "block6_all(44試験): t-SNE概観(コア・用量・所見・時点・scanner・実験)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/C2_core_map_per_k.png",
+     "caption": "block6_all(44試験): kごとのコアマップ",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/D2_tsne_nested_and_low_control.png",
+     "caption": "block6_all(44試験): 全粒度入れ子かつControl<5%のコア",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/E_low_control_core_composition.png",
+     "caption": "block6_all(44試験): Control<5%コアの化合物・所見構成",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/O1_findings.png",
+     "caption": "block6_all(44試験): 所見の内訳",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/A_tsne_overview_leiden_tau0.8.png",
+     "caption": "block6_clean_centered(slide平均を引いた版): t-SNE概観(コア・用量・所見・時点・scanner・実験)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/C2_core_map_per_k.png",
+     "caption": "block6_clean_centered(slide平均を引いた版): kごとのコアマップ",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/D_tsne_per_k_cores.png",
+     "caption": "block6_clean_centered(slide平均を引いた版): kごとのコアのt-SNE",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/E_low_control_core_composition.png",
+     "caption": "block6_clean_centered(slide平均を引いた版): Control<5%コアの化合物・所見構成",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/O1_findings.png",
+     "caption": "block6_clean_centered(slide平均を引いた版): 所見の内訳",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261017/A_tsne_overview_leiden_tau0.8.png",
+     "caption": "pilot(13試験): t-SNE概観(コア・用量・所見・時点・scanner・実験)",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261017/B_tsne_by_experiment_leiden_tau0.8.png",
+     "caption": "pilot(13試験): 実験ごとのt-SNE",
+     "representative": false
+    },
+    {
+     "path": "experiments/0017_20261016_block_consensus_patterns/visualization_20261017/C_core_map_leiden_tau0.8.png",
+     "caption": "pilot(13試験): コアマップ(Leiden τ=0.8)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0017_20261016_block_consensus_patterns/block3/per_k/per_k_overview_tau0.8.png",
+     "caption": "block3: kごとのコンセンサス概要",
+     "representative": false
+    },
+    {
+     "path": "outputs/0017_20261016_block_consensus_patterns/pilot/diagnostics/diagnostics_tsne.png",
+     "caption": "pilot: patch安定度(近傍との平均共所属率)のt-SNE診断",
+     "representative": false
+    },
+    {
+     "path": "outputs/0017_20261016_block_consensus_patterns/pilot/diagnostics/diagnostics_distributions.png",
+     "caption": "pilot: patch安定度・共所属率の分布診断",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 56
+  },
+  {
+   "id": "0018",
+   "date": "2026-10-22",
+   "name": "0018_20261022_ctrl_filter_then_cores",
+   "title": "Control近さで選別してからコアを作る2段階方式",
+   "status": "完了",
+   "purpose": "全体クラスタリングを正常patch除去に使い、残したpatchだけでコアを作り直して所見との対応を改善できるか調べる。",
+   "method": "1段目: 0017の60 runでpatchが入ったクラスタのControl割合を平均したスコアで閾値以下を残す(既定はYouden型の差最大)。2段目: 残したpatchでk=10/20/40×20 runのkごとコンセンサス(τ=0.8, Leiden)を作り、通過率と重症度、所見→コアAUC、ピントとの関係を解析。",
+   "results": [
+    "block6_clean(閾値0.254)の残存率: 全体32.0% / Control 14.6% / 投与所見なし25.0% / 所見あり64.2%、k=20でコア27・最多化合物割合0.22・一致度0.93(README.md, block6_clean/stage2_summary.csv)",
+    "閾値0.07では残存8.3%(Control 0.2%、所見あり30.1%)、コア19・最多化合物割合0.67と1化合物に寄る(README.md)",
+    "最大重症度ごとの通過率中央値(閾値0.07): Control 0.00、所見なし0.00、minimal 0.02、slight 0.13、moderate 0.54、severe 0.85(README.md, pass_vs_pathology/P1_pass_rate_by_grade.png)",
+    "組み合わせ版(1段目0.07+2段目centered)はControlをほぼ含まず化合物をまたぐコア23個(最多化合物割合0.35)を得たが一致度は0.72に低下(README.md)",
+    "同試験内の陽性/陰性slideを分けるAUCは主要7所見中5所見で1段目通過率が最良コアより高く、コアは『異常の量×化合物』に近い(finding_to_core/, README.md)",
+    "Control 52759の縦縞はスキャナのストライプ(2,032px)と同間隔だが、patchスコアとピントの順位相関は0.09(block6_clean/focus_maps/patch_vs_focus_summary.csv, README.md)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P1_pass_rate_by_grade.png",
+     "caption": "1段目の通過率をslide群・最大重症度別に3条件で比較: 重症度が上がるほど通過率が上がり、閾値0.07ではControl・所見なしはほぼ0",
+     "representative": true
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_thr0.07_s2block6_clean_centered.png",
+     "caption": "組み合わせ版: 所見×コアの同試験内AUCヒートマップ。多くの所見で1段目通過率のAUC(0.77〜0.98)が個々のコアより高い",
+     "representative": true
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P2_pass_rate_by_finding_topography.png",
+     "caption": "所見・部位ごとの1段目通過率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P3_pass_rate_by_grade_per_finding.png",
+     "caption": "所見ごとの重症度別通過率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_thr0.07.png",
+     "caption": "block6_clean_thr0.07: 所見×コアのAUC",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_centered.png",
+     "caption": "block6_clean_centered: 所見×コアのAUC",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/52759.png",
+     "caption": "nitrosodiethylamine Control 52759のピント(log10 var(Laplacian))マップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/patch_vs_focus_52759.png",
+     "caption": "52759でpatchスコアとピントの比較(順位相関0.09、縞はぼやけで説明できない)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/patch_vs_focus_52693.png",
+     "caption": "比較用slide 52693のpatchスコアとピント",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_score_and_threshold.png",
+     "caption": "block6_clean: Control近さスコアの分布と閾値(差最大0.254)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_kept_fraction_by_group.png",
+     "caption": "block6_clean: 群ごとの1段目残存割合",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_tsne.png",
+     "caption": "block6_clean: t-SNE上のControl近さスコア",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/T_pca0017.png",
+     "caption": "block6_clean: 残したpatchのt-SNE(0017のPCA64)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/T2_pca0017_by_finding.png",
+     "caption": "block6_clean: 残したpatchのt-SNEを所見で色分け",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/F_pca0017_consensus_k20.png",
+     "caption": "block6_clean: 2段目k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/F_pca_refit_consensus_k20.png",
+     "caption": "block6_clean: PCA再学習版k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/S1_score_and_threshold.png",
+     "caption": "組み合わせ版: スコア分布と閾値0.07",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/T_pca0017.png",
+     "caption": "組み合わせ版: 残したpatchのt-SNE",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/T2_pca0017_by_finding.png",
+     "caption": "組み合わせ版: t-SNEを所見で色分け",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/F_pca0017_consensus_k20.png",
+     "caption": "組み合わせ版: k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/F_pca_refit_consensus_k20.png",
+     "caption": "組み合わせ版: PCA再学習k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_all/figures/S1_score_and_threshold.png",
+     "caption": "block6_all: スコア分布と閾値",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_all/figures/F_pca0017_consensus_k20.png",
+     "caption": "block6_all: k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07/figures/S1_score_and_threshold.png",
+     "caption": "block6_clean_thr0.07: スコア分布と閾値",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07/figures/F_pca0017_consensus_k20.png",
+     "caption": "block6_clean_thr0.07: k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.03/figures/S1_score_and_threshold.png",
+     "caption": "block6_clean_thr0.03: スコア分布と閾値",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.03/figures/F_pca0017_consensus_k20.png",
+     "caption": "block6_clean_thr0.03: k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/S1_score_and_threshold.png",
+     "caption": "block6_clean_centered: スコア分布と閾値",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/F_pca0017_consensus_k20.png",
+     "caption": "block6_clean_centered: k=20コンセンサスのコア×所見・化合物",
+     "representative": false
+    },
+    {
+     "path": "outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/T2_pca0017_by_finding.png",
+     "caption": "block6_clean_centered: 残したpatchのt-SNEを所見で色分け",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 768
+  },
+  {
+   "id": "0019",
+   "date": "2026-10-24",
+   "name": "0019_20261024_bayer_annotation_audit",
+   "title": "Bayer病変アノテーションの監査",
+   "status": "完了",
+   "purpose": "Bayer AG/Aignosticsによる TG-GATEsラット肝230枚の病変アノテーションの中身・座標・信用性を確認する。",
+   "method": "ポリゴンを集計し、手元svsのある132枚で重ね描き・ラベル別ギャラリーを作成、TG-GATEs所見記録と突き合わせた(単一variant default)。",
+   "results": [
+    "230枚・57化合物・ポリゴン18,171個、うち手元svs 132枚、block6_cleanと重なるのは42枚（README.md）",
+    "ポリゴン面積の組織上割合は中央値97%で座標は一致、実質ラベルの組織被覆は中央値0.2%（最大6%）で網羅的でない（README.md, C3_coverage_and_alignment.png）",
+    "記録あり/なしslideで描かれた割合: 壊死97%/34%、核分裂増加→核分裂像100%/56%、単細胞壊死95%/70%、細胞浸潤78%/51%、胆管増生24%/0.5%（README.md, annotation_vs_record.csv）",
+    "アノテーションの9割（15,660件）はpathologist-0の1人（README.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0019_20261024_bayer_annotation_audit/default/figures/C2_annotation_vs_record.png",
+     "caption": "TG-GATEs記録の重症度別にBayerアノテーション量(壊死面積・単細胞壊死・核分裂・浸潤等)を箱ひげで比較。核分裂・単細胞壊死は重症度とともに増加",
+     "representative": true
+    },
+    {
+     "path": "outputs/0019_20261024_bayer_annotation_audit/default/figures/C3_coverage_and_alignment.png",
+     "caption": "132枚の被覆と座標確認: 実質ポリゴンの組織被覆は中央値≈0、ポリゴン面積の組織上割合は中央値0.97(病変は1.00)",
+     "representative": true
+    },
+    {
+     "path": "outputs/0019_20261024_bayer_annotation_audit/default/figures/C1_labels_and_authors.png",
+     "caption": "ラベル種類と作成者(pathologist)別のアノテーション内訳",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 152
+  },
+  {
+   "id": "0020",
+   "date": "2026-10-24",
+   "name": "0020_20261024_batch_robust_methods",
+   "title": "バッチ頑健な表現の比較",
+   "status": "完了",
+   "purpose": "Bayerアノテーションを物差しに、試験・slide差を抑えつつ所見・構造の区別を保つ表現を探す。",
+   "method": "raw/PCA、slide内の中心化・標準化・順位、stripe中心化、CORAL、Harmony、MNN対照学習、BBKNNなど13手法を61枚(compare, compare_v2)と132枚(compare_132)で比較し、LDA部分空間を試験ごとの交差検証で評価した(supervised_v1/_132)。",
+   "results": [
+    "61枚(57,476 patch): 別試験kNN balanced acc raw0.346、rank_slide0.342、harmony_slide0.275。近傍が別試験の割合 raw9%→rank_slide34%→harmony65%（README.md, compare/metrics.csv）",
+    "132枚(127,218 patch): raw 別slide kNN0.421/別試験0.387/試験外線形分類AUC0.953/NMI0.34、rank_slide 0.413/0.363/0.907/0.37、mnn_contrast_rank 0.437/0.374/0.834/0.37、harmony_slide 0.340/0.289/0.862/0.25（README.md, compare_132/metrics.csv）",
+    "Bayerラベル学習のLDA(試験ごとCV)で学習外試験のNMI 0.44・別試験kNN0.397・別試験近傍57%（PCA同条件はNMI0.32・kNN0.226）（README.md, supervised_132/supervised_metrics.csv）",
+    "Harmony/CORALは補正しすぎで核分裂像の再現率0.74→約0.3に低下（README.md）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_132/figures/M1_mixing_vs_conservation.png",
+     "caption": "132枚で13手法の混ざり具合(別slide/別試験の近傍割合)とラベル保持(別slide/別試験kNN)の散布図。Harmony/CORALは混ざるが区別を失う",
+     "representative": true
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare/figures/M1_mixing_vs_conservation.png",
+     "caption": "[compare] バッチ混ざり具合とラベル保持の手法別散布図",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare/figures/M2_recall_per_label.png",
+     "caption": "[compare] ラベル別の別slide/別試験kNN再現率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare/figures/M3_tsne_per_method.png",
+     "caption": "[compare] 手法別t-SNE",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_132/figures/M2_recall_per_label.png",
+     "caption": "[compare_132] ラベル別の別slide/別試験kNN再現率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_132/figures/M3_tsne_per_method.png",
+     "caption": "[compare_132] 手法別t-SNE",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M1_mixing_vs_conservation.png",
+     "caption": "[compare_v2] バッチ混ざり具合とラベル保持の手法別散布図",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M2_recall_per_label.png",
+     "caption": "[compare_v2] ラベル別の別slide/別試験kNN再現率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0020_20261024_batch_robust_methods/compare_v2/figures/M3_tsne_per_method.png",
+     "caption": "[compare_v2] 手法別t-SNE",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 9
+  },
+  {
+   "id": "0021",
+   "date": "2026-10-25",
+   "name": "0021_20261025_patch_prototypes",
+   "title": "patchプロトタイプ試作と隣接・小葉情報",
+   "status": "完了",
+   "purpose": "slide内順位・Bayerラベル由来LDAを使ったk-meansプロトタイプが試験をまたいで所見・構造を分けるか試作する。",
+   "method": "unsup(順位→PCA64)/weak(順位→LDA)/combo(LDA+残差PCA16)でk=30のk-meansを作成(v1:61枚, v2_132:132枚)。全patch地図(v3_maps)、8近傍伝播による隣接情報(context_v1, context_build_v*, explore_v*)、小葉位置のリッジ回帰(lobular_probe_v1-3)も試した。",
+   "results": [
+    "v1(約16万patch): NMI unsup0.28/weak0.48、クラスタあたり試験数中央値41.5/42（README.md）",
+    "v2_132(約23万patch・66試験): NMI unsup0.37/weak0.51/combo0.49、comboで核分裂像52%が1クラスタ(純度84%,61試験)、大血管純度99%（README.md, v2_132/results.json）",
+    "comboの壊死クラスタは純度99%だがallyl alcoholが85%で化合物と交絡（README.md, P1_labels_and_clusters_combo.png）",
+    "隣接伝播で隣のまとまり25%→73%、ラベル一致0.49→0.36。小葉位置はプロトタイプとのNMI0.025だが回帰でslide外CV R²0.18〜0.28（README.md, context_v1/context_metrics.csv, lobular_probe_v3/lobular_probe.csv）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_combo.png",
+     "caption": "comboのk=30クラスタ×Bayerラベルの占有率/純度ヒートマップと最多試験割合。壊死クラスタ7は85%/純度99%だが最多試験割合≈0.85(allyl alcohol偏り)",
+     "representative": true
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v2_132/figures/P2_tsne.png",
+     "caption": "unsup/weak/comboのt-SNE(クラスタ・Bayerラベル・試験66色)。weak/comboで壊死・大血管・核分裂像・門脈域などが試験を混ぜた島になる",
+     "representative": true
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/context_v1/figures/C1_context_metrics.png",
+     "caption": "[context_v1] 伝播回数ごとの隣接まとまりとラベル一致の変化",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v1/figures/P1_labels_and_clusters_unsup.png",
+     "caption": "[v1] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v1/figures/P1_labels_and_clusters_weak.png",
+     "caption": "[v1] weakのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v1/figures/P2_tsne.png",
+     "caption": "[v1] 表現別t-SNE(クラスタ/ラベル/試験)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_unsup.png",
+     "caption": "[v2_132] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_weak.png",
+     "caption": "[v2_132] weakのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_combo.png",
+     "caption": "[v3_maps] comboのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_unsup.png",
+     "caption": "[v3_maps] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_weak.png",
+     "caption": "[v3_maps] weakのクラスタ×Bayerラベル占有率/純度と試験偏り",
+     "representative": false
+    },
+    {
+     "path": "outputs/0021_20261025_patch_prototypes/v3_maps/figures/P2_tsne.png",
+     "caption": "[v3_maps] 表現別t-SNE(クラスタ/ラベル/試験)",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 248
+  },
+  {
+   "id": "0022",
+   "date": "2026-10-25",
+   "name": "0022_20261025_external_pharma_embeddings",
+   "title": "外部製薬WSIのUNI2-h特徴量抽出",
+   "status": "完了",
+   "purpose": "エーザイ・シオノギの外部WSIをTG-GATEsと同条件で埋め込み、層別化の外部検証に使えるようにする。",
+   "method": "肝臓ROI内を物理視野126µm四方(シオノギ285px、エーザイ250px)の重ならない格子で切り出し、0016のControl由来参照でMacenko正規化後UNI2-hで埋め込んだ(default)。外部は評価専用で学習に使わない約束。",
+   "results": [
+    "78枚(エーザイ18・シオノギ60)すべて抽出成功 n_ok=78（default/results.json, default/extraction.csv）",
+    "合計885,028 patch、エーザイ149,636(中央値8,794/枚)、シオノギ735,392(中央値12,462/枚)（default/extraction.csv）",
+    "出力h5 78個 features_uni_v2_macenko/（ls）。README・図なし"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "0023",
+   "date": "2026-10-25",
+   "name": "0023_20261025_layer_reality_check",
+   "title": "層別化の現実との突き合わせ",
+   "status": "完了（external_v1のcompletion.jsonはrunningのまま、v3で再実行済み）",
+   "purpose": "形態・小葉位置・領域の層が実際の組織と所見記録に結びつくかを、リークを断ってTG-GATEsと外部で確かめる。",
+   "method": "ラベルなし表現+周辺平均から小葉位置を試験ごと5分割で回帰(lobular_v1)、TG-GATEsで学習した層を外部78枚にそのまま適用(external_v1-v3、v3はNaN修正後)、形態・小葉・領域の3層を記録と比較(three_layers_v1)。",
+   "results": [
+    "小葉位置の回帰は学習外試験でR²0.25・順位相関0.45、病変の予測位置は記録分布と7件中6件一致(allyl alcohol壊死のみ不一致0.33)（README.md, lobular_v1/results.json）",
+    "外部で壊死プロトタイプ割合は対照0.1〜1.4%、thioacetamide 4〜11%、acetaminophen 7〜18%、ブロモベンゼン7〜15%（README.md, external_v1/external_layers.csv）",
+    "3層: 壊死プロトタイプ割合と記録の壊死程度の順位相関 TG-GATEs0.68/外部0.70、領域層は−0.16で結びつかない（README.md, L1_three_layers_vs_records.png）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0023_20261025_layer_reality_check/external_v3/figures/X1_external_necrosis.png",
+     "caption": "外部78枚: 記録の中心静脈側壊死grade別に壊死プロトタイプ割合(記録あり群で高い)と予測小葉位置(多くが中心静脈側)",
+     "representative": true
+    },
+    {
+     "path": "outputs/0023_20261025_layer_reality_check/lobular_v1/figures/R1_lesion_lobular_position.png",
+     "caption": "試験外で学習した小葉位置回帰による病変patchの予測位置(化合物別箱ひげ、記録の分布で色分け)。OOF R²0.25・Spearman0.45",
+     "representative": true
+    },
+    {
+     "path": "outputs/0023_20261025_layer_reality_check/three_layers_v1/figures/L1_three_layers_vs_records.png",
+     "caption": "3層(形態・領域・小葉位置)と記録の対応。形態層の壊死割合はSpearman TG-GATEs0.68/外部0.70、領域層は-0.16で結びつかない",
+     "representative": true
+    },
+    {
+     "path": "outputs/0023_20261025_layer_reality_check/external_v1/figures/X1_external_necrosis.png",
+     "caption": "[external_v1] 外部データの壊死プロトタイプ割合と予測小葉位置",
+     "representative": false
+    },
+    {
+     "path": "outputs/0023_20261025_layer_reality_check/external_v2/figures/X1_external_necrosis.png",
+     "caption": "[external_v2] 外部データの壊死プロトタイプ割合と予測小葉位置",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 31
+  },
+  {
+   "id": "0024",
+   "date": "2026-10-26",
+   "name": "0024_20261026_prototypes_vs_unlabeled_findings",
+   "title": "プロトタイプとBayer外所見の対応",
+   "status": "完了",
+   "purpose": "0021のプロトタイプが、Bayerラベルにない所見(肥大・空胞化・好酸性変化・脂肪変性など)の程度に応じて増えるかを試験内Control差で調べる。",
+   "method": "0021 v3_mapsのunsup/weak/combo(k=30)を全patchに割当て、同試験Control比の占有率差と所見gradeのSpearmanを所見×プロトタイプで算出し、全病変量を除いた偏相関(specificity)も見た。v1はblock6/block3、v2で脂肪変性試験(CCl4単回・反復、cholesterol)を追加。",
+   "results": [
+    "v2: 3,324枚・約4,377万patch・22所見を評価（v2/results.json）",
+    "所見ごとの最良Spearman中央値 unsup0.42/weak0.47/combo0.51、最高は顆粒状好酸性変性unsup0.87、脂肪変性combo0.66（v2/summary_best.csv）",
+    "全病変量を除くと多くの所見で相関が大きく下がり、unsupのp23/p1などは多所見に反応する汎用プロトタイプ。偏相関で残る最上位は顆粒状好酸性変性0.82、核分裂増加weak0.56、脂肪変性combo0.49（v2/specificity/best_partial.csv）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U2_best_rho_by_rep.png",
+     "caption": "22所見ごとに、試験内Control差のプロトタイプ占有率と重症度の最良Spearman(unsup/weak/combo)。顆粒状好酸性変性0.82-0.87が最高",
+     "representative": true
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/specificity/SP1_partial_vs_raw.png",
+     "caption": "全体の病変量を除いた偏相関で所見特異的プロトタイプが残るか。多くの所見で大きく低下し、汎用プロトタイプ(unsup p23/p1等)が判明",
+     "representative": true
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U1_assoc_heatmaps.png",
+     "caption": "[v1] 所見×プロトタイプの重症度相関ヒートマップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U2_best_rho_by_rep.png",
+     "caption": "[v1] 所見ごとの最良Spearman(表現別)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_combo.png",
+     "caption": "[v1] comboの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_unsup.png",
+     "caption": "[v1] unsupの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_weak.png",
+     "caption": "[v1] weakの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/specificity/SP1_partial_vs_raw.png",
+     "caption": "[v1] 病変量を除いた偏相関と生の相関の比較",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U1_assoc_heatmaps.png",
+     "caption": "[v2] 所見×プロトタイプの重症度相関ヒートマップ",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_combo.png",
+     "caption": "[v2] comboの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_unsup.png",
+     "caption": "[v2] unsupの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    },
+    {
+     "path": "outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_weak.png",
+     "caption": "[v2] weakの重症度相関上位(所見,プロトタイプ)組",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 32
+  },
+  {
+   "id": "0025",
+   "date": "2026-10-26",
+   "name": "0025_20261026_context_mixing_search",
+   "title": "隣接patch情報の入れ方の探索",
+   "status": "完了",
+   "purpose": "隣接patchの情報を表現に入れる最良の方法・係数を、リークのない設定選択で探す。",
+   "method": "Bayer 230枚の全patch(約325万)で、LDAを試験ごと5分割のout-of-foldで作り、試験をselect/testに分けて設定選択。v1線形・差分・平滑化等63設定、v2境界保存(bilateral)等、v3学習型GCN、v4コンセンサスk-meansとseed安定性、v5 k掃引、v6旧文脈表のリークなし再測定。",
+   "results": [
+    "v1-v3の最良は境界保存伝播(hops2,w1.0,α0.5,σq0.1): test NMI 0.391 vs self0.376、隣接同一率0.38 vs 0.28、小構造純度0.350 vs 0.362（search_v3/search.csv）",
+    "v4: コンセンサス10回でseed間ARI self_k30 0.46→0.60、bilateral 0.59→0.63（search_v4/search_runs.csv）",
+    "v5: NMIはk≈20〜40で最大(bilateral k30 0.389、self k30 0.371)、小構造純度はk増で上昇(self k200 0.468)（search_v5/search.csv, K1_k_sweep.png）",
+    "v6: 旧表のlinear hops4 w2.0は隣接同一率0.51・test NMI0.386、ctx_onlyは0.66/0.350（search_v6/search.csv）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v2/figures/S1_tradeoff.png",
+     "caption": "隣接情報の入れ方(bilateral/smooth/sym等)別に、隣接patchの同一プロトタイプ率とNMI・小構造純度のトレードオフ(select組)",
+     "representative": true
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v5/figures/K1_k_sweep.png",
+     "caption": "k=10-200の掃引(5回反復): 均質性・小構造純度はk増で上昇、NMIはk≈20-40で最大、seed間ARIは境界保存伝播で高め",
+     "representative": true
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v1/figures/S1_tradeoff.png",
+     "caption": "[search_v1] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v3/figures/S1_tradeoff.png",
+     "caption": "[search_v3] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v4/figures/S1_tradeoff.png",
+     "caption": "[search_v4] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v5/figures/S1_tradeoff.png",
+     "caption": "[search_v5] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0025_20261026_context_mixing_search/search_v6/figures/S1_tradeoff.png",
+     "caption": "[search_v6] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 7
+  },
+  {
+   "id": "misc_galleries_20261026-1029",
+   "date": "2026-10-26",
+   "name": "misc_galleries_20261026-1029",
+   "title": "補助ギャラリー・確認ページ群",
+   "status": "完了（補助資料）",
+   "purpose": "プロトタイプ・脂肪変性・炎症などを目視確認するためのHTMLページ。",
+   "method": "prototype_gallery(_context/_search)、prototype_tree(v2)、fatty_prototypes、old_fat_clusters、bayer_inflammation、bayer_chol_parenchyma、fatty_vs_control、scanner_thumbnails、stain_check（多くはjpg画像）。",
+   "results": [
+    "prototype_tree/T1_tree.png・v2: k=100プロトタイプのデンドログラム（0026 tree_v1/v2由来）",
+    "bayer_inflammation: A/B表現のslide AUC表 ab_slide_auc.csv",
+    "fatty_vs_control_20261029: 試験66/67/698の対照vs脂肪変性程度別ランダムpatch"
+   ],
+   "figures": [
+    {
+     "path": "outputs/prototype_tree_20261027/T1_tree.png",
+     "caption": "プロトタイプ系統樹（tree_v1）（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/prototype_tree_v2_20261028/T1_tree.png",
+     "caption": "プロトタイプ系統樹（tree_v2）（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/prototype_gallery_search_20261026/S1_tradeoff_v2.png",
+     "caption": "隣接情報探索のトレードオフ図",
+     "representative": false
+    },
+    {
+     "path": "outputs/old_fat_clusters_20261027/img/ccl4run_c52_ccl4.png",
+     "caption": "旧CCl4ランのクラスタ52（脂肪変性）patch例",
+     "representative": false
+    },
+    {
+     "path": "outputs/old_fat_clusters_20261027/img/ccl4run_c42_cholesterol.png",
+     "caption": "旧CCl4ランのクラスタ42（cholesterol）patch例",
+     "representative": false
+    },
+    {
+     "path": "outputs/old_fat_clusters_20261027/img/k100_c87_cholesterol.png",
+     "caption": "旧k100クラスタ87（cholesterol）patch例",
+     "representative": false
+    },
+    {
+     "path": "outputs/stain_check.png",
+     "caption": "Macenko染色正規化の確認画像（2026-09-13、0005関連）",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 0
+  },
+  {
+   "id": "necrosis_polygon_overview_20261026",
+   "date": "2026-10-26",
+   "name": "necrosis_polygon_overview_20261026",
+   "title": "Bayer壊死ポリゴンの面積概観",
+   "status": "完了",
+   "purpose": "Bayerの「Necrosis (area)」ポリゴンの大きさをpatchサイズと比較する。",
+   "method": "0019のannotations.parquetから壊死ポリゴン1,576個（120枚）の面積・化合物・時点を集計。",
+   "results": [
+    "1,576個の大半はpatch1枚（約128µm角=16,384µm²）より小さく中央値約3,000µm²（report_20261027/index.html, provenance.json）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/necrosis_polygon_overview_20261026/N1_area_hist.png",
+     "caption": "壊死ポリゴン面積のlog10ヒストグラム、patch1枚/10枚の目安線つき",
+     "representative": true
+    },
+    {
+     "path": "outputs/necrosis_polygon_overview_20261026/N2_area_by_compound.png",
+     "caption": "化合物別の壊死ポリゴン面積（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/necrosis_polygon_overview_20261026/N3_compound_time.png",
+     "caption": "化合物×時点ごとのポリゴン数（ファイル名より）",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 3
+  },
+  {
+   "id": "report_20261026",
+   "date": "2026-10-26",
+   "name": "report_20261026",
+   "title": "経過報告: パッチ層別化（実験0017〜0023）",
+   "status": "完了（報告済み）",
+   "purpose": "10/22〜26のバッチ頑健表現比較・プロトタイプ・小葉位置・外部検証をまとめて報告する。",
+   "method": "各実験出力の図と数値を転記したHTMLレポート（F1〜F6のpng/svg、img/にjpg15枚）。",
+   "results": [
+    "スキャナのストライプ間隔の縦帯がControlにも出現、帯強度とピント指標の順位相関0.09（index.html）",
+    "slide内順位化で別試験近傍割合12%→43%、Harmony/CORALはラベル保存が低下、LDAで試験CVのNMI 0.32→0.44（index.html, 0020）",
+    "0021プロトタイプk=30: NMI 0.49、クラスタあたり試験数中央値64.5/66（index.html）※後にリークありと判明",
+    "小葉位置回帰 R² 0.25・ρ 0.45、外部78枚で壊死プロトタイプ割合と程度のρ 0.70（index.html）",
+    "病変の広がり指標は程度と相関せず（ρ −0.16）（index.html）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/report_20261026/F2_methods_mixing_vs_conservation.png",
+     "caption": "13手法の試験混ざり（横）とラベル保存（縦）の散布図。rank_slide+LDAが右上、Harmony/CORALは混ざるがラベル保存が低下",
+     "representative": true
+    },
+    {
+     "path": "outputs/report_20261026/F6_three_layers_vs_records.png",
+     "caption": "TG-GATEs132枚/外部78枚で壊死プロトタイプ割合が程度と相関(ρ0.68/0.70)、広がり指標は無相関、壊死patchの小葉位置は中心静脈側に偏る",
+     "representative": true
+    },
+    {
+     "path": "outputs/report_20261026/F1_stage1_pass_by_grade.png",
+     "caption": "0018 1段目通過率と所見表の最大程度（図1）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261026/F3_spatial_context_tradeoff.png",
+     "caption": "隣接情報の混合度とNMI/純度のトレードオフ（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261026/F4_lobular_layer_vs_topography.png",
+     "caption": "小葉位置予測と所見表の分布記録の対応（ファイル名より）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261026/F5_external_necrosis_layers.png",
+     "caption": "外部データでの壊死の層別（0023 external_v3）（ファイル名より）",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 27
+  },
+  {
+   "id": "0026",
+   "date": "2026-10-27",
+   "name": "0026_20261027_fatty_degeneration_prototypes",
+   "title": "脂肪変性のプロトタイプ分離",
+   "status": "完了（README無し）",
+   "purpose": "Bayerにラベルのない脂肪変性(微小滴・大滴)が高純度のプロトタイプとして分かれるかを調べる。",
+   "method": "CCl4単回・反復とcholesterol食の試験を対象に、raw/unsup/unsup+β·LDA/combo系の表現でコンセンサスk-means(k=100/200)→Ward階層で20〜60に切って評価(v1)。tree_v1で系統樹、tree_v2でSphering+LDA(試験Control白色化)、tree_v3でBayerの脂肪・空胞化21枚をLDA学習から除外、tree_v3s/v3uでラベル有無×Sphering有無の2×2を比較。",
+   "results": [
+    "v1: 対象200枚・約345万patch。raw k100でcholesterolの純度≥0.9プロトタイプ2個、CCl4最良Spearman0.88（v1/summary.csv）",
+    "tree_v3(188枚): sphering_lda k100でBayer NMI0.378・均質性0.602、純度≥0.9がCCl4で7個・cholesterolで6個（tree_v3/summary.csv）",
+    "tree_v3u: LDAのみはNMI0.417と高いがcholesterolの純度≥0.9は0個、unsupは5個。tree_v3s(Sphering)はNMI0.332・5個（tree_v3u/summary.csv, tree_v3s/summary.csv）",
+    "cholesterolではp45/p60の占有率がgrade sevで約0.2まで単調増加（F1_share_by_grade_sphering_lda_k100.png）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/tree/sphering_lda_k100/T1_tree.png",
+     "caption": "Sphering+LDA k=100プロトタイプのWard系統樹とBayerラベル・脂肪純度バー。純度≈1の脂肪プロトタイプが複数の枝に分かれて出る",
+     "representative": true
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/figures/F1_share_by_grade_sphering_lda_k100.png",
+     "caption": "CCl4とcholesterolで脂肪変性grade別の上位6プロトタイプ占有率。cholesterolのp45/p60はsevで約0.2まで単調増加",
+     "representative": true
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v1/tree/unsup_lda1_k100/T1_tree.png",
+     "caption": "[tree_v1] プロトタイプ系統樹(unsup_lda1_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/tree/sphering_lda_k100/T1_tree.png",
+     "caption": "[tree_v2] プロトタイプ系統樹(sphering_lda_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/tree/unsup_lda1_k100/T1_tree.png",
+     "caption": "[tree_v2] プロトタイプ系統樹(unsup_lda1_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/tree/unsup_lda1_k100/T1_tree.png",
+     "caption": "[tree_v3] プロトタイプ系統樹(unsup_lda1_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3s/tree/sphering_k100/T1_tree.png",
+     "caption": "[tree_v3s] プロトタイプ系統樹(sphering_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/tree/lda_k100/T1_tree.png",
+     "caption": "[tree_v3u] プロトタイプ系統樹(lda_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/tree/unsup_k100/T1_tree.png",
+     "caption": "[tree_v3u] プロトタイプ系統樹(unsup_k100)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v1/figures/F1_share_by_grade_unsup_lda1_k100.png",
+     "caption": "[tree_v1] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/figures/F1_share_by_grade_sphering_lda_k100.png",
+     "caption": "[tree_v2] sphering_lda_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/figures/F1_share_by_grade_unsup_lda1_k100.png",
+     "caption": "[tree_v2] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/figures/F1_share_by_grade_unsup_lda1_k100.png",
+     "caption": "[tree_v3] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3s/figures/F1_share_by_grade_sphering_k100.png",
+     "caption": "[tree_v3s] sphering_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/figures/F1_share_by_grade_lda_k100.png",
+     "caption": "[tree_v3u] lda_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/figures/F1_share_by_grade_unsup_k100.png",
+     "caption": "[tree_v3u] unsup_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_bilateral_k100.png",
+     "caption": "[v1] combo_bilateral_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_k100.png",
+     "caption": "[v1] combo_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_strong_k100.png",
+     "caption": "[v1] combo_strong_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_raw_k100.png",
+     "caption": "[v1] raw_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_k100.png",
+     "caption": "[v1] unsup_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda0.5_k100.png",
+     "caption": "[v1] unsup_lda0.5_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k100.png",
+     "caption": "[v1] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda2_k100.png",
+     "caption": "[v1] unsup_lda2_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_raw_k100_cut40.png",
+     "caption": "[v1] raw_k100_cut40: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k100_cut30.png",
+     "caption": "[v1] unsup_lda1_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_bilateral_k100_cut30.png",
+     "caption": "[v1] combo_bilateral_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_k200_cut40.png",
+     "caption": "[v1] unsup_k200_cut40: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_k100_cut30.png",
+     "caption": "[v1] combo_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    },
+    {
+     "path": "outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k200_cut30.png",
+     "caption": "[v1] unsup_lda1_k200_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1032
+  },
+  {
+   "id": "0027",
+   "date": "2026-10-27",
+   "name": "0027_20261027_weak_supervision_extrapolation",
+   "title": "弱教師・Control正規化の外挿性比較",
+   "status": "完了（v2はcompletion.jsonがrunningのままだがresults.csv・図あり）",
+   "purpose": "学習に使わない所見ラベル(外挿)まで分けられる弱教師あり・バッチ除去手法を比較する。",
+   "method": "Bayerラベルの一部(A:壊死・濃い肝細胞・炎症、B:中心静脈・門脈域・核分裂像)を伏せ、unsup/LDA/unsup+LDA/Sphering/Sphering+LDA/TVN/TVN+LDA/GCD/敵対AEを比較。v1は分割ごとモデル(不適切)、v2は単一モデル、v3は脂肪変性で外挿確認、v4はControl追加後に全試験でv2を再実行。",
+   "results": [
+    "v4(229枚・67試験・約324万patch): 伏せたAの純度k100 sphering_lda0.466、sphering0.442、unsup0.417、lda0.219、ae_adv0.144（v4/results.csv, v4/results.json）",
+    "伏せたBの純度k100 sphering_lda0.312が最良、gcd0.147。gcdは既知ラベル純度0.45〜0.48と高いが外挿できない（v4/results.csv）",
+    "混ざり具合(別試験近傍) lda0.89・ae_adv0.94と高いが区別を失う、sphering0.51（v4/results.csv）",
+    "v3脂肪変性: cholesterolの純度≥0.9プロトタイプ unsup5・sphering5・lda0（v3/results.csv）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0027_20261027_weak_supervision_extrapolation/v4/figures/E1_extrapolation.png",
+     "caption": "v4(229枚・67試験): 伏せたラベルの純度(k30/100)・kNN再現率と既知ラベル純度・混ざり具合。sphering_ldaが伏せたラベルで最良、ae_adv/ldaは外挿不可",
+     "representative": true
+    },
+    {
+     "path": "outputs/0027_20261027_weak_supervision_extrapolation/v1/figures/E1_extrapolation.png",
+     "caption": "[v1] 伏せたラベルの外挿性(純度・kNN再現率・混ざり具合)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0027_20261027_weak_supervision_extrapolation/v2/figures/E1_extrapolation.png",
+     "caption": "[v2] 伏せたラベルの外挿性(純度・kNN再現率・混ざり具合)",
+     "representative": false
+    },
+    {
+     "path": "outputs/0027_20261027_weak_supervision_extrapolation/v3/figures/E1_extrapolation.png",
+     "caption": "[v3] 伏せたラベルが無い設定のため空のプロット(実データ点なし)",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 4
+  },
+  {
+   "id": "0028",
+   "date": "2026-10-27",
+   "name": "0028_20261027_external_sphering_prototypes",
+   "title": "外部データへのSphering付きプロトタイプ適用",
+   "status": "完了",
+   "purpose": "TG-GATEsで作ったプロトタイプを外部(エーザイ・塩野義)に学習なしで当て、外部の所見記録と対応するかを見る。",
+   "method": "0026のプロトタイプ(sphering_lda・unsup_lda1=tree_v2、combo=v1、k=100)を外部78枚に割り当て、白色化だけ外部各試験の対照群で行い、プロトタイプshare(対照差)と所見程度のSpearmanを置換nullと比較(variantはv1のみ)。",
+   "results": [
+    "外部78枚で所見ごとの最良Spearman平均: sphering_lda 0.870、unsup_lda1 0.862、combo 0.822(v1/results.json)",
+    "壊死プロトタイプのshareと壊死程度のSpearman: sphering_lda 0.75(壊死プロトタイプ5個、対照中央値0.0012→壊死0.10)、unsup_lda1 0.77、combo 0.78(v1/results.json)",
+    "F0219の炎症・壊死・肥大・グリコーゲン減少はnull p=0.002だが、F0220の単核細胞浸潤は0.54(p=0.67)で取れない(v1/external_findings_with_null.csv)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0028_20261027_external_sphering_prototypes/v1/figures/X1_external_findings.png",
+     "caption": "外部(エーザイ・塩野義)の各所見について、TG-GATEsプロトタイプの対照差share×程度の最良Spearmanを3表現で比較(多くが0.75〜0.99、単核細胞浸潤だけ0.5前後)",
+     "representative": true
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1
+  },
+  {
+   "id": "report_20261027",
+   "date": "2026-10-27",
+   "name": "report_20261027",
+   "title": "経過報告: プロトタイプ改良（実験0024〜0026）",
+   "status": "完了（報告済み）",
+   "purpose": "評価リークの是正、隣接情報、seed依存性、k選択、Bayerにない所見の結果を報告する。",
+   "method": "0024・0025・0026の出力を転記したHTMLレポート（png5枚、jpg2枚）。",
+   "results": [
+    "LDA学習と同じラベルで評価していたリークを除くとNMI 0.49→0.37〜0.39（index.html）",
+    "境界を保つ伝播でNMI 0.376→0.391、隣接同一率28%→38%（index.html, 0025）",
+    "コンセンサスk-meansでseed間ARI 0.42〜0.48→0.54〜0.63（index.html）",
+    "異常強度を差し引くと特異的に残るのは核分裂増加(ρ0.55)など少数（index.html, 0024）",
+    "ユーザー判断: 弱教師あり方向、純度重視、kはNMI最大付近（k=20〜40）（index.html）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/report_20261027/img/K1_k_sweep.png",
+     "caption": "k=10〜200の掃引: homogeneity・小構造純度はk増で上昇、NMIはk=20〜40で最大、ARIと隣接同一率はk増で低下",
+     "representative": true
+    },
+    {
+     "path": "outputs/report_20261027/img/U2_best_rho_by_rep.png",
+     "caption": "所見ごとの程度と最良プロトタイプの順位相関（unsup/weak/combo）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261027/img/SP1_partial_vs_raw.png",
+     "caption": "異常強度を差し引く前後の1位プロトタイプの相関",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261027/img/S1_tradeoff_v2.png",
+     "caption": "隣接情報の入れ方ごとの隣接同一率とNMI・小構造純度",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261027/img/N1_area_hist.png",
+     "caption": "壊死ポリゴン面積ヒストグラム",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 7
+  },
+  {
+   "id": "0029",
+   "date": "2026-10-28",
+   "name": "0029_20261028_external_finding_maps",
+   "title": "外部slideの所見・構造マップ(A〜D比較)",
+   "status": "完了(v1〜v9、v6/v7の目視評価結果は未集計)",
+   "purpose": "仮説①(ラベルを学んだ所見・構造はラベルのないslideからも取り出せる)を、外部slide上のプロトタイプ地図で確かめる。",
+   "method": "外部47枚(壊死30・対照12・炎症のみ5)にA(Sphering+LDA)/B(Sphering)/C(LDA)/D(unsup)のプロトタイプを色分けし、v2拡大窓、v3試験効果・壊死タイル、v4対照群のドメイン差、v5で2×2比較、v6/v7盲検評価窓、v8命名から脂肪系21枚除外、v9でBayerのみ重心(0032)のC/D/D13。",
+   "results": [
+    "v8 壊死slide vs 対照のAUC: A 0.86、B 0.98、C 0.93、D 0.92。炎症: A 0.91、B 0.89、C 0.55、D 0.50(v8/slide_auc.csv)",
+    "v8 対照群kNNの他ドメイン割合(TG起点、混ざれば0.47): A 0.33、B 0.36、C 0.43、D 0.25(v8/domain_gap.csv)",
+    "v8 会社特異プロトタイプ数: D 20個、A 5、B 4、C 1(v8/study_effect.csv)",
+    "v9(Bayerのみ重心) 壊死AUC: C 0.975、D13 0.795、D 0.708。色付け面積と壊死程度のrho: C 0.75 [0.64,0.82]、D 0.42、D13 0.41(v9/slide_auc.csv, v9/severity/severity_spearman.csv)",
+    "v6/v7は盲検評価用の窓画像とrating_key.csvを作成(評価結果の集計ファイルは見当たらない)(v7/rating/)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v8/domain_tsne_A_sphering_lda.png",
+     "caption": "表現A(Sphering+LDA)での対照群patchのt-SNE: TG-GATEs・塩野義・エーザイの対照群がほぼ混ざる",
+     "representative": true
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v9/severity/S1_severity.png",
+     "caption": "外部78枚で壊死/炎症に色付けされたpatch割合と記録の程度の関係: C(LDAのみ)が壊死rho 0.75でD(0.42)・D13(0.41)より高い",
+     "representative": true
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v4/domain_tsne_A_sphering_lda.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(A_sphering_lda) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v4/domain_tsne_B_sphering.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v4/domain_tsne_none.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(none) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v5/domain_tsne_A_sphering_lda.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(A_sphering_lda) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v5/domain_tsne_B_sphering.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v5/domain_tsne_C_lda.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v5/domain_tsne_D_unsup.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v5/severity/S1_severity.png",
+     "caption": "外部slideの色付け面積と記録の程度の相関 [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v8/domain_tsne_B_sphering.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v8]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v8/domain_tsne_C_lda.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v8]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v8/domain_tsne_D_unsup.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v8]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v8/severity/S1_severity.png",
+     "caption": "外部slideの色付け面積と記録の程度の相関 [v8]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v9/domain_tsne_C_lda.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v9]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v9/domain_tsne_D13_unsup13.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(D13_unsup13) [v9]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0029_20261028_external_finding_maps/v9/domain_tsne_D_unsup.png",
+     "caption": "対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v9]",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1615
+  },
+  {
+   "id": "0030",
+   "date": "2026-10-28",
+   "name": "0030_20261028_tggates_unseen_findings",
+   "title": "未学習TG-GATEs slideでの所見分類",
+   "status": "完了(v1・v3・v4。v2はディレクトリなし)",
+   "purpose": "Bayerラベルで学んだ表現A〜Dを学習に使っていないTG-GATEs slideに当て、所見を判別できるかとプロトタイプの対応を見る。",
+   "method": "未学習3,319枚(43試験、各2,048 patch)に割り当て、10所見について化合物held-outの読み出しAUCとBayer名付きプロトタイプのAUCを計算。v1(A〜D)、v3(命名を21枚除外版に、地図・タイル・bootstrap)、v4(0032のBayerのみ重心でD/D13/C、バッチ混合解析を追加)。",
+   "results": [
+    "v3 平均読み出しAUC: A 0.734、B 0.741、C 0.747、D 0.648。名前付きAUC: A 0.820、B 0.769、C 0.786、D 0.561(v3/results.json)",
+    "v3 所見別読み出し: 顆粒状好酸性変性 A 0.99/B 0.99、肥大 0.76〜0.79、好酸性変化 0.45〜0.53で取れない、壊死はC 0.86だがB 0.54(v3/finding_classification.csv)",
+    "v4 名前付きAUC平均: C 0.829、D 0.639、D13 0.606。核分裂増加の読み出し C 0.97 vs D 0.61(v4/results.json, v4/finding_classification.csv)",
+    "v4 対照群857枚のkNN他試験割合(期待0.98): raw 0.73、D 0.84、D13 0.90、C 0.95。他スキャナ割合(期待0.49): 0.24/0.28/0.38/0.45(v4/batch_mixing/summary_controls.csv)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v3/F1_finding_auc.png",
+     "caption": "未学習TG-GATEs 3,319枚での10所見の判別AUC(左: 化合物held-out読み出し、右: Bayer名付きプロトタイプのみ)をA〜Dで比較。好酸性変化はどれも0.5前後",
+     "representative": true
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F1_batch_mixing_controls.png",
+     "caption": "対照群857枚で試験・スキャナの混ざり具合(kNN他試験割合 raw 0.73→D 0.84→D13 0.90→C 0.95)とJS距離・プロトタイプ偏り",
+     "representative": true
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v1/F1_finding_auc.png",
+     "caption": "所見別の判別AUC(読み出し/名前付き) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v1/severity/S2_severity_tggates.png",
+     "caption": "未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v3/severity/S2_severity_tggates.png",
+     "caption": "未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v3]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/F1_finding_auc.png",
+     "caption": "所見別の判別AUC(読み出し/名前付き) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F2_tsne_controls.png",
+     "caption": "対照群のt-SNE(表現別) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F3_tsne_scanner.png",
+     "caption": "スキャナで色分けしたt-SNE [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F4_tsne_experiments.png",
+     "caption": "試験で色分けしたt-SNE [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F5_mixing_by_experiment.png",
+     "caption": "試験ごとの自試験近傍割合(観測/期待) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0030_20261028_tggates_unseen_findings/v4/severity/S2_severity_tggates.png",
+     "caption": "未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v4]",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 119
+  },
+  {
+   "id": "0031",
+   "date": "2026-10-29",
+   "name": "0031_20261029_heldout_patch_extraction",
+   "title": "化合物held-outのpatch単位抽出評価",
+   "status": "完了",
+   "purpose": "仮説①をpatch単位で検証し、学習に入れていない化合物のpatchがBayerポリゴンと一致するかを表現間で比べる。",
+   "method": "Bayer 230枚を化合物単位で5分割し、各分割の学習側だけでLDA→k-means(k=100)→命名を行い、評価側patchをポリゴン正解と照合、化合物bootstrap 2000回。v1はA〜D、v2はD・D13・C。",
+   "results": [
+    "v1 macro F1(実質除く): C 0.434、A 0.373、B 0.311、D 0.263。C−Dは+0.17 [0.14,0.20](v1/results.json)",
+    "v2 macro F1: C 0.440、D 0.263、D13 0.223。C−D13 +0.22 [0.18,0.24]、D13−Dは−0.04(次元を落とすだけでは上がらない)(v2/results.json)",
+    "v2 ラベル別のC−D差: 核分裂+0.38、炎症+0.21、壊死+0.16、濃い肝細胞+0.23(v2/heldout_differences.csv)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0031_20261029_heldout_patch_extraction/v2/P1_heldout_f1.png",
+     "caption": "化合物held-outのpatch単位F1(Bayerポリゴン正解)をラベル別にD・D13・Cで比較: Cが壊死・核分裂・中心静脈・炎症などで明確に高い",
+     "representative": true
+    },
+    {
+     "path": "outputs/0031_20261029_heldout_patch_extraction/v1/P1_heldout_f1.png",
+     "caption": "化合物held-outのpatch単位F1(ラベル別) [v1]",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 2
+  },
+  {
+   "id": "0032",
+   "date": "2026-10-29",
+   "name": "0032_20261029_bayer_only_prototypes",
+   "title": "Bayerのみで作るプロトタイプ(C/D/D13)",
+   "status": "完了(図なし、下流実験の入力)",
+   "purpose": "仮説①用に、脂肪変性試験を混ぜずBayer 230枚だけでプロトタイプを作り直す。",
+   "method": "Bayer 325万patchからC(LDA13)・D(PCA64)・D13(PCA13)の3表現でコンセンサスk-means(k=100、10回、80万点)と命名・系統樹を作成。出力は0029 v9・0030 v4がproto_rootとして利用(variantはv1のみ)。",
+   "results": [
+    "命名されたプロトタイプ数(k=100中): C 実質34・太い血管11・核分裂10・中心静脈10・門脈域8・単細胞壊死8・名前なし5(v1/results.json)",
+    "D は核分裂が22個・名前なし12個、D13は核分裂21個で、ラベルなし表現は核分裂名が過剰(v1/results.json)"
+   ],
+   "figures": [],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 300
+  },
+  {
+   "id": "report_20261029_hypothesis1",
+   "date": "2026-10-29",
+   "name": "report_20261029_hypothesis1",
+   "title": "仮説①検証レポート（0032/0031 v2/0030 v4/0029 v9）",
+   "status": "完了（報告済み）",
+   "purpose": "Bayerラベルで学んだ表現のプロトタイプが、未学習の化合物・slide・施設で所見・構造を取り出せるかを検証する。",
+   "method": "C(LDA13次元)・D(PCA64)・D13(PCA13)の3表現でBayer230枚のみからk=100コンセンサスk-meansプロトタイプを作り、patch単位(化合物held-out)、slide単位(未学習TG-GATEs 3,319枚)、外部(塩野義・エーザイ78枚)で比較、化合物bootstrap 2,000回の95%区間。",
+   "results": [
+    "patch単位平均F1: C−D +0.18[0.14,0.20]、C−D13 +0.22[0.18,0.24]、壊死F1 C0.74/D0.57、核分裂像0.71/0.33（index.html, 0031 v2）",
+    "未学習TG-GATEs学習なしAUC平均: C−D +0.22[0.13,0.29]、核分裂像C0.93 vs D0.30、壊死・単細胞壊死はC≒D（index.html, 0030 v4）",
+    "外部: 会社偏りプロトタイプD28個→C4個、TG-GATEs近傍の外部割合25%→43%、壊死程度相関C0.75 vs D0.42（index.html, 0029 v9）",
+    "Bayerにない所見への外挿ではC≒D、仮説①の範囲外（index.html §7）"
+   ],
+   "figures": [
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/P1_heldout_f1.png",
+     "caption": "化合物held-outでのラベル別patch F1（95%CI）。C_ldaが実質・壊死・核分裂像・中心静脈・結合組織・artifactでD/D13を上回る",
+     "representative": true
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/domain_tsne_C_lda.png",
+     "caption": "C表現の対照群patch t-SNE: TG-GATEs・塩野義・エーザイがほぼ混ざる",
+     "representative": true
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/F1_finding_auc.png",
+     "caption": "未学習TG-GATEsでの所見分類AUC（読み出し/学習なし）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/domain_tsne_D_unsup.png",
+     "caption": "D表現の対照群t-SNE（データセットごとに塊）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/domain_tsne_D13_unsup13.png",
+     "caption": "D13表現の対照群t-SNE（13次元でも塊が残る）",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/S1_severity.png",
+     "caption": "外部78枚の色面積と記録程度",
+     "representative": false
+    },
+    {
+     "path": "outputs/report_20261029_hypothesis1/fig/S2_severity_tggates.png",
+     "caption": "未学習TG-GATEsの名前付きプロトタイプ面積と程度",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 7
+  },
+  {
+   "id": "0033",
+   "date": "2026-11-01",
+   "name": "0033_20261101_labeled_unlabeled_tradeoff",
+   "title": "ラベルあり/なし所見のトレードオフ比較",
+   "status": "完了",
+   "purpose": "仮説②に使う表現を1つ決めるため、ラベルあり所見とラベルなし所見の両立を7表現で比べる。",
+   "method": "D・D13・C・B・A・E(D13‖LDA)・F(combo)の7表現で、(a)held-out patch F1、(b)未学習slideのラベルなし5所見読み出しAUC、(b')名前付きAUC、(c)脂肪変性純度≥0.9のプロトタイプ数を1表に並べた(v1)。",
+   "results": [
+    "(a) held-out macro F1: C 0.440が最良、F 0.423、E 0.399、A 0.378、B 0.313、D 0.265、D13 0.220(v1/summary.csv)",
+    "(b) ラベルなし読み出しAUC: B 0.728、A 0.724、E 0.707、C 0.681。区間幅は±0.1で差は有意でない(v1/summary.csv, README.md)",
+    "(c) 脂肪変性純プロトタイプ数 CCl4/chol: A 6/4、E 7/1、B 5/3、C 1/0(v1/summary.csv)",
+    "結論: A(Sphering‖LDA)が両立の点で最良(名前付きAUC 0.829 vs C 0.826)(README.md)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0033_20261101_labeled_unlabeled_tradeoff/v1/F1_tradeoff.png",
+     "caption": "7表現のトレードオフ: held-out F1×ラベルなし読み出しAUCの散布図、脂肪変性純度≥0.9のプロトタイプ数、名前付きAUC",
+     "representative": true
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1
+  },
+  {
+   "id": "0034",
+   "date": "2026-11-01",
+   "name": "0034_20261101_sphering_projection_sweep",
+   "title": "Sphering・射影のスイープ(A超え探索)",
+   "status": "完了",
+   "purpose": "0033で最良だったA(Sphering64‖LDA13)を上回る表現があるかを探す。",
+   "method": "LDA重みβ(0.5/1/2/4)、白色化次元128、LDAの代わりにPLS-DA32/64・NCA32を並べた11表現を0033と同じ3評価で比較(v1)。",
+   "results": [
+    "Aを全評価で上回る表現はなし(README.md)",
+    "A_beta2: held-out F1 0.431(A比+0.056)、ラベルなしAUC 0.704(−0.033、区間内)(v1/summary.csv, v1/differences.csv)",
+    "A128: 脂肪変性純プロトタイプ12/5(最多)、程度との相関 CCl4 0.89・chol 0.92、名前付きAUC 0.840(v1/summary.csv)",
+    "PLS/NCA置換は名前付きAUCが大きく低下(P32 0.745、P64 0.669、N32 0.655 vs A 0.842)(v1/summary.csv)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0034_20261101_sphering_projection_sweep/v1/F1_tradeoff.png",
+     "caption": "11表現(β・Sphering次元・PLS/NCA)のトレードオフ図: βでF1とラベルなしAUCが入れ替わり、A128/B128で脂肪変性純プロトタイプが最多",
+     "representative": true
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 1
+  },
+  {
+   "id": "0035",
+   "date": "2026-11-02",
+   "name": "0035_20261102_finer_prototypes_split_rejoin",
+   "title": "細かいプロトタイプの分割・再結合と試験間差の検証",
+   "status": "完了(v1・v2+追加解析6種。目視は一部のみ)",
+   "purpose": "プロトタイプを細かくして純度を上げる方法を比べ、さらにラベルなし所見の抽出と試験間差(対照群の識別)を調べる。",
+   "method": "Bayer+脂肪変性3試験+未学習3,319枚(1,043万patch)でA/A128に13方法(flat k100〜1000、split_label/record/dispersion、Ward再結合)を適用(v1)、v2はLDAなし(B128/B/D)。追加解析: unlabeled_findings、control_study_identification、within_study_findings、control_similarity、group_crossstudy、group_reference。",
+   "results": [
+    "v1(A): k=100→1000でheld-out coverageは0.17→0.18と不変、split_labelのみ0.23。脂肪変性の化合物内coverageは0→0.47/0.37(k=1000)(README.md, v1/summary.csv)",
+    "v2(LDAなし): B128 flat_k1000の脂肪変性coverage CCl4 0.48/chol 0.40でLDAありと同程度、held-out F1はB128 k100 0.31(v2/fatty_within_compound.csv, v2/heldout_summary.csv)",
+    "unlabeled_findings: 肥大で選んだ250プロトタイプは肥大slide 21%/対照1.3%、化合物held-out AUC 0.95(A128)だが所見間Jaccard 0.22〜0.72で投与全般を拾う(unlabeled_findings/overview.csv, README.md)",
+    "control_study_identification: 対照群だけで試験を識別できる(AUC中央値 A128 0.86、C 0.88、D 0.93)。LDAで試験間差はつぶれない(README.md)",
+    "within_study_findings: 試験内AUC 肥大0.83・空胞化0.90・胆管増生0.88・好酸性変化0.79、所見間Jaccard 0.00〜0.28に低下(within_study_findings/summary.csv)",
+    "control_similarity: 143試験の対照群ペア識別AUC中央値0.995、偶然と区別できない組5.5%、36まとまりの多くが単一スキャナ・単一0015塊(control_similarity/, README.md)",
+    "group_reference: 投与全般を除かない場合、A128肥大でまとまり内の対照を使う方が17組中15組で高AUC(p=0.002)、除くと差は消える(group_reference/, README.md)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F3_mds_B128.png",
+     "caption": "143試験を対照群の見分けやすさで配置したMDS(B128): 0015の塊ごと、さらにスキャナ(SS1601/SS1598)で割れ、撮影月とは対応しない",
+     "representative": true
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/F1_methods.png",
+     "caption": "13方法×A/A128の比較: held-out coverage(split_labelのみ0.23)、macro F1、記録coverage(A128 flat_k1000/split_recordで高い)、ラベルなし読み出しAUC",
+     "representative": true
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/within_study_findings/F1_within_study.png",
+     "caption": "試験内(同試験・同時点)の所見特有プロトタイプによる記録有無のAUC(10所見、A128/B128)と、選ばれたプロトタイプの所見間Jaccard(0.00〜0.28)",
+     "representative": true
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F1_block_identification.png",
+     "caption": "0015の塊ごとの対照群からの試験識別AUC [control_similarity]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F2_pairwise_heatmap_B128.png",
+     "caption": "試験ペアの対照群見分けやすさ(AUC)ヒートマップ [control_similarity]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/control_study_identification/F1_control_study_identification.png",
+     "caption": "対照群のプロトタイプ構成から試験・スキャナを当てるAUC [control_study_identification]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/group_crossstudy/F1_group_crossstudy_hypertrophy.png",
+     "caption": "まとまり内で他試験から選んだ肥大プロトタイプによる伏せた試験のAUC [group_crossstudy]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/group_reference/F1_reference_in_vs_out.png",
+     "caption": "選択時の対照群をまとまり内/外から取った場合のAUC比較 [group_reference]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/group_reference/no_generic/F1_reference_in_vs_out.png",
+     "caption": "選択時の対照群をまとまり内/外から取った場合のAUC比較(投与全般を除かない版) [group_reference]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Cellular_infiltration/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Cellular_infiltration) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Change_eosinophilic/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Change_eosinophilic) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Degeneration_granular_eosinophilic/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Degeneration_granular_eosinophilic) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/F4_overview.png",
+     "caption": "10所見の選択数・割合・AUCの一覧 [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hematopoiesis_extramedullary/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Hematopoiesis_extramedullary) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hypertrophy/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Hypertrophy) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hypertrophy/F2_log2_ratio_by_exp.png",
+     "caption": "試験ごとの所見slide/対照群のプロトタイプlog2比(Hypertrophy) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Increased_mitosis/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Increased_mitosis) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Necrosis/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Necrosis) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Necrosis/F2_log2_ratio_by_exp.png",
+     "caption": "試験ごとの所見slide/対照群のプロトタイプlog2比(Necrosis) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Proliferation_bile_duct/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Proliferation_bile_duct) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Single_cell_necrosis/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Single_cell_necrosis) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Vacuolization_cytoplasmic/F1_heldout_auc.png",
+     "caption": "化合物held-outの所見slide判別AUC(Vacuolization_cytoplasmic) [unlabeled_findings]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/F2_record_coverage.png",
+     "caption": "記録ありslideのpatchが高純度プロトタイプに入る割合(所見別・方法別) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/F1_tree_all.png",
+     "caption": "プロトタイプ系統樹(葉の注釈付き)(tree_A128_sphering_lda_split_record) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/a_history/F1_tree_all.png",
+     "caption": "プロトタイプ系統樹(葉の注釈付き)(a_history) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/b_knn/F1_tree_all.png",
+     "caption": "プロトタイプ系統樹(葉の注釈付き)(b_knn) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/c_meaning/F1_tree_all.png",
+     "caption": "プロトタイプ系統樹(葉の注釈付き)(c_meaning) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/ward/F1_tree_all.png",
+     "caption": "プロトタイプ系統樹(葉の注釈付き)(ward) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v2/F1_methods.png",
+     "caption": "方法別のcoverage・F1・読み出しAUC [v2]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0035_20261102_finer_prototypes_split_rejoin/v2/F2_record_coverage.png",
+     "caption": "記録ありslideのpatchが高純度プロトタイプに入る割合(所見別・方法別) [v2]",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 126
+  },
+  {
+   "id": "0036",
+   "date": "2026-11-03",
+   "name": "0036_20261103_local_prototype_context",
+   "title": "局所プロトタイプ文脈(空間・小葉内位置)",
+   "status": "第1段階完了(v1〜v5)、第2段階は未定",
+   "purpose": "patch単体のプロトタイプに周囲の組織情報(空間文脈)を足す価値があるかを第1段階として調べる。",
+   "method": "Bayer+脂肪変性3試験の647万patchで0035のA128 split_record(細876/粗100)の3×3・5×5近傍の共起と文脈分割を解析。v1/v2は目印距離z、v3は小葉内位置のリッジ回帰、v4は周囲だけの回帰、v5は周囲から脂肪系プロトタイプを除外、加えて色味チェック。",
+   "results": [
+    "同じプロトタイプが隣にいる割合: 実際0.108 vs シャッフル0.009(約12倍)(v1, README.md)",
+    "文脈分割のR²中央値 実際0.132 vs シャッフル0.090と差は小さく、分かれるのは組織の縁の種類(v1/v2, README.md)",
+    "目印距離zは機能せず(中心静脈/門脈域AUC 0.61)(v2, README.md)",
+    "回帰(R² 0.22、順位相関0.43)で純プロトタイプがCCl4 0.452 vs その他0.512、chol 0.587 vs 0.501と記録部位の向きにずれる(v3/zonation_fatty.csv)",
+    "v5(周囲から脂肪系除外): slide内差 CCl4 −0.031(91%が記録どおり)、chol +0.081(71%)。色味除去後も CCl4 −0.023、chol +0.048と残る(README.md, v5/color_check/)"
+   ],
+   "figures": [
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v1/figures/F2_cooccurrence.png",
+     "caption": "粗プロトタイプ3×3近傍共起の観測/期待(ブロック構造)と、細プロトタイプが実際の方がシャッフルより隣に同じものが多い散布図",
+     "representative": true
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v3/figures/F4_zonation_fatty.png",
+     "caption": "脂肪変性純プロトタイプの小葉内位置: 回帰(橙)ではCCl4が中心静脈側0.45、cholesterol食が門脈域側0.59に寄る。目印z(青)は差を捉えない",
+     "representative": true
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v1/figures/F1_neighbor_support.png",
+     "caption": "3×3近傍の有効数の分布 [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v1/figures/F3_context_split.png",
+     "caption": "細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v1/figures/F4_zonation_fatty.png",
+     "caption": "脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v1]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v2/figures/F1_neighbor_support.png",
+     "caption": "3×3近傍の有効数の分布 [v2]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v2/figures/F2_cooccurrence.png",
+     "caption": "近傍共起行列と空間的まとまり(実際vsシャッフル) [v2]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v2/figures/F3_context_split.png",
+     "caption": "細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v2]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v2/figures/F4_zonation_fatty.png",
+     "caption": "脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v2]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v3/figures/F1_neighbor_support.png",
+     "caption": "3×3近傍の有効数の分布 [v3]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v3/figures/F2_cooccurrence.png",
+     "caption": "近傍共起行列と空間的まとまり(実際vsシャッフル) [v3]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v3/figures/F3_context_split.png",
+     "caption": "細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v3]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v4/figures/F1_neighbor_support.png",
+     "caption": "3×3近傍の有効数の分布 [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v4/figures/F2_cooccurrence.png",
+     "caption": "近傍共起行列と空間的まとまり(実際vsシャッフル) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v4/figures/F3_context_split.png",
+     "caption": "細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v4/figures/F4_zonation_fatty.png",
+     "caption": "脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v4]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v5/color_check/F8_color_check.png",
+     "caption": "小葉内位置推定とpatch色味(明るさ)の相関確認 [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v5/figures/F1_neighbor_support.png",
+     "caption": "3×3近傍の有効数の分布 [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v5/figures/F2_cooccurrence.png",
+     "caption": "近傍共起行列と空間的まとまり(実際vsシャッフル) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v5/figures/F3_context_split.png",
+     "caption": "細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v5]",
+     "representative": false
+    },
+    {
+     "path": "outputs/0036_20261103_local_prototype_context/v5/figures/F4_zonation_fatty.png",
+     "caption": "脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v5]",
+     "representative": false
+    }
+   ],
+   "chart": null,
+   "notes": "",
+   "filled": true,
+   "n_figures_total": 84
+  }
+ ]
+}

@@ -9,6 +9,7 @@
 	failed_log_clean \
 	clean_failed \
 	preflight \
+	progress_deck \
 	jupyter \
 	review
 
@@ -185,3 +186,11 @@ jupyter:
 
 preflight:
 	@python3 -m scripts.preflight_check
+# =========================================================
+# Progress slides (experiments/*/report.yaml → docs/progress_deck/build)
+#    軽い集計なのでホストの python3 で実行（pyyaml と pillow が必要）。
+#    公開は Claude の progress-deck skill が行う。
+# =========================================================
+
+progress_deck:
+	@python3 tools/progress_deck/progress_deck.py build

@@ -1,0 +1,24 @@
+title: 弱教師・Control正規化の外挿性比較
+status: 完了（v2はcompletion.jsonがrunningのままだがresults.csv・図あり）
+purpose: 学習に使わない所見ラベル(外挿)まで分けられる弱教師あり・バッチ除去手法を比較する。
+method: Bayerラベルの一部(A:壊死・濃い肝細胞・炎症、B:中心静脈・門脈域・核分裂像)を伏せ、unsup/LDA/unsup+LDA/Sphering/Sphering+LDA/TVN/TVN+LDA/GCD/敵対AEを比較。v1は分割ごとモデル(不適切)、v2は単一モデル、v3は脂肪変性で外挿確認、v4はControl追加後に全試験でv2を再実行。
+results:
+- 'v4(229枚・67試験・約324万patch): 伏せたAの純度k100 sphering_lda0.466、sphering0.442、unsup0.417、lda0.219、ae_adv0.144（v4/results.csv, v4/results.json）'
+- 伏せたBの純度k100 sphering_lda0.312が最良、gcd0.147。gcdは既知ラベル純度0.45〜0.48と高いが外挿できない（v4/results.csv）
+- 混ざり具合(別試験近傍) lda0.89・ae_adv0.94と高いが区別を失う、sphering0.51（v4/results.csv）
+- 'v3脂肪変性: cholesterolの純度≥0.9プロトタイプ unsup5・sphering5・lda0（v3/results.csv）'
+figures:
+- path: outputs/0027_20261027_weak_supervision_extrapolation/v4/figures/E1_extrapolation.png
+  caption: 'v4(229枚・67試験): 伏せたラベルの純度(k30/100)・kNN再現率と既知ラベル純度・混ざり具合。sphering_ldaが伏せたラベルで最良、ae_adv/ldaは外挿不可'
+  representative: true
+- path: outputs/0027_20261027_weak_supervision_extrapolation/v1/figures/E1_extrapolation.png
+  caption: '[v1] 伏せたラベルの外挿性(純度・kNN再現率・混ざり具合)'
+  representative: false
+- path: outputs/0027_20261027_weak_supervision_extrapolation/v2/figures/E1_extrapolation.png
+  caption: '[v2] 伏せたラベルの外挿性(純度・kNN再現率・混ざり具合)'
+  representative: false
+- path: outputs/0027_20261027_weak_supervision_extrapolation/v3/figures/E1_extrapolation.png
+  caption: '[v3] 伏せたラベルが無い設定のため空のプロット(実データ点なし)'
+  representative: false
+chart: null
+notes: ''

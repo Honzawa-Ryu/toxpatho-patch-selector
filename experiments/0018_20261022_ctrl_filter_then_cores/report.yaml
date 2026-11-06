@@ -1,0 +1,104 @@
+title: Control近さで選別してからコアを作る2段階方式
+status: 完了
+purpose: 全体クラスタリングを正常patch除去に使い、残したpatchだけでコアを作り直して所見との対応を改善できるか調べる。
+method: '1段目: 0017の60 runでpatchが入ったクラスタのControl割合を平均したスコアで閾値以下を残す(既定はYouden型の差最大)。2段目: 残したpatchでk=10/20/40×20 runのkごとコンセンサス(τ=0.8, Leiden)を作り、通過率と重症度、所見→コアAUC、ピントとの関係を解析。'
+results:
+- 'block6_clean(閾値0.254)の残存率: 全体32.0% / Control 14.6% / 投与所見なし25.0% / 所見あり64.2%、k=20でコア27・最多化合物割合0.22・一致度0.93(README.md, block6_clean/stage2_summary.csv)'
+- 閾値0.07では残存8.3%(Control 0.2%、所見あり30.1%)、コア19・最多化合物割合0.67と1化合物に寄る(README.md)
+- '最大重症度ごとの通過率中央値(閾値0.07): Control 0.00、所見なし0.00、minimal 0.02、slight 0.13、moderate 0.54、severe 0.85(README.md, pass_vs_pathology/P1_pass_rate_by_grade.png)'
+- 組み合わせ版(1段目0.07+2段目centered)はControlをほぼ含まず化合物をまたぐコア23個(最多化合物割合0.35)を得たが一致度は0.72に低下(README.md)
+- 同試験内の陽性/陰性slideを分けるAUCは主要7所見中5所見で1段目通過率が最良コアより高く、コアは『異常の量×化合物』に近い(finding_to_core/, README.md)
+- Control 52759の縦縞はスキャナのストライプ(2,032px)と同間隔だが、patchスコアとピントの順位相関は0.09(block6_clean/focus_maps/patch_vs_focus_summary.csv, README.md)
+figures:
+- path: outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P1_pass_rate_by_grade.png
+  caption: '1段目の通過率をslide群・最大重症度別に3条件で比較: 重症度が上がるほど通過率が上がり、閾値0.07ではControl・所見なしはほぼ0'
+  representative: true
+- path: outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_thr0.07_s2block6_clean_centered.png
+  caption: '組み合わせ版: 所見×コアの同試験内AUCヒートマップ。多くの所見で1段目通過率のAUC(0.77〜0.98)が個々のコアより高い'
+  representative: true
+- path: outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P2_pass_rate_by_finding_topography.png
+  caption: 所見・部位ごとの1段目通過率
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/pass_vs_pathology/P3_pass_rate_by_grade_per_finding.png
+  caption: 所見ごとの重症度別通過率
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_thr0.07.png
+  caption: 'block6_clean_thr0.07: 所見×コアのAUC'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/finding_to_core/F1_auc_within_block6_clean_centered.png
+  caption: 'block6_clean_centered: 所見×コアのAUC'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/52759.png
+  caption: nitrosodiethylamine Control 52759のピント(log10 var(Laplacian))マップ
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/patch_vs_focus_52759.png
+  caption: 52759でpatchスコアとピントの比較(順位相関0.09、縞はぼやけで説明できない)
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/focus_maps/patch_vs_focus_52693.png
+  caption: 比較用slide 52693のpatchスコアとピント
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_score_and_threshold.png
+  caption: 'block6_clean: Control近さスコアの分布と閾値(差最大0.254)'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_kept_fraction_by_group.png
+  caption: 'block6_clean: 群ごとの1段目残存割合'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/S1_tsne.png
+  caption: 'block6_clean: t-SNE上のControl近さスコア'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/T_pca0017.png
+  caption: 'block6_clean: 残したpatchのt-SNE(0017のPCA64)'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/T2_pca0017_by_finding.png
+  caption: 'block6_clean: 残したpatchのt-SNEを所見で色分け'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/F_pca0017_consensus_k20.png
+  caption: 'block6_clean: 2段目k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean/figures/F_pca_refit_consensus_k20.png
+  caption: 'block6_clean: PCA再学習版k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/S1_score_and_threshold.png
+  caption: '組み合わせ版: スコア分布と閾値0.07'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/T_pca0017.png
+  caption: '組み合わせ版: 残したpatchのt-SNE'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/T2_pca0017_by_finding.png
+  caption: '組み合わせ版: t-SNEを所見で色分け'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/F_pca0017_consensus_k20.png
+  caption: '組み合わせ版: k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07_s2block6_clean_centered/figures/F_pca_refit_consensus_k20.png
+  caption: '組み合わせ版: PCA再学習k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_all/figures/S1_score_and_threshold.png
+  caption: 'block6_all: スコア分布と閾値'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_all/figures/F_pca0017_consensus_k20.png
+  caption: 'block6_all: k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07/figures/S1_score_and_threshold.png
+  caption: 'block6_clean_thr0.07: スコア分布と閾値'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.07/figures/F_pca0017_consensus_k20.png
+  caption: 'block6_clean_thr0.07: k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.03/figures/S1_score_and_threshold.png
+  caption: 'block6_clean_thr0.03: スコア分布と閾値'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_thr0.03/figures/F_pca0017_consensus_k20.png
+  caption: 'block6_clean_thr0.03: k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/S1_score_and_threshold.png
+  caption: 'block6_clean_centered: スコア分布と閾値'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/F_pca0017_consensus_k20.png
+  caption: 'block6_clean_centered: k=20コンセンサスのコア×所見・化合物'
+  representative: false
+- path: outputs/0018_20261022_ctrl_filter_then_cores/block6_clean_centered/figures/T2_pca0017_by_finding.png
+  caption: 'block6_clean_centered: 残したpatchのt-SNEを所見で色分け'
+  representative: false
+chart: null
+notes: ''

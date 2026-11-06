@@ -1,0 +1,11 @@
+title: TRIDENTによるWSI埋め込み抽出（UNI2-h）
+status: 完了
+purpose: TG-GATEsラット肝WSIからpatch埋め込みを作り、後続のpatch選択・クラスタリングの土台にする。
+method: TRIDENT v0.3.2（hest segmenter）で組織分割→20倍・256px・重なり0のパッチ座標→UNI2-h（uni_v2）特徴量を一括実行。壊れたconsole scriptはvendoringで回避し、スライドmanifest（化合物・用量・時点）を作成。
+results:
+- 初回run（2026-09-08）で219枚（4/8/15/29日、Control 160・High 59）を完了、合計3,260,413 patch（0002 plan.mdに記載）（trident_job/summary.md, plan.md of 0002）
+- 2026-09-13の再runで590枚（Low/Middle追加）まで拡張し、seg/coords/uni_v2特徴量が590枚すべてcompleted（trident_job/summary.md, trident_all_slides/results.json n_slides=590）
+- features_uni_v2に590ファイル（outputs/0001.../trident_job/20x_256px_0px_overlap/features_uni_v2）
+figures: []
+chart: null
+notes: ''

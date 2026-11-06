@@ -1,0 +1,34 @@
+id: misc_galleries_20261026-1029
+date: '2026-10-26'
+title: 補助ギャラリー・確認ページ群
+status: 完了（補助資料）
+purpose: プロトタイプ・脂肪変性・炎症などを目視確認するためのHTMLページ。
+method: prototype_gallery(_context/_search)、prototype_tree(v2)、fatty_prototypes、old_fat_clusters、bayer_inflammation、bayer_chol_parenchyma、fatty_vs_control、scanner_thumbnails、stain_check（多くはjpg画像）。
+results:
+- 'prototype_tree/T1_tree.png・v2: k=100プロトタイプのデンドログラム（0026 tree_v1/v2由来）'
+- 'bayer_inflammation: A/B表現のslide AUC表 ab_slide_auc.csv'
+- 'fatty_vs_control_20261029: 試験66/67/698の対照vs脂肪変性程度別ランダムpatch'
+figures:
+- path: outputs/prototype_tree_20261027/T1_tree.png
+  caption: プロトタイプ系統樹（tree_v1）（ファイル名より）
+  representative: false
+- path: outputs/prototype_tree_v2_20261028/T1_tree.png
+  caption: プロトタイプ系統樹（tree_v2）（ファイル名より）
+  representative: false
+- path: outputs/prototype_gallery_search_20261026/S1_tradeoff_v2.png
+  caption: 隣接情報探索のトレードオフ図
+  representative: false
+- path: outputs/old_fat_clusters_20261027/img/ccl4run_c52_ccl4.png
+  caption: 旧CCl4ランのクラスタ52（脂肪変性）patch例
+  representative: false
+- path: outputs/old_fat_clusters_20261027/img/ccl4run_c42_cholesterol.png
+  caption: 旧CCl4ランのクラスタ42（cholesterol）patch例
+  representative: false
+- path: outputs/old_fat_clusters_20261027/img/k100_c87_cholesterol.png
+  caption: 旧k100クラスタ87（cholesterol）patch例
+  representative: false
+- path: outputs/stain_check.png
+  caption: Macenko染色正規化の確認画像（2026-09-13、0005関連）
+  representative: false
+chart: null
+notes: ''

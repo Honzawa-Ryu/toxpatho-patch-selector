@@ -1,0 +1,12 @@
+title: 所見名の粒度と形態クラスタのずれ
+status: 完了
+purpose: 所見名（およびTOPOGRAPHY_TYPE）とpatchクラスタの対応のずれが部位で説明できるかを検証する。
+method: k=100クラスタで、化合物ごとにHighと自群Controlの占有率を比べて富化クラスタを取り、Centrilobular Hypertrophyを持つ3化合物（H1）と他部位化合物（H2）の共有を検定。control群を実験でラベル付けしたsilhouetteでバッチ効果も測定。
+results:
+- H2成立：胆管・Ito細胞・Kupffer細胞の化合物ではCentrilobular群の富化クラスタ占有率がすべて0.000（plan.md）
+- H1棄却：phenobarbital・promethazine・thioacetamideの富化クラスタ上位4の共通部分が全ペアで空（plan.md, label_granularity/results.json）
+- 所見の無いcontrol 160枚が実験で分離（silhouette 0.175, z=31.9）、時点では分離せず（z=2.7）、投与群の化合物分離は0.566（plan.md）
+- Macenko正規化後もH1は棄却のまま（共有はcluster 94のみ）、control分離は0.175→0.153（plan.md 追記）
+figures: []
+chart: null
+notes: ''

@@ -1,0 +1,104 @@
+title: tier1コーパス（3,441枚）でのクラスタリング
+status: 完了（2026-09-25に監査・再評価あり）
+purpose: 0006の候補クラスタ選定をtier1コーパス全体に適用し、所見に対応するパッチ集を作る。
+method: k-meansをk=100〜2000で振り、閾値をコーパス規模に合わせて見直し（min_treated_presence=0、min_compounds撤廃、組織割合≥0.85）、保有内率でクラスタを順位付けしてexemplarを出力。
+results:
+- 0006設定のままでは候補0・LOCO 0.500、原因はmin_treated_presence=0.1で、撤廃後LOCO 0.871（plan.md）
+- 候補158個中98.7%が所見と有意に対応、5枚以上ある36所見中35種を捕捉（plan.md）
+- 採用k=2000：候補329、保有内率中央値0.682、保有内率0.8以上かつ20枚以上が100個（plan.md）
+- 脂肪変性はcholesterolとCCl4で別クラスタ（スライド重なりJaccard 0.00、重心距離0.90）（plan.md, fatty_degeneration_clusters.csv）
+- 巣状所見は頭打ち（Single cell necrosis 0.750、Necrosis 0.696）、びまん性所見は最大1.00（plan.md）
+- 2026-09-25監査でmanifestにindividual未対応80枚を発見、除外後LOCOは0.8707→0.8587（EXPERIMENT_NOTES.md）
+figures:
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r004_p1.00_n41_DUP2_cluster_00147_carbon_tetrachloride.png
+  caption: k=2000 cluster 147（CCl4 100%）：大小の脂肪滴空胞が肝細胞に充満、Degeneration, fatty保有内率100%（41/41）
+  representative: true
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_granular_eosinophilic/r001_p1.00_n52_cluster_01412_WY-14643.png
+  caption: k=2000 cluster 1412（WY-14643 96%）：好酸性顆粒状細胞質の肝細胞、granular eosinophilic保有内率100%（52/52）
+  representative: true
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0041.png
+  caption: exemplars_review_k2000/ の cluster 41 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0104.png
+  caption: exemplars_review_k2000/ の cluster 104 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0147.png
+  caption: exemplars_review_k2000/ の cluster 147 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0215.png
+  caption: exemplars_review_k2000/ の cluster 215 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0301.png
+  caption: exemplars_review_k2000/ の cluster 301 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0375.png
+  caption: exemplars_review_k2000/ の cluster 375 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0429.png
+  caption: exemplars_review_k2000/ の cluster 429 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_0943.png
+  caption: exemplars_review_k2000/ の cluster 943 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1026.png
+  caption: exemplars_review_k2000/ の cluster 1026 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1089.png
+  caption: exemplars_review_k2000/ の cluster 1089 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1298.png
+  caption: exemplars_review_k2000/ の cluster 1298 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1412.png
+  caption: exemplars_review_k2000/ の cluster 1412 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1566.png
+  caption: exemplars_review_k2000/ の cluster 1566 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1625.png
+  caption: exemplars_review_k2000/ の cluster 1625 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_review_k2000/cluster_1626.png
+  caption: exemplars_review_k2000/ の cluster 1626 代表パッチ一覧
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r027_p0.96_n54_DUP2_cluster_01625_carbon_tetrachloride.png
+  caption: k=2000 cluster 1625（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位27・保有内率0.96・保有54枚・DUPフラグ
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r043_p0.93_n59_cluster_00943_carbon_tetrachloride.png
+  caption: k=2000 cluster 943（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位43・保有内率0.93・保有59枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r087_p0.85_n66_cluster_00697_carbon_tetrachloride.png
+  caption: k=2000 cluster 697（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位87・保有内率0.85・保有66枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r096_p0.82_n73_cluster_00902_carbon_tetrachloride.png
+  caption: k=2000 cluster 902（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位96・保有内率0.82・保有73枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r106_p0.80_n74_cluster_01479_carbon_tetrachloride.png
+  caption: k=2000 cluster 1479（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位106・保有内率0.80・保有74枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r119_p0.78_n77_cluster_00876_carbon_tetrachloride.png
+  caption: k=2000 cluster 876（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位119・保有内率0.78・保有77枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r130_p0.75_n80_cluster_00052_carbon_tetrachloride.png
+  caption: k=2000 cluster 52（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位130・保有内率0.75・保有80枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Cellular_infiltration/r143_p0.71_n38_cluster_01469_carbon_tetrachloride.png
+  caption: k=2000 cluster 1469（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位143・保有内率0.71・保有38枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r165_p0.67_n90_cluster_00539_carbon_tetrachloride.png
+  caption: k=2000 cluster 539（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位165・保有内率0.67・保有90枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r171_p0.66_n91_cluster_01581_carbon_tetrachloride.png
+  caption: k=2000 cluster 1581（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位171・保有内率0.66・保有91枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Degeneration_fatty/r172_p0.66_n90_cluster_00931_carbon_tetrachloride.png
+  caption: k=2000 cluster 931（carbon_tetrachloride）のパッチ一覧、所見Degeneration_fattyの順位172・保有内率0.66・保有90枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Cellular_infiltration/r267_p0.45_n83_cluster_00346_clofibrate.png
+  caption: k=2000 cluster 346（clofibrate）のパッチ一覧、所見Degeneration_fattyの順位267・保有内率0.45・保有83枚
+  representative: false
+- path: outputs/0009_20260919_tier1_corpus_clustering/exemplars_ranked_k2000/Change_eosinophilic/r297_p0.33_n60_cluster_00012_ethinylestradiol.png
+  caption: k=2000 cluster 12（ethinylestradiol）のパッチ一覧、所見Degeneration_fattyの順位297・保有内率0.33・保有60枚
+  representative: false
+chart: null
+notes: ''

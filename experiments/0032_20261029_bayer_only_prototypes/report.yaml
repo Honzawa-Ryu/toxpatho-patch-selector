@@ -1,0 +1,10 @@
+title: Bayerのみで作るプロトタイプ(C/D/D13)
+status: 完了(図なし、下流実験の入力)
+purpose: 仮説①用に、脂肪変性試験を混ぜずBayer 230枚だけでプロトタイプを作り直す。
+method: Bayer 325万patchからC(LDA13)・D(PCA64)・D13(PCA13)の3表現でコンセンサスk-means(k=100、10回、80万点)と命名・系統樹を作成。出力は0029 v9・0030 v4がproto_rootとして利用(variantはv1のみ)。
+results:
+- '命名されたプロトタイプ数(k=100中): C 実質34・太い血管11・核分裂10・中心静脈10・門脈域8・単細胞壊死8・名前なし5(v1/results.json)'
+- D は核分裂が22個・名前なし12個、D13は核分裂21個で、ラベルなし表現は核分裂名が過剰(v1/results.json)
+figures: []
+chart: null
+notes: ''

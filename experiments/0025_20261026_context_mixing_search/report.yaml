@@ -1,0 +1,33 @@
+title: 隣接patch情報の入れ方の探索
+status: 完了
+purpose: 隣接patchの情報を表現に入れる最良の方法・係数を、リークのない設定選択で探す。
+method: Bayer 230枚の全patch(約325万)で、LDAを試験ごと5分割のout-of-foldで作り、試験をselect/testに分けて設定選択。v1線形・差分・平滑化等63設定、v2境界保存(bilateral)等、v3学習型GCN、v4コンセンサスk-meansとseed安定性、v5 k掃引、v6旧文脈表のリークなし再測定。
+results:
+- 'v1-v3の最良は境界保存伝播(hops2,w1.0,α0.5,σq0.1): test NMI 0.391 vs self0.376、隣接同一率0.38 vs 0.28、小構造純度0.350 vs 0.362（search_v3/search.csv）'
+- 'v4: コンセンサス10回でseed間ARI self_k30 0.46→0.60、bilateral 0.59→0.63（search_v4/search_runs.csv）'
+- 'v5: NMIはk≈20〜40で最大(bilateral k30 0.389、self k30 0.371)、小構造純度はk増で上昇(self k200 0.468)（search_v5/search.csv, K1_k_sweep.png）'
+- 'v6: 旧表のlinear hops4 w2.0は隣接同一率0.51・test NMI0.386、ctx_onlyは0.66/0.350（search_v6/search.csv）'
+figures:
+- path: outputs/0025_20261026_context_mixing_search/search_v2/figures/S1_tradeoff.png
+  caption: 隣接情報の入れ方(bilateral/smooth/sym等)別に、隣接patchの同一プロトタイプ率とNMI・小構造純度のトレードオフ(select組)
+  representative: true
+- path: outputs/0025_20261026_context_mixing_search/search_v5/figures/K1_k_sweep.png
+  caption: 'k=10-200の掃引(5回反復): 均質性・小構造純度はk増で上昇、NMIはk≈20-40で最大、seed間ARIは境界保存伝播で高め'
+  representative: true
+- path: outputs/0025_20261026_context_mixing_search/search_v1/figures/S1_tradeoff.png
+  caption: '[search_v1] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)'
+  representative: false
+- path: outputs/0025_20261026_context_mixing_search/search_v3/figures/S1_tradeoff.png
+  caption: '[search_v3] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)'
+  representative: false
+- path: outputs/0025_20261026_context_mixing_search/search_v4/figures/S1_tradeoff.png
+  caption: '[search_v4] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)'
+  representative: false
+- path: outputs/0025_20261026_context_mixing_search/search_v5/figures/S1_tradeoff.png
+  caption: '[search_v5] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)'
+  representative: false
+- path: outputs/0025_20261026_context_mixing_search/search_v6/figures/S1_tradeoff.png
+  caption: '[search_v6] 隣接情報の入れ方のトレードオフ(まとまり vs NMI/小構造純度)'
+  representative: false
+chart: null
+notes: ''

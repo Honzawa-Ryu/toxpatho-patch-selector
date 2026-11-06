@@ -1,0 +1,30 @@
+id: overview_20261012
+date: '2026-10-12'
+title: データセット概観（tier1評価集合）
+status: 完了
+purpose: 反復投与肝WSIの評価集合の規模・所見分布を把握する。
+method: tier1コーパスのslide manifestと病理所見表を集計し、枚数・用量×時点・所見種・共起を図示（実験ディレクトリ外の補助出力）。
+results:
+- 評価集合3,357枚=44化合物×4時点×4用量群、所見ありは1,287枚(38%)（01_overview.png）
+- ローカル.svs 3,445→individual metadata無し80枚・重複個体4枚を除外（01_overview.png, EXPERIMENT_NOTES.md）
+figures:
+- path: outputs/dataset_overview_20261012/01_overview.png
+  caption: (a)WSI枚数の絞り込み3,445→3,357、(b)時点×用量群ごとの所見ありslide数（Highで大半が所見あり）
+  representative: true
+- path: outputs/dataset_overview_20261012/02_compound_heatmap.png
+  caption: 化合物別の所見ありslideのヒートマップ（ファイル名より）
+  representative: false
+- path: outputs/dataset_overview_20261012/03_findings_per_slide.png
+  caption: slideあたり所見数の分布（ファイル名より）
+  representative: false
+- path: outputs/dataset_overview_20261012/04_finding_types.png
+  caption: 所見種別の件数（ファイル名より）
+  representative: false
+- path: outputs/dataset_overview_20261012/05_cooccurrence.png
+  caption: 所見の共起行列（ファイル名より）
+  representative: false
+- path: outputs/dataset_overview_20261012/06_combinations.png
+  caption: 所見の組合せ頻度（ファイル名より）
+  representative: false
+chart: null
+notes: ''

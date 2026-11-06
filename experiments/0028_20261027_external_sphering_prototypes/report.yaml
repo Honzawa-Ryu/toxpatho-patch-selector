@@ -1,0 +1,14 @@
+title: 外部データへのSphering付きプロトタイプ適用
+status: 完了
+purpose: TG-GATEsで作ったプロトタイプを外部(エーザイ・塩野義)に学習なしで当て、外部の所見記録と対応するかを見る。
+method: 0026のプロトタイプ(sphering_lda・unsup_lda1=tree_v2、combo=v1、k=100)を外部78枚に割り当て、白色化だけ外部各試験の対照群で行い、プロトタイプshare(対照差)と所見程度のSpearmanを置換nullと比較(variantはv1のみ)。
+results:
+- '外部78枚で所見ごとの最良Spearman平均: sphering_lda 0.870、unsup_lda1 0.862、combo 0.822(v1/results.json)'
+- '壊死プロトタイプのshareと壊死程度のSpearman: sphering_lda 0.75(壊死プロトタイプ5個、対照中央値0.0012→壊死0.10)、unsup_lda1 0.77、combo 0.78(v1/results.json)'
+- F0219の炎症・壊死・肥大・グリコーゲン減少はnull p=0.002だが、F0220の単核細胞浸潤は0.54(p=0.67)で取れない(v1/external_findings_with_null.csv)
+figures:
+- path: outputs/0028_20261027_external_sphering_prototypes/v1/figures/X1_external_findings.png
+  caption: 外部(エーザイ・塩野義)の各所見について、TG-GATEsプロトタイプの対照差share×程度の最良Spearmanを3表現で比較(多くが0.75〜0.99、単核細胞浸潤だけ0.5前後)
+  representative: true
+chart: null
+notes: ''

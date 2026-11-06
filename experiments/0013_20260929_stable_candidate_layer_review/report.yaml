@@ -1,0 +1,31 @@
+title: run横断の投票率による候補patchの層分けと目視
+status: 完了(L3層は未実行・不要と判断)
+purpose: 0012の多数runをまたいで安定に候補となるpatchを、投票率で層分けして目視し、選定指標を決める。
+method: 0012の110 runで各patchが同じ所見の候補クラスタに入った割合(投票率、分母110)を計算し、層・0.1刻み区間ごとの所見別画像シートを作成。q値・一貫性との関係も確認。
+results:
+- 選定指標は投票率(分母110)のみとし、閾値は所見ごとに決める方針(閾値は未決)(README.md, EXPERIMENT_NOTES.md)
+- q値と投票率の順位相関はpatch単位-0.42、slide単位-0.23。投票率はクラスタの大きさとも+0.44で相関しq値は選定に使わない(q_vote/q_vote_correlation.csv, README.md)
+- 一貫性(最多所見回数/候補回数)は切り分けが弱く不採用(README.md)
+- 投票率≥0.05のpatchはHypertrophy 61,855、顆粒状好酸性変性50,374、脂肪変性12,358など17所見。顆粒状好酸性変性・脂肪変性は投票率0.9以上に集中、Hypertrophyは広く分布(vote_fraction_by_finding_counts.png)
+- 110 runは手法混在(MiniBatch 48, Lloyd 36, Leiden 15, Ward 6, コンセンサス 5)で同一条件の再現率ではない(README.md)
+figures:
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_counts.png
+  caption: '最多所見別の投票率ヒストグラム(17所見、110 run): 顆粒状好酸性変性・脂肪変性は1.0付近に集中、Hypertrophy・Swellingは中間に広がる'
+  representative: true
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_pooled.png
+  caption: 全patchをまとめた投票率の分布(ファイル名から)
+  representative: false
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_percent.png
+  caption: 最多所見別の投票率分布を割合表示(ファイル名から)
+  representative: false
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_counts.pdf
+  caption: vote_fraction_by_finding_counts.pngのPDF版
+  representative: false
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_pooled.pdf
+  caption: vote_fraction_pooled.pngのPDF版
+  representative: false
+- path: experiments/0013_20260929_stable_candidate_layer_review/vote_fraction_histograms_20261009/vote_fraction_by_finding_percent.pdf
+  caption: vote_fraction_by_finding_percent.pngのPDF版
+  representative: false
+chart: null
+notes: ''

@@ -1,0 +1,30 @@
+id: report_20261027
+date: '2026-10-27'
+title: '経過報告: プロトタイプ改良（実験0024〜0026）'
+status: 完了（報告済み）
+purpose: 評価リークの是正、隣接情報、seed依存性、k選択、Bayerにない所見の結果を報告する。
+method: 0024・0025・0026の出力を転記したHTMLレポート（png5枚、jpg2枚）。
+results:
+- LDA学習と同じラベルで評価していたリークを除くとNMI 0.49→0.37〜0.39（index.html）
+- 境界を保つ伝播でNMI 0.376→0.391、隣接同一率28%→38%（index.html, 0025）
+- コンセンサスk-meansでseed間ARI 0.42〜0.48→0.54〜0.63（index.html）
+- 異常強度を差し引くと特異的に残るのは核分裂増加(ρ0.55)など少数（index.html, 0024）
+- 'ユーザー判断: 弱教師あり方向、純度重視、kはNMI最大付近（k=20〜40）（index.html）'
+figures:
+- path: outputs/report_20261027/img/K1_k_sweep.png
+  caption: 'k=10〜200の掃引: homogeneity・小構造純度はk増で上昇、NMIはk=20〜40で最大、ARIと隣接同一率はk増で低下'
+  representative: true
+- path: outputs/report_20261027/img/U2_best_rho_by_rep.png
+  caption: 所見ごとの程度と最良プロトタイプの順位相関（unsup/weak/combo）
+  representative: false
+- path: outputs/report_20261027/img/SP1_partial_vs_raw.png
+  caption: 異常強度を差し引く前後の1位プロトタイプの相関
+  representative: false
+- path: outputs/report_20261027/img/S1_tradeoff_v2.png
+  caption: 隣接情報の入れ方ごとの隣接同一率とNMI・小構造純度
+  representative: false
+- path: outputs/report_20261027/img/N1_area_hist.png
+  caption: 壊死ポリゴン面積ヒストグラム
+  representative: false
+chart: null
+notes: ''

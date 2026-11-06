@@ -1,0 +1,13 @@
+title: 層別した候補選定条件の比較とパッチ一覧
+status: 完了(探索的。ギャラリーの人手レビューは未実施)
+purpose: 大規模化で旧形態(脂肪変性候補など)が消えたのはクラスタリングか候補選定条件のせいかを切り分ける。
+method: 0009のk=2000割当を固定し、全体MWU(A)・実験時点内比較+化合物内Control希少性(B1)・同+全体Control希少性(B2)の3方式を組織割合フィルタ有無で比較。3方式の和集合489クラスタ×24patchのギャラリーを作成。
+results:
+- 組織割合フィルタありの候補数はA 312 / B1 303 / B2 382、所見保有内率中央値は69.5% / 66.7% / 59.3%(ablation_summary_all_variants.csv, README.md)
+- B1/B2は旧fatty change候補につながる1356/846/703/535の4つを回収(Aは0)(ablation_summary_all_variants.csv)
+- 旧42/53由来patchの保持はAの0.02%/0.16%→B2で96.0%/81.4%に改善、一方旧29/81は95.4%/99.6%→29.5%/57.0%に低下(old_patch_retention_with_tissue.csv, README.md)
+- 489クラスタ×24枚=11,736patchのギャラリーを切り出しエラー0で作成(outputs/.../gallery/index.html, execution_manifest.json)
+- '結論: 従来設定(A)の全面置換はせず、組織割合フィルタは維持(EXPERIMENT_NOTES.md)'
+figures: []
+chart: null
+notes: ''

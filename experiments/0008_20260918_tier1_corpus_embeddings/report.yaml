@@ -1,0 +1,11 @@
+title: tier1コーパス全体の埋め込み抽出
+status: 完了（4枚の特徴量欠損あり）
+purpose: 0001・0007以外のtier1化合物のLiver WSIを埋め込み化し、大規模クラスタリング用コーパスを揃える。
+method: NFSからscratchへ30枚単位でstagingしつつ、0001/0007で抽出済みのスライドを除外して同じTRIDENT設定で4チャンク抽出。
+results:
+- manifestは689/689/689/688枚（計2,755枚）、全4チャンクcompleted（chunk_*/results.json, completion.json）
+- features_uni_v2は688/688/688/687ファイル（計2,751）で4枚欠損（features_uni_v2ディレクトリ、0009 plan.md）
+- 0001+0007と合わせ3,441スライド・44化合物・5,502万patchのtier1コーパスを構成（0009 plan.md）
+figures: []
+chart: null
+notes: ''

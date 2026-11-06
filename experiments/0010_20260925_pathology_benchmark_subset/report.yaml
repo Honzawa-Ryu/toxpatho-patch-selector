@@ -1,0 +1,106 @@
+title: 病理所見評価用subsetとラベル監査
+status: 完了(subsetは暫定。ROI確認・施設対応表は未着手)
+purpose: クラスタリング評価用に交絡を抑えた所見別slide subsetを固定し、既存ラベル・集計の誤りを監査する。
+method: tier1 3,441枚で候補3所見の分布を監査し、同一実験・時点のtriplet(陽性/投与陰性/Control)で顆粒状好酸性変性90枚(v1)とNecrosis@Hepatocyte 54枚(v2)を固定。individual非対応80枚と個体重複4枚を除外した3,357枚で既存k=2000候補選定LOCOを再評価し、拡大前後のクラスタ移動を可視化。
+results:
+- 顆粒状好酸性変性@Hepatocyteでfenofibrate/gemfibrozil/lomustine各10組=90枚(v1)を固定。facility不明・用量・併存所見の交絡が残る暫定subset(README.md)
+- individual metadata非対応80枚(CCl4 exp67:20, acetaminophen exp42:21, exp707:39)をunknown扱いに。評価対象は3,357枚(FOLLOWUP.md, label_audit/sensitivity.csv)
+- 候補選定LOCOのpooled AUROCは旧条件0.8707(329候補)→unknown・個体重複除外0.8587(330候補)(label_audit/sensitivity.csv, FOLLOWUP.md)
+- 同用量ペアは顆粒状好酸性変性で3組しか作れず、代替のNecrosis@Hepatocyte 6化合物×9枚=54枚をv2に固定。陽性18枚中12枚はSP_FLG=True(FOLLOWUP.md, snapshot_v2/)
+- 54枚×6ランダムpatch=324patchの一次目視(Codex)では巣状壊死を確認/否定できず全54件uncertain(assistant_screening_v2.csv, FOLLOWUP.md)
+- k2000品質表のgrade_passed/best_rhoがk1000からの誤結合だったため除去(FOLLOWUP.md, EXPERIMENT_NOTES.md)
+- 旧42/53脂肪変性patchの77.7%はk=2000の4クラスタへ移るが、全コーパスではどれもq<0.05を通らない(scale_visualization_20261009/fatty_candidate_loss.png)
+- k=2000で旧コホートと共通に選定114、追加216、消失114クラスタ(scale_trace/scale_trace_summary.png)
+figures:
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/clustering_before_after.png
+  caption: 同じ319枚由来12,760 patchの共通t-SNE上で、拡大前(319枚k=100)と拡大後(3,441枚k=100/k=2000)のクラスタ割当と選定候補(19/6/330クラスタ、表示patchの約20%)を比較
+  representative: true
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/fatty_candidate_loss.png
+  caption: 旧cholesterol脂肪変性候補(旧42/53)のpatchの77.7%がk=2000の4クラスタ(1356/846/703/535)へ移るが、全コーパスでは4つともq<0.05の候補選定を通らない
+  representative: true
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_trace/scale_trace_summary.png
+  caption: '319枚の同一patch 5,111,952個の追跡: 旧19クラスタの移動先数、k=2000で両方選定114/追加216/消失114、保有内率、slide数と選定クラスタ数の関係'
+  representative: true
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/clustering_before_after.pdf
+  caption: clustering_before_after.pngのPDF版
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/fatty_candidate_loss.pdf
+  caption: fatty_candidate_loss.pngのPDF版
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_trace/scale_trace_summary.pdf
+  caption: scale_trace_summary.pngのPDF版
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/corpus_expansion.png
+  caption: コーパス拡大(319枚→3,441枚)の構成変化(ファイル名から)
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/corpus_expansion.pdf
+  caption: corpus_expansion.pngのPDF版
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/original_cluster_splitting.png
+  caption: 旧クラスタが拡大後のk=2000でどう分割されたか(ファイル名から)
+  representative: false
+- path: experiments/0010_20260925_pathology_benchmark_subset/scale_visualization_20261009/original_cluster_splitting.pdf
+  caption: original_cluster_splitting.pngのPDF版
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R001.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R001(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R002.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R002(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R003.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R003(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R004.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R004(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R005.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R005(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R006.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R006(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R007.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R007(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R008.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R008(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R009.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R009(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R010.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R010(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R011.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R011(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R012.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R012(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R013.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R013(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R014.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R014(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R015.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R015(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R016.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R016(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R017.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R017(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R018.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R018(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R019.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R019(ラベル非表示)
+  representative: false
+- path: outputs/0010_20260925_pathology_benchmark_subset/review_v2/R020.png
+  caption: snapshot_v2(Necrosis@Hepatocyte 54枚)の一次目視用ランダム6patchシート R020(ラベル非表示)
+  representative: false
+chart: null
+notes: ''

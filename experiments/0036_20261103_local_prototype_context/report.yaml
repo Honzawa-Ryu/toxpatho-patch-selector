@@ -1,0 +1,76 @@
+title: 局所プロトタイプ文脈(空間・小葉内位置)
+status: 第1段階完了(v1〜v5)、第2段階は未定
+purpose: patch単体のプロトタイプに周囲の組織情報(空間文脈)を足す価値があるかを第1段階として調べる。
+method: Bayer+脂肪変性3試験の647万patchで0035のA128 split_record(細876/粗100)の3×3・5×5近傍の共起と文脈分割を解析。v1/v2は目印距離z、v3は小葉内位置のリッジ回帰、v4は周囲だけの回帰、v5は周囲から脂肪系プロトタイプを除外、加えて色味チェック。
+results:
+- '同じプロトタイプが隣にいる割合: 実際0.108 vs シャッフル0.009(約12倍)(v1, README.md)'
+- 文脈分割のR²中央値 実際0.132 vs シャッフル0.090と差は小さく、分かれるのは組織の縁の種類(v1/v2, README.md)
+- 目印距離zは機能せず(中心静脈/門脈域AUC 0.61)(v2, README.md)
+- 回帰(R² 0.22、順位相関0.43)で純プロトタイプがCCl4 0.452 vs その他0.512、chol 0.587 vs 0.501と記録部位の向きにずれる(v3/zonation_fatty.csv)
+- 'v5(周囲から脂肪系除外): slide内差 CCl4 −0.031(91%が記録どおり)、chol +0.081(71%)。色味除去後も CCl4 −0.023、chol +0.048と残る(README.md, v5/color_check/)'
+figures:
+- path: outputs/0036_20261103_local_prototype_context/v1/figures/F2_cooccurrence.png
+  caption: 粗プロトタイプ3×3近傍共起の観測/期待(ブロック構造)と、細プロトタイプが実際の方がシャッフルより隣に同じものが多い散布図
+  representative: true
+- path: outputs/0036_20261103_local_prototype_context/v3/figures/F4_zonation_fatty.png
+  caption: '脂肪変性純プロトタイプの小葉内位置: 回帰(橙)ではCCl4が中心静脈側0.45、cholesterol食が門脈域側0.59に寄る。目印z(青)は差を捉えない'
+  representative: true
+- path: outputs/0036_20261103_local_prototype_context/v1/figures/F1_neighbor_support.png
+  caption: 3×3近傍の有効数の分布 [v1]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v1/figures/F3_context_split.png
+  caption: 細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v1]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v1/figures/F4_zonation_fatty.png
+  caption: 脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v1]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v2/figures/F1_neighbor_support.png
+  caption: 3×3近傍の有効数の分布 [v2]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v2/figures/F2_cooccurrence.png
+  caption: 近傍共起行列と空間的まとまり(実際vsシャッフル) [v2]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v2/figures/F3_context_split.png
+  caption: 細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v2]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v2/figures/F4_zonation_fatty.png
+  caption: 脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v2]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v3/figures/F1_neighbor_support.png
+  caption: 3×3近傍の有効数の分布 [v3]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v3/figures/F2_cooccurrence.png
+  caption: 近傍共起行列と空間的まとまり(実際vsシャッフル) [v3]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v3/figures/F3_context_split.png
+  caption: 細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v3]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v4/figures/F1_neighbor_support.png
+  caption: 3×3近傍の有効数の分布 [v4]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v4/figures/F2_cooccurrence.png
+  caption: 近傍共起行列と空間的まとまり(実際vsシャッフル) [v4]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v4/figures/F3_context_split.png
+  caption: 細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v4]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v4/figures/F4_zonation_fatty.png
+  caption: 脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v4]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v5/color_check/F8_color_check.png
+  caption: 小葉内位置推定とpatch色味(明るさ)の相関確認 [v5]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v5/figures/F1_neighbor_support.png
+  caption: 3×3近傍の有効数の分布 [v5]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v5/figures/F2_cooccurrence.png
+  caption: 近傍共起行列と空間的まとまり(実際vsシャッフル) [v5]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v5/figures/F3_context_split.png
+  caption: 細プロトタイプ内の文脈による分割R²(実際vsシャッフル) [v5]
+  representative: false
+- path: outputs/0036_20261103_local_prototype_context/v5/figures/F4_zonation_fatty.png
+  caption: 脂肪変性純プロトタイプの小葉内位置(目印z/回帰/シャッフル) [v5]
+  representative: false
+chart: null
+notes: ''

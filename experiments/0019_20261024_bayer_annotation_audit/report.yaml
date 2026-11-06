@@ -1,0 +1,21 @@
+title: Bayer病変アノテーションの監査
+status: 完了
+purpose: Bayer AG/Aignosticsによる TG-GATEsラット肝230枚の病変アノテーションの中身・座標・信用性を確認する。
+method: ポリゴンを集計し、手元svsのある132枚で重ね描き・ラベル別ギャラリーを作成、TG-GATEs所見記録と突き合わせた(単一variant default)。
+results:
+- 230枚・57化合物・ポリゴン18,171個、うち手元svs 132枚、block6_cleanと重なるのは42枚（README.md）
+- ポリゴン面積の組織上割合は中央値97%で座標は一致、実質ラベルの組織被覆は中央値0.2%（最大6%）で網羅的でない（README.md, C3_coverage_and_alignment.png）
+- '記録あり/なしslideで描かれた割合: 壊死97%/34%、核分裂増加→核分裂像100%/56%、単細胞壊死95%/70%、細胞浸潤78%/51%、胆管増生24%/0.5%（README.md, annotation_vs_record.csv）'
+- アノテーションの9割（15,660件）はpathologist-0の1人（README.md）
+figures:
+- path: outputs/0019_20261024_bayer_annotation_audit/default/figures/C2_annotation_vs_record.png
+  caption: TG-GATEs記録の重症度別にBayerアノテーション量(壊死面積・単細胞壊死・核分裂・浸潤等)を箱ひげで比較。核分裂・単細胞壊死は重症度とともに増加
+  representative: true
+- path: outputs/0019_20261024_bayer_annotation_audit/default/figures/C3_coverage_and_alignment.png
+  caption: '132枚の被覆と座標確認: 実質ポリゴンの組織被覆は中央値≈0、ポリゴン面積の組織上割合は中央値0.97(病変は1.00)'
+  representative: true
+- path: outputs/0019_20261024_bayer_annotation_audit/default/figures/C1_labels_and_authors.png
+  caption: ラベル種類と作成者(pathologist)別のアノテーション内訳
+  representative: false
+chart: null
+notes: ''

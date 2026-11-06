@@ -1,0 +1,47 @@
+title: プロトタイプとBayer外所見の対応
+status: 完了
+purpose: 0021のプロトタイプが、Bayerラベルにない所見(肥大・空胞化・好酸性変化・脂肪変性など)の程度に応じて増えるかを試験内Control差で調べる。
+method: 0021 v3_mapsのunsup/weak/combo(k=30)を全patchに割当て、同試験Control比の占有率差と所見gradeのSpearmanを所見×プロトタイプで算出し、全病変量を除いた偏相関(specificity)も見た。v1はblock6/block3、v2で脂肪変性試験(CCl4単回・反復、cholesterol)を追加。
+results:
+- 'v2: 3,324枚・約4,377万patch・22所見を評価（v2/results.json）'
+- 所見ごとの最良Spearman中央値 unsup0.42/weak0.47/combo0.51、最高は顆粒状好酸性変性unsup0.87、脂肪変性combo0.66（v2/summary_best.csv）
+- 全病変量を除くと多くの所見で相関が大きく下がり、unsupのp23/p1などは多所見に反応する汎用プロトタイプ。偏相関で残る最上位は顆粒状好酸性変性0.82、核分裂増加weak0.56、脂肪変性combo0.49（v2/specificity/best_partial.csv）
+figures:
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U2_best_rho_by_rep.png
+  caption: 22所見ごとに、試験内Control差のプロトタイプ占有率と重症度の最良Spearman(unsup/weak/combo)。顆粒状好酸性変性0.82-0.87が最高
+  representative: true
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/specificity/SP1_partial_vs_raw.png
+  caption: 全体の病変量を除いた偏相関で所見特異的プロトタイプが残るか。多くの所見で大きく低下し、汎用プロトタイプ(unsup p23/p1等)が判明
+  representative: true
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U1_assoc_heatmaps.png
+  caption: '[v1] 所見×プロトタイプの重症度相関ヒートマップ'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U2_best_rho_by_rep.png
+  caption: '[v1] 所見ごとの最良Spearman(表現別)'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_combo.png
+  caption: '[v1] comboの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_unsup.png
+  caption: '[v1] unsupの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/figures/U3_top_pairs_weak.png
+  caption: '[v1] weakの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v1/specificity/SP1_partial_vs_raw.png
+  caption: '[v1] 病変量を除いた偏相関と生の相関の比較'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U1_assoc_heatmaps.png
+  caption: '[v2] 所見×プロトタイプの重症度相関ヒートマップ'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_combo.png
+  caption: '[v2] comboの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_unsup.png
+  caption: '[v2] unsupの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+- path: outputs/0024_20261026_prototypes_vs_unlabeled_findings/v2/figures/U3_top_pairs_weak.png
+  caption: '[v2] weakの重症度相関上位(所見,プロトタイプ)組'
+  representative: false
+chart: null
+notes: ''

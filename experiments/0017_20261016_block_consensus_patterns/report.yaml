@@ -1,0 +1,104 @@
+title: 塊内のk-meansコンセンサスによるpatch pattern(コア)抽出
+status: 完了
+purpose: 0015で背景が近いと判定した試験の塊内で、k-means複数runの共所属から安定なpatchのまとまり(コア)が取れるかを判断する。
+method: 0016のMacenko全patch特徴量をL2正規化+PCA64し、k=50/100/200×抽出seed5×初期化seed4=60 runのk-meansの共所属率をkNNグラフに付けてτ=0.8・Leidenでコア抽出。pilot・block3から最大の塊44試験(block6_all)、QC済みA_clean(block6_clean)、slide平均を引いた版(centered)へ拡張。
+results:
+- 'kを混ぜたコンセンサス(Leiden, τ=0.8): pilot 81コア・覆う割合62%・Control<5%コア25、block3 76コア・60%・15(README.md)'
+- 'kごとのコンセンサスでpilotはk50: 49コア/92%/一致度0.87、k100: 80/82%/0.79、k200: 132/64%/0.72。kを混ぜたことが不安定さの主因で、以後kごとに取る方針(README.md, pilot/per_k/per_k_overview_tau0.8.png)'
+- Control<5%のコアは所見と対応するが多くは1〜3化合物に偏る(PPARα作動薬の顆粒状好酸性変性など)(README.md)
+- 'k=200のコア/Control<5%/全粒度入れ子かつControl<5%: block6_all 140/20/9、block6_clean 133/27/10、block6_clean_centered 122/5/1(README.md)'
+- slide平均を引くとコア内最多化合物の割合中央値が0.2前後→0.12〜0.16で化合物をまたぐが、Controlとの分離は弱まる(README.md, DISCUSSION_20261024)
+- block6_cleanでもnitrosodiethylamineのControlなどに縦の帯が残る(README.md)
+figures:
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/A_tsne_overview_leiden_tau0.8.png
+  caption: 'block6_clean(39試験・105,410 patch)のt-SNE: 80コア・未割当40%、所見ありslideのpatchは左側に集まり、他は実験ごとに混在'
+  representative: true
+- path: outputs/0017_20261016_block_consensus_patterns/pilot/per_k/per_k_overview_tau0.8.png
+  caption: 'pilot: kごとのコンセンサス(k50:49コア, k100:80, k200:132)のControl割合×最多実験割合×一致度と、k間の入れ子度ヒストグラム'
+  representative: true
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/A2_tsne_by_finding.png
+  caption: 'block6_clean: 所見別のt-SNE'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/B_tsne_by_experiment_leiden_tau0.8.png
+  caption: 'block6_clean: 実験ごとのt-SNE'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/C_core_map_leiden_tau0.8.png
+  caption: 'block6_clean: コアマップ(Leiden τ=0.8)'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/C2_core_map_per_k.png
+  caption: 'block6_clean: kごとのコアマップ'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D_tsne_per_k_cores.png
+  caption: 'block6_clean: kごとのコアのt-SNE'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D2_tsne_nested_and_low_control.png
+  caption: 'block6_clean: 全粒度入れ子かつControl<5%のコア'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/D3_tsne_low_control_cores_each.png
+  caption: 'block6_clean: Control<5%コアを個別表示'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/E_low_control_core_composition.png
+  caption: 'block6_clean: Control<5%コアの化合物・所見構成'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O1_findings.png
+  caption: 'block6_clean: 所見の内訳'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O2_experiments.png
+  caption: 'block6_clean: 試験の内訳'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O3_finding_by_experiment.png
+  caption: 'block6_clean: 試験×所見'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_clean/O4_findings_dose_time.png
+  caption: 'block6_clean: 所見×用量×時点'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/A_tsne_overview_leiden_tau0.8.png
+  caption: 'block6_all(44試験): t-SNE概観(コア・用量・所見・時点・scanner・実験)'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/C2_core_map_per_k.png
+  caption: 'block6_all(44試験): kごとのコアマップ'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/D2_tsne_nested_and_low_control.png
+  caption: 'block6_all(44試験): 全粒度入れ子かつControl<5%のコア'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/E_low_control_core_composition.png
+  caption: 'block6_all(44試験): Control<5%コアの化合物・所見構成'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261022_block6_all/O1_findings.png
+  caption: 'block6_all(44試験): 所見の内訳'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/A_tsne_overview_leiden_tau0.8.png
+  caption: 'block6_clean_centered(slide平均を引いた版): t-SNE概観(コア・用量・所見・時点・scanner・実験)'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/C2_core_map_per_k.png
+  caption: 'block6_clean_centered(slide平均を引いた版): kごとのコアマップ'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/D_tsne_per_k_cores.png
+  caption: 'block6_clean_centered(slide平均を引いた版): kごとのコアのt-SNE'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/E_low_control_core_composition.png
+  caption: 'block6_clean_centered(slide平均を引いた版): Control<5%コアの化合物・所見構成'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261023_block6_clean_centered/O1_findings.png
+  caption: 'block6_clean_centered(slide平均を引いた版): 所見の内訳'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261017/A_tsne_overview_leiden_tau0.8.png
+  caption: 'pilot(13試験): t-SNE概観(コア・用量・所見・時点・scanner・実験)'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261017/B_tsne_by_experiment_leiden_tau0.8.png
+  caption: 'pilot(13試験): 実験ごとのt-SNE'
+  representative: false
+- path: experiments/0017_20261016_block_consensus_patterns/visualization_20261017/C_core_map_leiden_tau0.8.png
+  caption: 'pilot(13試験): コアマップ(Leiden τ=0.8)'
+  representative: false
+- path: outputs/0017_20261016_block_consensus_patterns/block3/per_k/per_k_overview_tau0.8.png
+  caption: 'block3: kごとのコンセンサス概要'
+  representative: false
+- path: outputs/0017_20261016_block_consensus_patterns/pilot/diagnostics/diagnostics_tsne.png
+  caption: 'pilot: patch安定度(近傍との平均共所属率)のt-SNE診断'
+  representative: false
+- path: outputs/0017_20261016_block_consensus_patterns/pilot/diagnostics/diagnostics_distributions.png
+  caption: 'pilot: patch安定度・共所属率の分布診断'
+  representative: false
+chart: null
+notes: ''

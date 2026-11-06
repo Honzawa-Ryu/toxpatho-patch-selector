@@ -1,0 +1,104 @@
+title: Controlに現れないクラスタの探索
+status: 完了
+purpose: patch埋め込みをクラスタリングし、Controlにほぼ出ないクラスタで所見特有の形態を取り出せるか検証する。
+method: PCA後にMiniBatchKMeans（k=100/500/2000）でクラスタ化し、control占有率の低いクラスタをアーティファクト除去のうえ候補とし、Fisher検定で所見と対応付け、化合物を伏せるLOCO AUROCで評価。後にCCl4追加・Macenko版・min_treated_presence撤廃の変種を実行。
+results:
+- '219枚: k=100で候補8、in-sample AUROC 0.903に対しLOCO 0.635、k=500でLOCO 0.664、k=2000でLOCO 0.474（plan.md, cluster_mining/results.json）'
+- k=100の化合物別LOCOでphenobarbital 1.00（0002では最下位）、ethambutol 0.94、cholesterol 0.512（plan.md）
+- k=100 cluster 45が`Degeneration, granular, eosinophilic`とOR=594、q=4.9e-16で対応（plan.md）
+- CCl4追加（319枚・512万patch）で`Degeneration, fatty`はcholesterolとCCl4で別クラスタに分離（交差ゼロ）、CCl4側は複合centrilobular障害シグネチャと解釈（plan.md）
+- min_treated_presence撤廃でk=100の候補10→19、LOCO 0.560→0.836（k=2000は0.443→0.412に悪化）（plan.md, cluster_mining_ccl4_no_presence_filter）
+- CCl4のクラスタ被覆率は用量に単調増加（Control 0.5%→Low 35%→Middle 61%→High 80%）（plan.md）
+figures:
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00045.png
+  caption: k=100 cluster 45の代表パッチ：好酸性顆粒状の肝細胞が並び、一部に組織辺縁や血管周囲パッチが混じる
+  representative: true
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00225.png
+  caption: k=500 cluster 225の代表パッチ：類洞内の赤血球充満（うっ血・出血）像で、組織辺縁の白背景入りパッチも多い
+  representative: true
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26594_cluster_map_allclusters.png
+  caption: CCl4スライド26594の全クラスタ割当マップ：組織内で特定クラスタが帯状・斑状に集まる
+  representative: true
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00012.png
+  caption: cluster_mining/exemplars_k100 の cluster 12 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00016.png
+  caption: cluster_mining/exemplars_k100 の cluster 16 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00020.png
+  caption: cluster_mining/exemplars_k100 の cluster 20 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00042.png
+  caption: cluster_mining/exemplars_k100 の cluster 42 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00043.png
+  caption: cluster_mining/exemplars_k100 の cluster 43 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00063.png
+  caption: cluster_mining/exemplars_k100 の cluster 63 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars_k100/cluster_00087.png
+  caption: cluster_mining/exemplars_k100 の cluster 87 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26461_cluster_map.png
+  caption: CCl4コーパスでのスライド26461上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26594_cluster_map.png
+  caption: CCl4コーパスでのスライド26594上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/26647_cluster_map.png
+  caption: CCl4コーパスでのスライド26647上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/29514_cluster_map.png
+  caption: CCl4コーパスでのスライド29514上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/29647_cluster_map.png
+  caption: CCl4コーパスでのスライド29647上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/66179_cluster_map.png
+  caption: CCl4コーパスでのスライド66179上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/spatial_maps/66207_cluster_map.png
+  caption: CCl4コーパスでのスライド66207上の候補クラスタの空間マップ
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00000.png
+  caption: cluster_mining_ccl4/exemplars の cluster 0 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00004.png
+  caption: cluster_mining_ccl4/exemplars の cluster 4 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00005.png
+  caption: cluster_mining_ccl4/exemplars の cluster 5 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00014.png
+  caption: cluster_mining_ccl4/exemplars の cluster 14 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00025.png
+  caption: cluster_mining_ccl4/exemplars の cluster 25 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00052.png
+  caption: cluster_mining_ccl4/exemplars の cluster 52 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00055.png
+  caption: cluster_mining_ccl4/exemplars の cluster 55 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00062.png
+  caption: cluster_mining_ccl4/exemplars の cluster 62 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00067.png
+  caption: cluster_mining_ccl4/exemplars の cluster 67 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining_ccl4/exemplars/cluster_00077.png
+  caption: cluster_mining_ccl4/exemplars の cluster 77 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00063.png
+  caption: cluster_mining/exemplars の cluster 63 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00156.png
+  caption: cluster_mining/exemplars の cluster 156 代表パッチ一覧
+  representative: false
+- path: outputs/0003_20260912_control_absent_cluster_mining/cluster_mining/exemplars/cluster_00255.png
+  caption: cluster_mining/exemplars の cluster 255 代表パッチ一覧
+  representative: false
+chart: null
+notes: ''

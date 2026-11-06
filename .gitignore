@@ -234,3 +234,6 @@ experiments/latest
 # agentrun capsule
 .agent-runs/
 .agentrun.lock
+
+# progress_deck の生成物（state.json と inventory.json は管理する）
+docs/progress_deck/build/

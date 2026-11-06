@@ -1,0 +1,15 @@
+title: ラベルあり/なし所見のトレードオフ比較
+status: 完了
+purpose: 仮説②に使う表現を1つ決めるため、ラベルあり所見とラベルなし所見の両立を7表現で比べる。
+method: D・D13・C・B・A・E(D13‖LDA)・F(combo)の7表現で、(a)held-out patch F1、(b)未学習slideのラベルなし5所見読み出しAUC、(b')名前付きAUC、(c)脂肪変性純度≥0.9のプロトタイプ数を1表に並べた(v1)。
+results:
+- '(a) held-out macro F1: C 0.440が最良、F 0.423、E 0.399、A 0.378、B 0.313、D 0.265、D13 0.220(v1/summary.csv)'
+- '(b) ラベルなし読み出しAUC: B 0.728、A 0.724、E 0.707、C 0.681。区間幅は±0.1で差は有意でない(v1/summary.csv, README.md)'
+- '(c) 脂肪変性純プロトタイプ数 CCl4/chol: A 6/4、E 7/1、B 5/3、C 1/0(v1/summary.csv)'
+- '結論: A(Sphering‖LDA)が両立の点で最良(名前付きAUC 0.829 vs C 0.826)(README.md)'
+figures:
+- path: outputs/0033_20261101_labeled_unlabeled_tradeoff/v1/F1_tradeoff.png
+  caption: '7表現のトレードオフ: held-out F1×ラベルなし読み出しAUCの散布図、脂肪変性純度≥0.9のプロトタイプ数、名前付きAUC'
+  representative: true
+chart: null
+notes: ''

@@ -1,0 +1,15 @@
+title: クラスタリング手法比較（k-means/Leiden/DBSCAN）
+status: 完了
+purpose: k-means以外のクラスタリング（kNNグラフ+Leiden、DBSCAN）で所見形態がより良く取れるかを比べる。
+method: Macenko正規化済み219枚・326万patchをPCA64次元にし、同じ20万patch部分集合でクラスタを決めkNN多数決で全体へ伝播、解析部（lib/cluster_analysis.py）を共通にしてLOCO AUROCで比較。粒度合わせ版と空間隣接Leiden版も実行。
+results:
+- k-means k=100がLOCO 0.747・候補7で最良、Leiden r=0.5〜2.0は0.681〜0.653、DBSCANは0.510〜0.539でノイズ率24〜66%（plan.md, method_comparison/results.json）
+- 粒度合わせ版でもk-means（k=20/29/43/100でLOCO 0.808/0.832/0.703/0.747）がLeiden（r=5/10/20、90/156/275クラスタでLOCO 0.666/0.596/0.592）を上回った（method_comparison_matched/results.json）
+- 空間隣接付きLeidenはクラスタ28→14に粗くなり候補0、LOCO 0.510（0003 plan.md, spatial_leiden_ccl4）
+- 解釈：patch埋め込み空間は離散的な塊でなく連続体（plan.md）
+figures:
+- path: outputs/0006_20260915_clustering_method_comparison/method_comparison/embedding_scatter_2d.png
+  caption: 共通t-SNE上のk-means k100（98）・Leiden r1.0（24）・DBSCAN q0.5（16、灰色ノイズ多数）のクラスタ色分け比較
+  representative: true
+chart: null
+notes: ''

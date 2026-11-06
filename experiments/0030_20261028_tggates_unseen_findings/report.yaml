@@ -1,0 +1,45 @@
+title: 未学習TG-GATEs slideでの所見分類
+status: 完了(v1・v3・v4。v2はディレクトリなし)
+purpose: Bayerラベルで学んだ表現A〜Dを学習に使っていないTG-GATEs slideに当て、所見を判別できるかとプロトタイプの対応を見る。
+method: 未学習3,319枚(43試験、各2,048 patch)に割り当て、10所見について化合物held-outの読み出しAUCとBayer名付きプロトタイプのAUCを計算。v1(A〜D)、v3(命名を21枚除外版に、地図・タイル・bootstrap)、v4(0032のBayerのみ重心でD/D13/C、バッチ混合解析を追加)。
+results:
+- 'v3 平均読み出しAUC: A 0.734、B 0.741、C 0.747、D 0.648。名前付きAUC: A 0.820、B 0.769、C 0.786、D 0.561(v3/results.json)'
+- 'v3 所見別読み出し: 顆粒状好酸性変性 A 0.99/B 0.99、肥大 0.76〜0.79、好酸性変化 0.45〜0.53で取れない、壊死はC 0.86だがB 0.54(v3/finding_classification.csv)'
+- 'v4 名前付きAUC平均: C 0.829、D 0.639、D13 0.606。核分裂増加の読み出し C 0.97 vs D 0.61(v4/results.json, v4/finding_classification.csv)'
+- 'v4 対照群857枚のkNN他試験割合(期待0.98): raw 0.73、D 0.84、D13 0.90、C 0.95。他スキャナ割合(期待0.49): 0.24/0.28/0.38/0.45(v4/batch_mixing/summary_controls.csv)'
+figures:
+- path: outputs/0030_20261028_tggates_unseen_findings/v3/F1_finding_auc.png
+  caption: '未学習TG-GATEs 3,319枚での10所見の判別AUC(左: 化合物held-out読み出し、右: Bayer名付きプロトタイプのみ)をA〜Dで比較。好酸性変化はどれも0.5前後'
+  representative: true
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F1_batch_mixing_controls.png
+  caption: 対照群857枚で試験・スキャナの混ざり具合(kNN他試験割合 raw 0.73→D 0.84→D13 0.90→C 0.95)とJS距離・プロトタイプ偏り
+  representative: true
+- path: outputs/0030_20261028_tggates_unseen_findings/v1/F1_finding_auc.png
+  caption: 所見別の判別AUC(読み出し/名前付き) [v1]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v1/severity/S2_severity_tggates.png
+  caption: 未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v1]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v3/severity/S2_severity_tggates.png
+  caption: 未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v3]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/F1_finding_auc.png
+  caption: 所見別の判別AUC(読み出し/名前付き) [v4]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F2_tsne_controls.png
+  caption: 対照群のt-SNE(表現別) [v4]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F3_tsne_scanner.png
+  caption: スキャナで色分けしたt-SNE [v4]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F4_tsne_experiments.png
+  caption: 試験で色分けしたt-SNE [v4]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/F5_mixing_by_experiment.png
+  caption: 試験ごとの自試験近傍割合(観測/期待) [v4]
+  representative: false
+- path: outputs/0030_20261028_tggates_unseen_findings/v4/severity/S2_severity_tggates.png
+  caption: 未学習TG-GATEsでの名前付きプロトタイプ割合と程度の相関 [v4]
+  representative: false
+chart: null
+notes: ''

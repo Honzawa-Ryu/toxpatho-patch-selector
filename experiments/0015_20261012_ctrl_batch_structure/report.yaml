@@ -1,0 +1,59 @@
+title: 無所見Ctrlの試験間差(バッチ構造)の評価
+status: 完了
+purpose: 全試験の無所見Ctrlを共通クラスタリングし、正常背景が試験間で共有されるか、試験・scanner固有のクラスタがあるかを測る。
+method: '無所見Ctrl(main: 830枚・44実験、正規化なし0009埋め込み)を1枚512patchでk=50/100のk-means 40 run、slide占有率のJS距離を同試験同時点/同試験別時点/別試験の4段階で比較し並べ替え検定。正規化有無(s219_raw/macenko 157枚)と全反復投与Ctrl Macenko版(allctrl_macenko 2,659枚・143実験)も実施し、実験の塊を判定。'
+results:
+- 'main k=100の占有率JS距離: 同試験同時点0.37 / 同試験別時点0.44 / 別試験同時点0.92、全40 runでp=0.001(main/level_summary.csv)'
+- 外れ度は全44試験で0.96〜1.06に収まり、少数の外れ試験でなく全試験が互いに離れている(main/exp_outlier.csv, DISCUSSION_20261012)
+- '157枚で正規化の有無を比較: 試験差−個体差は平均埋め込みで0.63→0.42、占有率k=100で0.43→0.39。正規化でも試験差は支配的(s219_raw・s219_macenko/level_summary.csv)'
+- scanner混在8群・39枚で別scanner間はやや遠い程度(0.42対0.37、p=0.02〜0.20)(DISCUSSION_20261012)
+- 'allctrl_macenko(2,659枚・143実験)k=100: 同試験同時点0.44 / 別試験0.87、試験差−個体差0.43(allctrl_macenko/level_summary.csv)'
+- 143実験をcut 0.72で6塊(最大44実験)、cut 0.7で7塊に分割。後続0016/0017の対象に(exp_blocks_preview_allctrl_macenko_20261016_cut0.72/exp_blocks.csv)
+figures:
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.72/exp_blocks_preview.png
+  caption: 反復投与の無所見Ctrl 2,659枚・143実験(Macenko)の実験間JS距離の階層クラスタリングとcut 0.72での塊(6塊)の共所属率、scanner帯付き
+  representative: true
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/1b_tsne_by_experiment_main.png
+  caption: '正規化なし830枚・44実験: 実験ごとのCtrl patchをt-SNE上で表示。各実験が別々の領域に固まる(外れ度0.96〜1.06)'
+  representative: true
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/4_blocks_main.png
+  caption: main(830枚)の実験の塊を色分けしたクラスタリング図(ファイル名・コミットから)
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/1a_tsne_cluster_time_scanner.png
+  caption: 'main: t-SNEをクラスタ・時点・scannerで色分け(ファイル名から)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/2_occupancy_heatmap.png
+  caption: 'main: slide×クラスタ占有率のヒートマップ(ファイル名から)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261014/3_slide_mds.png
+  caption: 'main: slide占有率距離のMDS(ファイル名から)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/1a_tsne_cluster_time_scanner.png
+  caption: 's219_raw/macenko: t-SNEをクラスタ・時点・scannerで色分け(正規化有無の並置)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/1b_tsne_by_experiment.png
+  caption: 's219_raw/macenko: 実験ごとのCtrl patch分布(正規化有無の並置)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/2_occupancy_heatmap.png
+  caption: 's219_raw/macenko: 占有率ヒートマップ(正規化有無の並置)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/clustering_visualization_20261013/3_slide_mds.png
+  caption: 's219_raw/macenko: slide間距離のMDS(正規化有無の並置)'
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_main_20261013/exp_blocks_preview.png
+  caption: main(830枚・44実験)の実験の塊プレビュー
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261015/exp_blocks_preview.png
+  caption: allctrl_macenko(2,659枚)の実験の塊プレビュー初版
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.7/exp_blocks_preview.png
+  caption: allctrl_macenkoのcut 0.7での塊プレビュー(7塊)
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.7/slide_occupancy_by_block.png
+  caption: cut 0.7の塊ごとのslide占有率
+  representative: false
+- path: experiments/0015_20261012_ctrl_batch_structure/exp_blocks_preview_allctrl_macenko_20261016_cut0.72/slide_occupancy_by_block.png
+  caption: cut 0.72の塊ごとのslide占有率
+  representative: false
+chart: null
+notes: ''

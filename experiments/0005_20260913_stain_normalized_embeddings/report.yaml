@@ -1,0 +1,13 @@
+title: Macenko染色正規化した埋め込みの再抽出
+status: 完了
+purpose: 染色バッチ差を減らした埋め込みで0003/0004の結論が変わるかを確かめる。
+method: 0001の座標を再利用し、controlから推定した参照濃度でMacenko正規化したパッチをUNI2-hで再埋め込みし、0003/0004をmacenko版として再実行。
+results:
+- 正規化前の染色濃度は実験間で1.5〜1.9倍の差（max_c_h 1.425〜2.775、max_c_e 1.208〜1.828）（plan.md, stain_fits.parquet）
+- 正規化あり/なし埋め込みのcos類似度0.958、正規化オフ時は0001と1.0000で抽出経路一致（EXPERIMENT_NOTES.md）
+- LOCO AUROCはk=100で0.635→0.741、k=500で0.664→0.750に改善（plan.md）
+- バッチ上限（control 160枚の実験分離）は0.175→0.153でほぼ不変、処置信号は0.099→0.106で保存（plan.md）
+- 化合物別LOCOでthioacetamide 0.54→1.00に改善、vitamin Aは0.88→0.51に低下（plan.md）
+figures: []
+chart: null
+notes: ''

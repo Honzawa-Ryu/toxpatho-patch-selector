@@ -1,0 +1,48 @@
+title: patchプロトタイプ試作と隣接・小葉情報
+status: 完了
+purpose: slide内順位・Bayerラベル由来LDAを使ったk-meansプロトタイプが試験をまたいで所見・構造を分けるか試作する。
+method: unsup(順位→PCA64)/weak(順位→LDA)/combo(LDA+残差PCA16)でk=30のk-meansを作成(v1:61枚, v2_132:132枚)。全patch地図(v3_maps)、8近傍伝播による隣接情報(context_v1, context_build_v*, explore_v*)、小葉位置のリッジ回帰(lobular_probe_v1-3)も試した。
+results:
+- 'v1(約16万patch): NMI unsup0.28/weak0.48、クラスタあたり試験数中央値41.5/42（README.md）'
+- 'v2_132(約23万patch・66試験): NMI unsup0.37/weak0.51/combo0.49、comboで核分裂像52%が1クラスタ(純度84%,61試験)、大血管純度99%（README.md, v2_132/results.json）'
+- comboの壊死クラスタは純度99%だがallyl alcoholが85%で化合物と交絡（README.md, P1_labels_and_clusters_combo.png）
+- 隣接伝播で隣のまとまり25%→73%、ラベル一致0.49→0.36。小葉位置はプロトタイプとのNMI0.025だが回帰でslide外CV R²0.18〜0.28（README.md, context_v1/context_metrics.csv, lobular_probe_v3/lobular_probe.csv）
+figures:
+- path: outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_combo.png
+  caption: comboのk=30クラスタ×Bayerラベルの占有率/純度ヒートマップと最多試験割合。壊死クラスタ7は85%/純度99%だが最多試験割合≈0.85(allyl alcohol偏り)
+  representative: true
+- path: outputs/0021_20261025_patch_prototypes/v2_132/figures/P2_tsne.png
+  caption: unsup/weak/comboのt-SNE(クラスタ・Bayerラベル・試験66色)。weak/comboで壊死・大血管・核分裂像・門脈域などが試験を混ぜた島になる
+  representative: true
+- path: outputs/0021_20261025_patch_prototypes/context_v1/figures/C1_context_metrics.png
+  caption: '[context_v1] 伝播回数ごとの隣接まとまりとラベル一致の変化'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v1/figures/P1_labels_and_clusters_unsup.png
+  caption: '[v1] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v1/figures/P1_labels_and_clusters_weak.png
+  caption: '[v1] weakのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v1/figures/P2_tsne.png
+  caption: '[v1] 表現別t-SNE(クラスタ/ラベル/試験)'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_unsup.png
+  caption: '[v2_132] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v2_132/figures/P1_labels_and_clusters_weak.png
+  caption: '[v2_132] weakのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_combo.png
+  caption: '[v3_maps] comboのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_unsup.png
+  caption: '[v3_maps] unsupのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v3_maps/figures/P1_labels_and_clusters_weak.png
+  caption: '[v3_maps] weakのクラスタ×Bayerラベル占有率/純度と試験偏り'
+  representative: false
+- path: outputs/0021_20261025_patch_prototypes/v3_maps/figures/P2_tsne.png
+  caption: '[v3_maps] 表現別t-SNE(クラスタ/ラベル/試験)'
+  representative: false
+chart: null
+notes: ''

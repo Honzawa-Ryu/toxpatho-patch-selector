@@ -1,0 +1,33 @@
+id: report_20261026
+date: '2026-10-26'
+title: '経過報告: パッチ層別化（実験0017〜0023）'
+status: 完了（報告済み）
+purpose: 10/22〜26のバッチ頑健表現比較・プロトタイプ・小葉位置・外部検証をまとめて報告する。
+method: 各実験出力の図と数値を転記したHTMLレポート（F1〜F6のpng/svg、img/にjpg15枚）。
+results:
+- スキャナのストライプ間隔の縦帯がControlにも出現、帯強度とピント指標の順位相関0.09（index.html）
+- slide内順位化で別試験近傍割合12%→43%、Harmony/CORALはラベル保存が低下、LDAで試験CVのNMI 0.32→0.44（index.html, 0020）
+- '0021プロトタイプk=30: NMI 0.49、クラスタあたり試験数中央値64.5/66（index.html）※後にリークありと判明'
+- 小葉位置回帰 R² 0.25・ρ 0.45、外部78枚で壊死プロトタイプ割合と程度のρ 0.70（index.html）
+- 病変の広がり指標は程度と相関せず（ρ −0.16）（index.html）
+figures:
+- path: outputs/report_20261026/F2_methods_mixing_vs_conservation.png
+  caption: 13手法の試験混ざり（横）とラベル保存（縦）の散布図。rank_slide+LDAが右上、Harmony/CORALは混ざるがラベル保存が低下
+  representative: true
+- path: outputs/report_20261026/F6_three_layers_vs_records.png
+  caption: TG-GATEs132枚/外部78枚で壊死プロトタイプ割合が程度と相関(ρ0.68/0.70)、広がり指標は無相関、壊死patchの小葉位置は中心静脈側に偏る
+  representative: true
+- path: outputs/report_20261026/F1_stage1_pass_by_grade.png
+  caption: 0018 1段目通過率と所見表の最大程度（図1）
+  representative: false
+- path: outputs/report_20261026/F3_spatial_context_tradeoff.png
+  caption: 隣接情報の混合度とNMI/純度のトレードオフ（ファイル名より）
+  representative: false
+- path: outputs/report_20261026/F4_lobular_layer_vs_topography.png
+  caption: 小葉位置予測と所見表の分布記録の対応（ファイル名より）
+  representative: false
+- path: outputs/report_20261026/F5_external_necrosis_layers.png
+  caption: 外部データでの壊死の層別（0023 external_v3）（ファイル名より）
+  representative: false
+chart: null
+notes: ''

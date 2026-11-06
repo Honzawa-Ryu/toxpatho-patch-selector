@@ -1,0 +1,64 @@
+title: 外部slideの所見・構造マップ(A〜D比較)
+status: 完了(v1〜v9、v6/v7の目視評価結果は未集計)
+purpose: 仮説①(ラベルを学んだ所見・構造はラベルのないslideからも取り出せる)を、外部slide上のプロトタイプ地図で確かめる。
+method: 外部47枚(壊死30・対照12・炎症のみ5)にA(Sphering+LDA)/B(Sphering)/C(LDA)/D(unsup)のプロトタイプを色分けし、v2拡大窓、v3試験効果・壊死タイル、v4対照群のドメイン差、v5で2×2比較、v6/v7盲検評価窓、v8命名から脂肪系21枚除外、v9でBayerのみ重心(0032)のC/D/D13。
+results:
+- 'v8 壊死slide vs 対照のAUC: A 0.86、B 0.98、C 0.93、D 0.92。炎症: A 0.91、B 0.89、C 0.55、D 0.50(v8/slide_auc.csv)'
+- 'v8 対照群kNNの他ドメイン割合(TG起点、混ざれば0.47): A 0.33、B 0.36、C 0.43、D 0.25(v8/domain_gap.csv)'
+- 'v8 会社特異プロトタイプ数: D 20個、A 5、B 4、C 1(v8/study_effect.csv)'
+- 'v9(Bayerのみ重心) 壊死AUC: C 0.975、D13 0.795、D 0.708。色付け面積と壊死程度のrho: C 0.75 [0.64,0.82]、D 0.42、D13 0.41(v9/slide_auc.csv, v9/severity/severity_spearman.csv)'
+- v6/v7は盲検評価用の窓画像とrating_key.csvを作成(評価結果の集計ファイルは見当たらない)(v7/rating/)
+figures:
+- path: outputs/0029_20261028_external_finding_maps/v8/domain_tsne_A_sphering_lda.png
+  caption: '表現A(Sphering+LDA)での対照群patchのt-SNE: TG-GATEs・塩野義・エーザイの対照群がほぼ混ざる'
+  representative: true
+- path: outputs/0029_20261028_external_finding_maps/v9/severity/S1_severity.png
+  caption: '外部78枚で壊死/炎症に色付けされたpatch割合と記録の程度の関係: C(LDAのみ)が壊死rho 0.75でD(0.42)・D13(0.41)より高い'
+  representative: true
+- path: outputs/0029_20261028_external_finding_maps/v4/domain_tsne_A_sphering_lda.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(A_sphering_lda) [v4]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v4/domain_tsne_B_sphering.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v4]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v4/domain_tsne_none.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(none) [v4]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v5/domain_tsne_A_sphering_lda.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(A_sphering_lda) [v5]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v5/domain_tsne_B_sphering.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v5]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v5/domain_tsne_C_lda.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v5]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v5/domain_tsne_D_unsup.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v5]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v5/severity/S1_severity.png
+  caption: 外部slideの色付け面積と記録の程度の相関 [v5]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v8/domain_tsne_B_sphering.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(B_sphering) [v8]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v8/domain_tsne_C_lda.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v8]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v8/domain_tsne_D_unsup.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v8]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v8/severity/S1_severity.png
+  caption: 外部slideの色付け面積と記録の程度の相関 [v8]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v9/domain_tsne_C_lda.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(C_lda) [v9]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v9/domain_tsne_D13_unsup13.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(D13_unsup13) [v9]
+  representative: false
+- path: outputs/0029_20261028_external_finding_maps/v9/domain_tsne_D_unsup.png
+  caption: 対照群patchのt-SNE(TG-GATEs vs 外部)(D_unsup) [v9]
+  representative: false
+chart: null
+notes: ''

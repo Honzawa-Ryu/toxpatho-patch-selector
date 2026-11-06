@@ -1,0 +1,105 @@
+title: 細かいプロトタイプの分割・再結合と試験間差の検証
+status: 完了(v1・v2+追加解析6種。目視は一部のみ)
+purpose: プロトタイプを細かくして純度を上げる方法を比べ、さらにラベルなし所見の抽出と試験間差(対照群の識別)を調べる。
+method: 'Bayer+脂肪変性3試験+未学習3,319枚(1,043万patch)でA/A128に13方法(flat k100〜1000、split_label/record/dispersion、Ward再結合)を適用(v1)、v2はLDAなし(B128/B/D)。追加解析: unlabeled_findings、control_study_identification、within_study_findings、control_similarity、group_crossstudy、group_reference。'
+results:
+- 'v1(A): k=100→1000でheld-out coverageは0.17→0.18と不変、split_labelのみ0.23。脂肪変性の化合物内coverageは0→0.47/0.37(k=1000)(README.md, v1/summary.csv)'
+- 'v2(LDAなし): B128 flat_k1000の脂肪変性coverage CCl4 0.48/chol 0.40でLDAありと同程度、held-out F1はB128 k100 0.31(v2/fatty_within_compound.csv, v2/heldout_summary.csv)'
+- 'unlabeled_findings: 肥大で選んだ250プロトタイプは肥大slide 21%/対照1.3%、化合物held-out AUC 0.95(A128)だが所見間Jaccard 0.22〜0.72で投与全般を拾う(unlabeled_findings/overview.csv, README.md)'
+- 'control_study_identification: 対照群だけで試験を識別できる(AUC中央値 A128 0.86、C 0.88、D 0.93)。LDAで試験間差はつぶれない(README.md)'
+- 'within_study_findings: 試験内AUC 肥大0.83・空胞化0.90・胆管増生0.88・好酸性変化0.79、所見間Jaccard 0.00〜0.28に低下(within_study_findings/summary.csv)'
+- 'control_similarity: 143試験の対照群ペア識別AUC中央値0.995、偶然と区別できない組5.5%、36まとまりの多くが単一スキャナ・単一0015塊(control_similarity/, README.md)'
+- 'group_reference: 投与全般を除かない場合、A128肥大でまとまり内の対照を使う方が17組中15組で高AUC(p=0.002)、除くと差は消える(group_reference/, README.md)'
+figures:
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F3_mds_B128.png
+  caption: '143試験を対照群の見分けやすさで配置したMDS(B128): 0015の塊ごと、さらにスキャナ(SS1601/SS1598)で割れ、撮影月とは対応しない'
+  representative: true
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/F1_methods.png
+  caption: '13方法×A/A128の比較: held-out coverage(split_labelのみ0.23)、macro F1、記録coverage(A128 flat_k1000/split_recordで高い)、ラベルなし読み出しAUC'
+  representative: true
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/within_study_findings/F1_within_study.png
+  caption: 試験内(同試験・同時点)の所見特有プロトタイプによる記録有無のAUC(10所見、A128/B128)と、選ばれたプロトタイプの所見間Jaccard(0.00〜0.28)
+  representative: true
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F1_block_identification.png
+  caption: 0015の塊ごとの対照群からの試験識別AUC [control_similarity]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/F2_pairwise_heatmap_B128.png
+  caption: 試験ペアの対照群見分けやすさ(AUC)ヒートマップ [control_similarity]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/control_study_identification/F1_control_study_identification.png
+  caption: 対照群のプロトタイプ構成から試験・スキャナを当てるAUC [control_study_identification]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/group_crossstudy/F1_group_crossstudy_hypertrophy.png
+  caption: まとまり内で他試験から選んだ肥大プロトタイプによる伏せた試験のAUC [group_crossstudy]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/group_reference/F1_reference_in_vs_out.png
+  caption: 選択時の対照群をまとまり内/外から取った場合のAUC比較 [group_reference]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/group_reference/no_generic/F1_reference_in_vs_out.png
+  caption: 選択時の対照群をまとまり内/外から取った場合のAUC比較(投与全般を除かない版) [group_reference]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Cellular_infiltration/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Cellular_infiltration) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Change_eosinophilic/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Change_eosinophilic) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Degeneration_granular_eosinophilic/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Degeneration_granular_eosinophilic) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/F4_overview.png
+  caption: 10所見の選択数・割合・AUCの一覧 [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hematopoiesis_extramedullary/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Hematopoiesis_extramedullary) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hypertrophy/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Hypertrophy) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Hypertrophy/F2_log2_ratio_by_exp.png
+  caption: 試験ごとの所見slide/対照群のプロトタイプlog2比(Hypertrophy) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Increased_mitosis/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Increased_mitosis) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Necrosis/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Necrosis) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Necrosis/F2_log2_ratio_by_exp.png
+  caption: 試験ごとの所見slide/対照群のプロトタイプlog2比(Necrosis) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Proliferation_bile_duct/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Proliferation_bile_duct) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Single_cell_necrosis/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Single_cell_necrosis) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/unlabeled_findings/Vacuolization_cytoplasmic/F1_heldout_auc.png
+  caption: 化合物held-outの所見slide判別AUC(Vacuolization_cytoplasmic) [unlabeled_findings]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/F2_record_coverage.png
+  caption: 記録ありslideのpatchが高純度プロトタイプに入る割合(所見別・方法別) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/F1_tree_all.png
+  caption: プロトタイプ系統樹(葉の注釈付き)(tree_A128_sphering_lda_split_record) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/a_history/F1_tree_all.png
+  caption: プロトタイプ系統樹(葉の注釈付き)(a_history) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/b_knn/F1_tree_all.png
+  caption: プロトタイプ系統樹(葉の注釈付き)(b_knn) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/c_meaning/F1_tree_all.png
+  caption: プロトタイプ系統樹(葉の注釈付き)(c_meaning) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v1/tree_A128_sphering_lda_split_record/ward/F1_tree_all.png
+  caption: プロトタイプ系統樹(葉の注釈付き)(ward) [v1]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v2/F1_methods.png
+  caption: 方法別のcoverage・F1・読み出しAUC [v2]
+  representative: false
+- path: outputs/0035_20261102_finer_prototypes_split_rejoin/v2/F2_record_coverage.png
+  caption: 記録ありslideのpatchが高純度プロトタイプに入る割合(所見別・方法別) [v2]
+  representative: false
+chart: null
+notes: ''

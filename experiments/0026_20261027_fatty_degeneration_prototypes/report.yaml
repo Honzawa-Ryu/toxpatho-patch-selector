@@ -1,0 +1,102 @@
+title: 脂肪変性のプロトタイプ分離
+status: 完了（README無し）
+purpose: Bayerにラベルのない脂肪変性(微小滴・大滴)が高純度のプロトタイプとして分かれるかを調べる。
+method: CCl4単回・反復とcholesterol食の試験を対象に、raw/unsup/unsup+β·LDA/combo系の表現でコンセンサスk-means(k=100/200)→Ward階層で20〜60に切って評価(v1)。tree_v1で系統樹、tree_v2でSphering+LDA(試験Control白色化)、tree_v3でBayerの脂肪・空胞化21枚をLDA学習から除外、tree_v3s/v3uでラベル有無×Sphering有無の2×2を比較。
+results:
+- 'v1: 対象200枚・約345万patch。raw k100でcholesterolの純度≥0.9プロトタイプ2個、CCl4最良Spearman0.88（v1/summary.csv）'
+- 'tree_v3(188枚): sphering_lda k100でBayer NMI0.378・均質性0.602、純度≥0.9がCCl4で7個・cholesterolで6個（tree_v3/summary.csv）'
+- 'tree_v3u: LDAのみはNMI0.417と高いがcholesterolの純度≥0.9は0個、unsupは5個。tree_v3s(Sphering)はNMI0.332・5個（tree_v3u/summary.csv, tree_v3s/summary.csv）'
+- cholesterolではp45/p60の占有率がgrade sevで約0.2まで単調増加（F1_share_by_grade_sphering_lda_k100.png）
+figures:
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/tree/sphering_lda_k100/T1_tree.png
+  caption: Sphering+LDA k=100プロトタイプのWard系統樹とBayerラベル・脂肪純度バー。純度≈1の脂肪プロトタイプが複数の枝に分かれて出る
+  representative: true
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/figures/F1_share_by_grade_sphering_lda_k100.png
+  caption: CCl4とcholesterolで脂肪変性grade別の上位6プロトタイプ占有率。cholesterolのp45/p60はsevで約0.2まで単調増加
+  representative: true
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v1/tree/unsup_lda1_k100/T1_tree.png
+  caption: '[tree_v1] プロトタイプ系統樹(unsup_lda1_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/tree/sphering_lda_k100/T1_tree.png
+  caption: '[tree_v2] プロトタイプ系統樹(sphering_lda_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/tree/unsup_lda1_k100/T1_tree.png
+  caption: '[tree_v2] プロトタイプ系統樹(unsup_lda1_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/tree/unsup_lda1_k100/T1_tree.png
+  caption: '[tree_v3] プロトタイプ系統樹(unsup_lda1_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3s/tree/sphering_k100/T1_tree.png
+  caption: '[tree_v3s] プロトタイプ系統樹(sphering_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/tree/lda_k100/T1_tree.png
+  caption: '[tree_v3u] プロトタイプ系統樹(lda_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/tree/unsup_k100/T1_tree.png
+  caption: '[tree_v3u] プロトタイプ系統樹(unsup_k100)'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v1/figures/F1_share_by_grade_unsup_lda1_k100.png
+  caption: '[tree_v1] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/figures/F1_share_by_grade_sphering_lda_k100.png
+  caption: '[tree_v2] sphering_lda_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v2/figures/F1_share_by_grade_unsup_lda1_k100.png
+  caption: '[tree_v2] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3/figures/F1_share_by_grade_unsup_lda1_k100.png
+  caption: '[tree_v3] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3s/figures/F1_share_by_grade_sphering_k100.png
+  caption: '[tree_v3s] sphering_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/figures/F1_share_by_grade_lda_k100.png
+  caption: '[tree_v3u] lda_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/tree_v3u/figures/F1_share_by_grade_unsup_k100.png
+  caption: '[tree_v3u] unsup_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_bilateral_k100.png
+  caption: '[v1] combo_bilateral_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_k100.png
+  caption: '[v1] combo_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_strong_k100.png
+  caption: '[v1] combo_strong_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_raw_k100.png
+  caption: '[v1] raw_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_k100.png
+  caption: '[v1] unsup_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda0.5_k100.png
+  caption: '[v1] unsup_lda0.5_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k100.png
+  caption: '[v1] unsup_lda1_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda2_k100.png
+  caption: '[v1] unsup_lda2_k100: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_raw_k100_cut40.png
+  caption: '[v1] raw_k100_cut40: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k100_cut30.png
+  caption: '[v1] unsup_lda1_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_bilateral_k100_cut30.png
+  caption: '[v1] combo_bilateral_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_k200_cut40.png
+  caption: '[v1] unsup_k200_cut40: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_combo_k100_cut30.png
+  caption: '[v1] combo_k100_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+- path: outputs/0026_20261027_fatty_degeneration_prototypes/v1/figures/F1_share_by_grade_unsup_lda1_k200_cut30.png
+  caption: '[v1] unsup_lda1_k200_cut30: CCl4/cholesterolの脂肪変性grade別上位プロトタイプ占有率'
+  representative: false
+chart: null
+notes: ''

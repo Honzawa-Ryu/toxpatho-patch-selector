@@ -1,0 +1,11 @@
+title: CCl4脂肪変性スライドの埋め込み抽出
+status: 完了
+purpose: 脂肪変性の比較用にcarbon tetrachloride（CCl4）のLiver WSIの埋め込みを追加する。
+method: 0001と同じTRIDENT設定（hest, 20倍256px, uni_v2）でCCl4のスライドを4チャンクに分けて抽出。
+results:
+- 4チャンク×25枚=100枚、全チャンクcompleted（chunk_*/results.json, completion.json）
+- features_uni_v2は各チャンク25ファイル（trident_job_chunk*/20x_256px_0px_overlap/features_uni_v2）
+- 0003のCCl4比較（319枚・512万patch）と0009のtier1コーパスに投入（0003 plan.md, 0009 plan.md）
+figures: []
+chart: null
+notes: ''
