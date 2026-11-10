@@ -40,6 +40,48 @@ FULL_DIR = "outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap
 WSI_DIRS = [ROOT / "data/TGGATEs/WSI/Liver", Path("/workspace/andre01/honzawa/00-utils/hdd/TGGATEs/WSI/Liver")]
 
 
+def load_0030_models():
+    """0030 v4 と同じ前処理（slide 内の順位 → 0021 の PCA256）、LDA（同じ設定で学び直す）、0032 の重心。
+    返り値: pre, tf, L（LDA の次元）, ex23（slide_rank を持つ）, {"D_unsup": 重心, "C_lda": 重心}"""
+    import importlib.util
+    import pickle
+    import yaml
+
+    def load_module(path, name):
+        spec = importlib.util.spec_from_file_location(name, path)
+        m = importlib.util.module_from_spec(spec)
+        sys.modules[name] = m
+        spec.loader.exec_module(m)
+        return m
+    c30 = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))
+    c30 = {**c30, **c30["variants"]["v4"]}
+    load_module(ROOT / "experiments" / c30["exp0021"] / "experiment.py", "exp0021")
+    ex23 = load_module(ROOT / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
+    ex26 = load_module(ROOT / "experiments" / c30["exp0026"] / "experiment.py", "exp0026")
+    cfg20 = yaml.safe_load(open(ROOT / "experiments/0020_20261024_batch_robust_methods/config.yml"))
+    src = ROOT / "outputs" / c30["exp0025"] / c30["cache_from"]
+    c = np.load(src / "cache.npz")
+    Ka, laba = c["K"], c["lab"].astype(np.int64)
+    keep = [k for k in np.unique(laba) if k >= 0 and (laba == k).sum() >= cfg20["min_label_patches"]]
+    laba = np.where(np.isin(laba, keep), laba, -1)
+    lab_c = np.where(laba >= 0, np.searchsorted(keep, np.maximum(laba, 0)), -1)
+    bayer = pd.read_csv(src / "slides.csv", dtype=str)
+    ex_ids = pd.read_csv(ROOT / c30["lda_exclude_slides"], dtype=str).slide_id.tolist()
+    lab_c = np.where(np.isin(bayer.slide_id.to_numpy()[c["row"]], ex_ids), -1, lab_c)
+    tf = ex26.fit_combo(Ka, lab_c, c30, c30["seed"])
+    del Ka
+    pre = pickle.loads((ROOT / "outputs" / c30["exp0021"] / "v3_maps/models.pkl").read_bytes())["pre"]
+    proto = ROOT / c30["proto_root"]
+    cen = {"D_unsup": np.load(proto / "centroids_unsup_k100.npy").astype(np.float32), "C_lda": np.load(proto / "centroids_lda_k100.npy").astype(np.float32)}
+    return pre, tf, len(keep) - 1, ex23, cen
+
+
+def nearest(z, c_):
+    """各行に最も近い重心の番号（ユークリッド距離）。"""
+    zt, ct = torch.from_numpy(np.ascontiguousarray(z, dtype=np.float32)), torch.from_numpy(np.ascontiguousarray(c_, dtype=np.float32))
+    return np.concatenate([torch.cdist(zz, ct).argmin(1).numpy() for zz in torch.split(zt, 4096)])
+
+
 def main():
     from lib.clustering import kmeans_lloyd
     OUT.mkdir(exist_ok=True)
@@ -170,7 +212,6 @@ def main():
     # 全 patch の割り当て（3 表現）
     import h5py
     import openslide
-    import yaml
     from concurrent.futures import ProcessPoolExecutor
     from sklearn.decomposition import PCA
     import tggates_unseen_batch_mixing as bm
@@ -189,42 +230,9 @@ def main():
     del raw
     Xr = R["X_raw_pca64"]
     cen = {"raw_pca64": np.stack([Xr[cl["raw_pca64"] == k].mean(0) for k in range(K)])}
-    # D・C: 0030 と同じ前処理と LDA
-    import importlib.util
-    import pickle
+    pre, tf, L, ex23, c_dc = load_0030_models()
+    cen.update(c_dc)
 
-    def load_module(path, name):
-        spec = importlib.util.spec_from_file_location(name, path)
-        m = importlib.util.module_from_spec(spec)
-        sys.modules[name] = m
-        spec.loader.exec_module(m)
-        return m
-    c30 = yaml.safe_load(open(ROOT / "experiments/0030_20261028_tggates_unseen_findings/config.yml"))
-    c30 = {**c30, **c30["variants"]["v4"]}
-    load_module(ROOT / "experiments" / c30["exp0021"] / "experiment.py", "exp0021")
-    ex23 = load_module(ROOT / "experiments/0023_20261025_layer_reality_check/experiment.py", "exp0023")
-    ex26 = load_module(ROOT / "experiments" / c30["exp0026"] / "experiment.py", "exp0026")
-    cfg20 = yaml.safe_load(open(ROOT / "experiments/0020_20261024_batch_robust_methods/config.yml"))
-    src = ROOT / "outputs" / c30["exp0025"] / c30["cache_from"]
-    c = np.load(src / "cache.npz")
-    Ka, laba = c["K"], c["lab"].astype(np.int64)
-    keep = [k for k in np.unique(laba) if k >= 0 and (laba == k).sum() >= cfg20["min_label_patches"]]
-    laba = np.where(np.isin(laba, keep), laba, -1)
-    lab_c = np.where(laba >= 0, np.searchsorted(keep, np.maximum(laba, 0)), -1)
-    bayer = pd.read_csv(src / "slides.csv", dtype=str)
-    ex_ids = pd.read_csv(ROOT / c30["lda_exclude_slides"], dtype=str).slide_id.tolist()
-    lab_c = np.where(np.isin(bayer.slide_id.to_numpy()[c["row"]], ex_ids), -1, lab_c)
-    tf = ex26.fit_combo(Ka, lab_c, c30, c30["seed"])
-    L = len(keep) - 1
-    del Ka
-    pre = pickle.loads((ROOT / "outputs" / c30["exp0021"] / "v3_maps/models.pkl").read_bytes())["pre"]
-    proto = ROOT / c30["proto_root"]
-    cen["D_unsup"] = np.load(proto / "centroids_unsup_k100.npy").astype(np.float32)
-    cen["C_lda"] = np.load(proto / "centroids_lda_k100.npy").astype(np.float32)
-
-    def nearest(z, c_):
-        zt, ct = torch.from_numpy(np.ascontiguousarray(z, dtype=np.float32)), torch.from_numpy(c_)
-        return np.concatenate([torch.cdist(zz, ct).argmin(1).numpy() for zz in torch.split(zt, 4096)])
     full = {}
     for s_ in (a, b):
         with h5py.File(ROOT / FULL_DIR / f"{sids[s_]}.h5", "r") as h:
