@@ -8,8 +8,8 @@
 #SBATCH --export=ALL
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=55g
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=20g
 #SBATCH --time=36:00:00
 
 # 他の実験のジョブに依存させたい場合、有効化してjob_idを埋める
@@ -63,7 +63,7 @@ GRID_ARGS=(
     "--chunk"
 )
 GRID_VALUES=(
-    "coords_group"
+    "sub_group"
     "0 1 2 3"
 )
 
