@@ -28,6 +28,8 @@ def main():
     font_manager.fontManager.addfont(FONT_JP)
     plt.rcParams.update({"font.family": font_manager.FontProperties(fname=FONT_JP).get_name(), "axes.spines.top": False, "axes.spines.right": False, "font.size": 9})
     lo = pd.read_csv(RUN / "loso.csv")
+    base_p = RUN / "baseline_0035/loso.csv"
+    bl = pd.read_csv(base_p) if base_p.exists() else None   # 0035 の全体のプロトタイプ（scripts/group_prototypes_global_baseline.py）
     S = pd.read_csv(RUN / "slides.csv")
 
     # F1
@@ -44,6 +46,9 @@ def main():
             ax.scatter(x, r.auc_own_neg, s=10, color=col, alpha=0.35, linewidths=0)
             m = r.groupby("k").auc_own_neg.mean().reindex(KS)
             ax.plot(np.log2(KS) + (j - 0.5) * 0.12, m.to_numpy(), marker=mk, color=col, lw=1.6, ms=5, mec="#333333", mew=0.4)
+            if bl is not None:
+                mb = bl[(bl.group == p.group) & (bl.finding == p.finding) & (bl.rep == rep)].groupby("k").auc_own_neg.mean().reindex(KS)
+                ax.plot(np.log2(KS) + (j - 0.5) * 0.12, mb.to_numpy(), marker=mk, color=col, lw=1.2, ls="--", ms=5, mfc="white", mec=col, mew=1.0)
         ax.axhline(0.5, color="black", lw=0.6, ls=":")
         ax.set_title(f"まとまり {p.group}：{JP.get(p.finding, p.finding)}\n{p.exp} 試験・所見の slide {npos} 枚", fontsize=9)
         ax.set_xticks(np.log2(KS), [str(k) for k in KS])
@@ -56,12 +61,23 @@ def main():
         ax.set_xlabel("k")
     from matplotlib.lines import Line2D
     h = [Line2D([], [], color=col, marker=mk, mec="#333333", mew=0.4, label=lab) for _, lab, col, mk in REPS]
-    h.append(Line2D([], [], color="#777777", marker="o", ls="", alpha=0.4, ms=4, label="伏せた試験ごと"))
+    if bl is not None:
+        h += [Line2D([], [], color=col, marker=mk, ls="--", mfc="white", mec=col, label=lab.split("（")[0] + "：0035 の全体のプロトタイプ（まとまりで作り直さない）") for _, lab, col, mk in REPS]
+    h.append(Line2D([], [], color="#777777", marker="o", ls="", alpha=0.4, ms=4, label="伏せた試験ごと（0037）"))
     fig.legend(handles=h, loc="outside lower center", ncol=3, frameon=False)
     fig.suptitle("まとまりの他の試験だけで選んだプロトタイプで、伏せた試験の所見の slide を、同じ試験の記録のない投与群と判別できるか（0037）\n"
-                 "線 = 伏せた試験の平均。所見の slide と記録のない投与群が 2 枚以上ある試験が 2 つ以上ある組だけ", fontsize=10)
+                 "実線 = 0037（まとまりで作り直す）、点線 = 0035 の全体のプロトタイプ（あれば）。伏せた試験の平均。所見の slide と記録のない投与群が 2 枚以上ある試験が 2 つ以上ある組だけ", fontsize=10)
     fig.savefig(RUN / "F1_loso_auc_by_k.png", dpi=170)
     plt.close(fig)
+    if bl is not None:   # 0037 と 0035 の全体のプロトタイプの比較表（組 × 表現 × k の、伏せた試験の平均 AUC）
+        key = ["group", "finding", "rep", "k"]
+        cmp_ = lo.groupby(key).auc_own_neg.mean().rename("auc_0037").to_frame().join(bl.groupby(key).auc_own_neg.mean().rename("auc_0035")).reset_index()
+        cmp_["diff"] = cmp_.auc_0037 - cmp_.auc_0035
+        cmp_.to_csv(RUN / "compare_0035_global.csv", index=False)
+        pd.set_option("display.width", 200)
+        print(cmp_.groupby(["group", "finding"])[["auc_0037", "auc_0035", "diff"]].mean().round(3).to_string())
+        print(cmp_.groupby(["rep", "k"])[["auc_0037", "auc_0035", "diff"]].mean().round(3).to_string())
+        print("pairs (group x finding x rep x k) with 0037 > 0035:", int((cmp_["diff"] > 0).sum()), "/", int(cmp_["diff"].notna().sum()))
 
     # F2
     rec = pd.read_csv(RUN / "record_purity.csv")

@@ -65,6 +65,57 @@ def load_module(path, name):
     return mod
 
 
+def record_purity(ex35, cs, posg, findings, ev, meta):
+    """(c) 記録の純度（0035 と同じ定義）。cs: プロトタイプ × slide の件数、posg: slide × 所見の記録あり。"""
+    share, base, lift, njf, n = ex35.record_shares(cs, posg)
+    big = n >= ev["min_proto_patches"]
+    rows = []
+    for i, f in enumerate(findings):
+        if not posg[:, i].any():
+            continue
+        j = int(np.where(big, share[:, i], -1).argmax())
+        hi = big & (share[:, i] >= ev["precision_thr"])
+        rows.append({**meta, "finding": f, "n_pos_slides": int(posg[:, i].sum()), "base_rate": float(base[i]),
+                     "best_share": float(share[j, i]), "best_lift": float(lift[j, i]), "best_n": int(n[j]),
+                     "n_protos_share_ge_thr": int(hi.sum()), "coverage": float(njf[hi, i].sum() / max(njf[:, i].sum(), 1))})
+    return rows
+
+
+def loso_auc(cs, posg, expg, ctrlg, compg, findings, lo, meta):
+    """(a) 試験を 1 つ伏せる（0035 scripts/group_crossstudy_findings.py と同じ選び方）。残りの試験で所見のプロトタイプを選び、
+    伏せた試験の所見の slide を、選んだプロトタイプの割合で各相手と判別した AUC。"""
+    from sklearn.metrics import roc_auc_score
+    P = (cs / np.maximum(cs.sum(0, keepdims=True), 1)).T              # slides × プロトタイプ の割合
+    lr = lambda a, b: np.log2((P[a].mean(0) + 1e-4) / (P[b].mean(0) + 1e-4))
+    rows = []
+    for i, f in enumerate(findings):
+        pf = posg[:, i]
+        neg = ~ctrlg & ~pf
+        fx = [e for e in np.unique(expg[pf]) if ((expg == e) & pf).sum() >= lo["min_n"] and ((expg == e) & neg).sum() >= lo["min_n"]]
+        if len(fx) < 2:
+            continue
+        non_f = ~ctrlg & ~np.isin(expg, fx) & ~pf
+        for e in fx:
+            tr = [x for x in fx if x != e]
+            gc = ctrlg & (expg != e)
+            LRc = np.array([lr((expg == x) & pf, gc) for x in tr])
+            LRn = np.array([lr((expg == x) & pf, (expg == x) & neg) for x in tr])
+            LRg = np.array([lr((expg == x) & neg, gc) for x in tr])
+            me = min(2, len(tr))
+            sel = (((LRc >= lo["lr_up"]) & (LRn >= lo["lr_up"])).sum(0) >= me) & (LRn.mean(0) >= lo["lr_up"]) & ((LRg >= lo["lr_up"]).sum(0) < me)
+            score = P[:, sel].sum(1)
+            tgt = (expg == e) & pf
+            refs = {"own_neg": (expg == e) & neg, "own_ctrl": (expg == e) & ctrlg, "group_ctrl": gc, "group_nonfinding_treated": non_f}
+            row = {**meta, "finding": f, "exp": int(e), "compound": compg[expg == e][0],
+                   "n_pos": int(tgt.sum()), "n_train_exps": len(tr), "n_selected": int(sel.sum()), "share_pos_in_selected": float(score[tgt].mean())}
+            for rk, mk in refs.items():
+                ok = mk.sum() >= lo["min_n"] and sel.any()
+                row[f"auc_{rk}"] = float(roc_auc_score(np.r_[np.ones(tgt.sum()), np.zeros(mk.sum())], np.r_[score[tgt], score[mk]])) if ok else np.nan
+                row[f"n_{rk}"] = int(mk.sum())
+            rows.append(row)
+    return rows
+
+
 def parse_args() -> argparse.Namespace:
     """Define CLI args for all variable dimensions (used in GRID_ARGS / RUN_COMMAND)."""
     parser = argparse.ArgumentParser()
@@ -116,7 +167,6 @@ def main() -> None:
     from concurrent.futures import ProcessPoolExecutor
 
     import torch
-    from sklearn.metrics import roc_auc_score
     cfg = config
     t0 = time.time()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -213,45 +263,9 @@ def main() -> None:
                 np.save(run_dir / f"assign_{tag}.npy", cl.astype(np.int16))
                 np.save(run_dir / f"centroids_{tag}.npy", cen.cpu().numpy().astype(np.float32))
                 cs = ex35.slide_counts(cl, k, so, ns)                     # k × slides
-                # (c) 記録の純度（0035 と同じ定義）
-                share, base, lift, njf, n = ex35.record_shares(cs, posg)
-                big = n >= ev["min_proto_patches"]
-                for i, f in enumerate(findings):
-                    if not posg[:, i].any():
-                        continue
-                    j = int(np.where(big, share[:, i], -1).argmax())
-                    hi = big & (share[:, i] >= ev["precision_thr"])
-                    rec_rows.append({"group": g, "rep": rep, "k": k, "finding": f, "n_pos_slides": int(posg[:, i].sum()), "base_rate": float(base[i]),
-                                     "best_share": float(share[j, i]), "best_lift": float(lift[j, i]), "best_n": int(n[j]),
-                                     "n_protos_share_ge_thr": int(hi.sum()), "coverage": float(njf[hi, i].sum() / max(njf[:, i].sum(), 1))})
-                # (a) 試験を 1 つ伏せる（0035 scripts/group_crossstudy_findings.py と同じ選び方）
-                P = (cs / np.maximum(cs.sum(0, keepdims=True), 1)).T              # slides × k の割合
-                lr = lambda a, b: np.log2((P[a].mean(0) + 1e-4) / (P[b].mean(0) + 1e-4))
-                for i, f in enumerate(findings):
-                    pf = posg[:, i]
-                    neg = ~ctrlg & ~pf
-                    fx = [e for e in np.unique(expg[pf]) if ((expg == e) & pf).sum() >= lo["min_n"] and ((expg == e) & neg).sum() >= lo["min_n"]]
-                    if len(fx) < 2:
-                        continue
-                    non_f = ~ctrlg & ~np.isin(expg, fx) & ~pf
-                    for e in fx:
-                        tr = [x for x in fx if x != e]
-                        gc = ctrlg & (expg != e)
-                        LRc = np.array([lr((expg == x) & pf, gc) for x in tr])
-                        LRn = np.array([lr((expg == x) & pf, (expg == x) & neg) for x in tr])
-                        LRg = np.array([lr((expg == x) & neg, gc) for x in tr])
-                        me = min(2, len(tr))
-                        sel = (((LRc >= lo["lr_up"]) & (LRn >= lo["lr_up"])).sum(0) >= me) & (LRn.mean(0) >= lo["lr_up"]) & ((LRg >= lo["lr_up"]).sum(0) < me)
-                        score = P[:, sel].sum(1)
-                        tgt = (expg == e) & pf
-                        refs = {"own_neg": (expg == e) & neg, "own_ctrl": (expg == e) & ctrlg, "group_ctrl": gc, "group_nonfinding_treated": non_f}
-                        row = {"group": g, "rep": rep, "k": k, "finding": f, "exp": int(e), "compound": S.COMPOUND_NAME.to_numpy()[sg][expg == e][0],
-                               "n_pos": int(tgt.sum()), "n_train_exps": len(tr), "n_selected": int(sel.sum()), "share_pos_in_selected": float(score[tgt].mean())}
-                        for rk, mk in refs.items():
-                            ok = mk.sum() >= lo["min_n"] and sel.any()
-                            row[f"auc_{rk}"] = float(roc_auc_score(np.r_[np.ones(tgt.sum()), np.zeros(mk.sum())], np.r_[score[tgt], score[mk]])) if ok else np.nan
-                            row[f"n_{rk}"] = int(mk.sum())
-                        loso_rows.append(row)
+                meta = {"group": g, "rep": rep, "k": k}
+                rec_rows += record_purity(ex35, cs, posg, findings, ev, meta)
+                loso_rows += loso_auc(cs, posg, expg, ctrlg, S.COMPOUND_NAME.to_numpy()[sg], findings, lo, meta)
                 logger.info(f"group {g} {rep} k={k}: done; {time.time() - t0:.0f}s")
             del X
         del Sw
