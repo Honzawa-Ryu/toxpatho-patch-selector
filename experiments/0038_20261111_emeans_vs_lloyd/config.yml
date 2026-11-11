@@ -1,0 +1,23 @@
+# 0038: e-means（Bessa et al., arXiv:2611.09501、Faiss contrib/e_means）と、今の k-means（lib/clustering.py の kmeans_lloyd、0035・0037 の合議）を
+#       同じデータで比べる。実行時間、二乗誤差、seed ごとの安定性、下流の評価（0037 の「試験を 1 つ伏せる」AUC）。Issue #16。
+# 2026-11-11 ユーザー: 「GPU 最適化されているらしく、どれかしらのジョブで実行時間と結果について比較してほしい。シードごとの安定性も変わるんじゃないか」
+# データ: 0037 のまとまり 3（13 試験、1,104 枚 × 2,048 patch、約 226 万 patch）の B128（白色化 128 次元、ラベルなし）。0037 と同じ作り方。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0035: 0035_20261102_finer_prototypes_split_rejoin
+exp0037: 0037_20261111_group_prototypes_with_treated
+group: 3
+emeans_dir: /workspace/andre01/honzawa/00-utils/third_party/faiss_e_means_2b648f06/e_means   # Faiss のコミット 2b648f06（2026-11-11）、MIT。SOURCE.txt
+k_list: [100, 1000]
+seeds: [0, 1, 2, 3, 4]
+methods:
+  lloyd_sub: {}                     # 今の 1 回分: 60 万点で Lloyd（最大 300 回）→ 全 patch に割り当て
+  consensus: {}                     # 0037 と同じ合議（k=100 は 10 回、k=1000 は 5 回、プールは 120 万点）
+  lloyd_full: {}                    # 全 patch で Lloyd（e-means と同じ点数）
+  emeans: {nepochs: 5}              # 全 patch、既定（FP32 入力は BF16 で最近傍探索、Triton）
+  emeans_fp32: {nepochs: 5}         # 全 patch、最近傍探索も FP32（QuantizedEmeans(quantizer=None)）
+fit_points: 600000
+consensus_runs: {100: 10, 1000: 5}
