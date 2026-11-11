@@ -3,7 +3,7 @@
 
 0035 の重心は保存されていないので、0035 の割当と同じ並びで表現を作り直し、プロトタイプごとの平均を取る（scripts/control_similarity_groups.py と同じやり方）。
 A128 の LDA の重みは 0035 の全 patch で計算した値（0036 v5 の a128_scale.json）。0037 の slide は、0037 と同じく試験ごとに自分の対照群で白色化してから割り当てる。
-出力: outputs/0037_20261111_group_prototypes_with_treated/default/baseline_0035/{loso.csv, record_purity.csv}
+出力: outputs/0037_20261111_group_prototypes_with_treated/default/baseline_0035/{loso.csv, record_purity.csv, slide_counts.npz（プロトタイプ × まとまりの slide の件数、区間の計算用）}
 usage: python scripts/group_prototypes_global_baseline.py   （コンテナ内、Slurm経由。CPU 12 コア・48 GB、1 時間程度）
 """
 import importlib.util
@@ -134,7 +134,7 @@ def main():
     findings = cfg37["findings"]
     pos = S[[f"grade__{f}" for f in findings]].to_numpy() > 0
     exp_s, ctrl_s = S.exp.to_numpy(), S.is_ctrl.to_numpy()
-    rec_rows, loso_rows = [], []
+    rec_rows, loso_rows, counts = [], [], {}
     for g in cfg37["groups"]:
         sg = np.where(S.grp.to_numpy() == g)[0]
         m = np.isin(slide_of, sg)
@@ -147,10 +147,12 @@ def main():
             for k in KS:
                 cl = ex35.assign(cen[(r, k)], X, torch.device("cpu"))
                 cs = ex35.slide_counts(cl, k, so, len(sg))
+                counts[f"g{g}_{r}_k{k}"] = cs.astype(np.int32)
                 meta = {"group": g, "rep": r, "k": k}
                 rec_rows += ex37.record_purity(ex35, cs, pos[sg], findings, cfg37["eval"], meta)
                 loso_rows += ex37.loso_auc(cs, pos[sg], exp_s[sg], ctrl_s[sg], S.COMPOUND_NAME.to_numpy()[sg], findings, cfg37["loso"], meta)
                 print(f"group {g} {r} k={k} done", flush=True)
+    np.savez_compressed(OUT / "slide_counts.npz", **counts)
     pd.DataFrame(rec_rows).to_csv(OUT / "record_purity.csv", index=False)
     pd.DataFrame(loso_rows).to_csv(OUT / "loso.csv", index=False)
     print("done", flush=True)
