@@ -21,3 +21,9 @@ methods:
   emeans_fp32: {nepochs: 5}         # 全 patch、最近傍探索も FP32（QuantizedEmeans(quantizer=None)）
 fit_points: 600000
 consensus_runs: {100: 10, 1000: 5}
+variants:
+  v2:                               # 2026-11-11 ユーザー: 「e-means 単体と合議を比べていないか。e-means の合議だとどうなる」。合議どうしで比べる
+    methods:
+      emeans_consensus_sub: {data: sub, nepochs: 5}             # 今の合議の 1 回分だけ e-means に（60 万点 × 10 回 / 5 回）
+      emeans_consensus_full: {data: full, nepochs: 5}           # 毎回全 patch、回数は今と同じ
+      emeans_consensus_full50: {data: full, nepochs: 5, runs: 50}   # 毎回全 patch、50 回

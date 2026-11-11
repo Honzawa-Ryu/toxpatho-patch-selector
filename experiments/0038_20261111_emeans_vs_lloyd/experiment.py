@@ -69,6 +69,7 @@ def parse_args() -> argparse.Namespace:
     """Define CLI args for all variable dimensions (used in GRID_ARGS / RUN_COMMAND)."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yml")   # run_slurm.shが渡す。読むのは常に実験ディレクトリのconfig.yml
+    parser.add_argument("--variant", default="default")   # default = 最初の比較、v2 = e-means の合議（config.yml の variants）
     # These must match GRID_ARGS entries in run_slurm.sh.
     # Example:
     #   parser.add_argument("--model", required=True)
@@ -93,7 +94,7 @@ def main() -> None:
     # Example:
     #   model_short = args.model.replace("/", "-")
     #   variant_key = f"{model_short}__{args.seed}"
-    variant_key = "default"
+    variant_key = args.variant
 
     # Initialize output directory (exits immediately if already completed).
     # Written on OUTPUT_ROOT (scratch) when set; scripts/slurm_entry.sh
@@ -120,7 +121,7 @@ def main() -> None:
     import torch
     from sklearn.metrics import adjusted_rand_score
     from lib.clustering import kmeans_lloyd
-    cfg = config
+    cfg = {**config, **config.get("variants", {}).get(args.variant, {})}
     device = torch.device("cuda")
     t0 = time.time()
     for n_, e_ in [("exp0021", cfg["exp0021"]), ("exp0023", "0023_20261025_layer_reality_check")]:
@@ -180,6 +181,23 @@ def main() -> None:
             return cen, sec
         if method == "lloyd_full":
             (_, cen, _), sec = timed(lambda: kmeans_lloyd(X, k, 1000 + s, device))
+            return torch.from_numpy(cen).to(device), sec
+        if method.startswith("emeans_consensus"):
+            # 今の合議（ex25.consensus_kmeans）の 1 回分の Lloyd を e-means に替えたもの。まとめ直しは同じ Lloyd。
+            # sub: 今と同じく 120 万点のプールから 60 万点ずつ / full: 毎回全 patch（seed だけ変える）
+            runs = mc.get("runs") or cfg["consensus_runs"][k]
+
+            def run():
+                r_ = np.random.default_rng([cfg["seed"], s, k])
+                pool = r_.choice(N, min(N, 2 * cfg["fit_points"]), replace=False)
+                cents = []
+                for m in range(runs):
+                    idx = np.random.default_rng([s, m]).choice(pool, cfg["fit_points"], replace=False) if mc["data"] == "sub" else None
+                    em = Emeans(D, k, nepochs=mc["nepochs"], seed=s * 1000 + m)
+                    c_, _ = em.train(Xg if idx is None else Xg[torch.from_numpy(idx).to(device)])
+                    cents.append(c_.float().cpu().numpy())
+                return kmeans_lloyd(np.concatenate(cents), k, s, device)[1]
+            cen, sec = timed(run)
             return torch.from_numpy(cen).to(device), sec
         em = Emeans(D, k, nepochs=mc["nepochs"], seed=s) if method == "emeans" else QuantizedEmeans(D, k, quantizer=None, nepochs=mc["nepochs"], seed=s)
         (cen, _), sec = timed(lambda: em.train(Xg))
