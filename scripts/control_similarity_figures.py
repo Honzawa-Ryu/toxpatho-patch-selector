@@ -1,5 +1,5 @@
 """scripts/control_similarity_groups.py の図（F2 ヒートマップ、F3 平面配置）を、保存した表から描き直す（2026-11-05: 帯の色が塊とスキャナで重なっていた、
-単回/反復は 143 試験すべて反復で情報がない、撮影月を足す）。計算はしない。
+単回/反復は 143 試験すべて反復で情報がない、撮影月を足す。2026-11-11: F2 の字を大きく、樹形図を左に）。計算はしない。
 入力: outputs/0035_.../control_similarity/（pairwise_auc_B128.csv、experiments.csv、summary.json）
 usage: python scripts/control_similarity_figures.py   （コンテナ内、Slurm経由。数十秒）
 """
@@ -42,31 +42,38 @@ def main():
     months = sorted(E.scan_month.dropna().unique())
     mcol = {m: matplotlib.colormaps["Purples"](0.25 + 0.75 * i / max(len(months) - 1, 1)) for i, m in enumerate(months)}
 
-    fig = plt.figure(figsize=(13, 13.5))
-    axd = fig.add_axes([0.18, 0.86, 0.7, 0.1])
-    dendrogram(Z, ax=axd, no_labels=True, color_threshold=d_thr, above_threshold_color="#999999")
-    axd.axhline(d_thr, color="#D55E00", lw=1, ls="--")
-    axd.set_ylabel("見分けやすさ d", fontsize=8)
-    axd.set_xticks([])
-    axd.set_title(f"試験の組ごとの、対照群の見分けやすさ（B128、{len(M)} 試験、すべて反復投与）\n赤破線 = 偶然の 95% 点（AUC {thr:.2f}）で切る高さ。この下でつながる試験は対照群が見分けられない", fontsize=10)
-    axh = fig.add_axes([0.18, 0.15, 0.7, 0.69])
-    im = axh.imshow(M.to_numpy()[np.ix_(order, order)], vmin=0.5, vmax=1.0, cmap="Blues", interpolation="nearest")
+    # 2026-11-11 ユーザー: 字が小さい、樹形図は左に。行のラベルは 1 行の高さで上限が決まるので、ヒートマップの一辺 S を 14 inch にして 7 pt（行の高さいっぱい）にする
+    S, FW, FH, X0, Y0 = 14.0, 20.3, 16.9, 3.0, 1.9   # inch
+    fig = plt.figure(figsize=(FW, FH))
+    axd = fig.add_axes([0.5 / FW, Y0 / FH, (X0 - 0.55) / FW, S / FH])
+    dendrogram(Z, ax=axd, orientation="left", no_labels=True, color_threshold=d_thr, above_threshold_color="#999999")
+    axd.invert_yaxis()   # 葉の並びを上から order の順に（ヒートマップの行と合わせる）
+    axd.axvline(d_thr, color="#D55E00", lw=1.5, ls="--")
+    axd.set_xlabel("見分けやすさ d", fontsize=16)
+    axd.set_xticks([1, 0.5, 0], ["1.0", "0.5", "0 "], fontsize=13, ha="right")   # 右寄せ: 0 がヒートマップに隠れないように
+    axd.set_yticks([])
+    axh = fig.add_axes([X0 / FW, Y0 / FH, S / FW, S / FH])
+    im = axh.imshow(M.to_numpy()[np.ix_(order, order)], vmin=0.5, vmax=1.0, cmap="Blues", interpolation="nearest", aspect="auto")
+    axh.set_title(f"試験の組ごとの、対照群の見分けやすさ（B128、{len(M)} 試験、すべて反復投与）\n赤破線 = 偶然の 95% 点（AUC {thr:.2f}）で切る高さ。この下でつながる試験は対照群が見分けられない", fontsize=18)
     axh.set_xticks([])
+    axh.yaxis.tick_right()
     axh.set_yticks(range(len(M)))
-    axh.set_yticklabels([f"{str(E.compound.iloc[i])[:16]}（{M.index[i]}）" for i in order], fontsize=4)
-    cax = fig.add_axes([0.9, 0.5, 0.015, 0.3])
-    fig.colorbar(im, cax=cax, label="AUC（0.5 = 見分けられない、1 = 完全に見分けられる）")
+    axh.set_yticklabels([f"{str(E.compound.iloc[i])[:16]}（{M.index[i]}）" for i in order], fontsize=7)
+    cax = fig.add_axes([(X0 + S + 1.55) / FW, (Y0 + 0.3 * S) / FH, 0.3 / FW, 0.4 * S / FH])
+    fig.colorbar(im, cax=cax).set_label("AUC（0.5 = 見分けられない、1 = 完全に見分けられる）", fontsize=15)
+    cax.tick_params(labelsize=13)
     strips = [("0015 の塊", [BLOCK_COL[int(b)] for b in E.block.iloc[order]]),
               ("スキャナ", [SCAN_COL.get(s, "#FFFFFF") for s in E.scanner.iloc[order]]),
               ("撮影月", [mcol.get(m, (1, 1, 1, 1)) for m in E.scan_month.iloc[order]])]
     for k, (nm, cols) in enumerate(strips):
-        ax_ = fig.add_axes([0.18, 0.13 - 0.022 * (k + 1), 0.7, 0.017])
+        ax_ = fig.add_axes([X0 / FW, (Y0 - 0.38 * (k + 1)) / FH, S / FW, 0.3 / FH])
         ax_.imshow(np.array([[matplotlib.colors.to_rgb(c) for c in cols]]), aspect="auto", interpolation="nearest")
         ax_.set_xticks([]); ax_.set_yticks([])
-        ax_.set_ylabel(nm, rotation=0, ha="right", va="center", fontsize=8)
+        ax_.yaxis.set_label_position("right")
+        ax_.set_ylabel(nm, rotation=0, ha="left", va="center", fontsize=15)
     handles = ([Patch(color=c, label=f"塊 {b}") for b, c in BLOCK_COL.items()] + [Patch(facecolor=SCAN_COL["SS1601"], label="SS1601"), Patch(facecolor=SCAN_COL["SS1598"], label="SS1598")] +
                [Patch(color=mcol[m], label=m) for m in months])
-    fig.legend(handles=handles, loc="lower center", ncol=13, frameon=False, fontsize=7)
+    fig.legend(handles=handles, loc="lower center", ncol=13, frameon=False, fontsize=14)
     fig.savefig(D_ / "F2_pairwise_heatmap_B128.png", dpi=170)
     plt.close(fig)
 
