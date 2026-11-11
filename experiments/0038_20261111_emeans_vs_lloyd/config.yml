@@ -27,3 +27,17 @@ variants:
       emeans_consensus_sub: {data: sub, nepochs: 5}             # 今の合議の 1 回分だけ e-means に（60 万点 × 10 回 / 5 回）
       emeans_consensus_full: {data: full, nepochs: 5}           # 毎回全 patch、回数は今と同じ
       emeans_consensus_full50: {data: full, nepochs: 5, runs: 50}   # 毎回全 patch、50 回
+  v3:                               # 2026-11-11 ユーザー: 「回数をもっと増やしたときに ARI がどこまで上がるかを先に見る」。毎回全 patch の e-means の合議で、回数だけ変える
+    methods:
+      emeans_consensus_full_r5: {data: full, nepochs: 5, runs: 5}
+      emeans_consensus_full_r10: {data: full, nepochs: 5, runs: 10}
+      emeans_consensus_full_r20: {data: full, nepochs: 5, runs: 20}
+      emeans_consensus_full_r50: {data: full, nepochs: 5, runs: 50}
+      emeans_consensus_full_r100: {data: full, nepochs: 5, runs: 100}
+      emeans_consensus_full_r200: {data: full, nepochs: 5, runs: 200}
+      emeans_consensus_full_r500: {data: full, nepochs: 5, runs: 500}
+  v4:                               # 2026-11-11 ユーザー: 「ミニバッチ実行についても k-means よりよくなったという話だと思うが、実際どうか」。従来のミニバッチ k-means（Sculley 2010）と比べる
+    methods:
+      emeans: {nepochs: 5}                                                             # 同じジョブ内の基準（default と同じ設定）
+      minibatch_same: {nepochs: 5, batch_size: {100: 65536, 1000: 131072}}             # e-means が選んだバッチの大きさと同じ、同じエポック数
+      minibatch_1024: {nepochs: 5, batch_size: {100: 1024, 1000: 1024}}                # scikit-learn の MiniBatchKMeans の既定のバッチの大きさ

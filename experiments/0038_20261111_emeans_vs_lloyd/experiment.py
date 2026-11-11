@@ -199,6 +199,27 @@ def main() -> None:
                 return kmeans_lloyd(np.concatenate(cents), k, s, device)[1]
             cen, sec = timed(run)
             return torch.from_numpy(cen).to(device), sec
+        if method.startswith("minibatch"):
+            # 従来のミニバッチ k-means（Sculley 2010）: 重心 = それまでに割り当てられた点全部の平均（重心ごとの学習率 = バッチ内の点数 / 累積点数）。
+            # e-means と同じく、初期値は無作為の k 点、エポックごとに並べ替え。空になった重心の付け直しはしない（n_empty に出る）
+            B = mc["batch_size"][k]
+
+            def run():
+                g = torch.Generator(device=device).manual_seed(s)
+                cen = Xg[torch.randperm(N, generator=g, device=device)[:k]].clone()
+                cnt = torch.zeros(k, device=device)
+                for _ in range(mc["nepochs"]):
+                    perm = torch.randperm(N, generator=g, device=device)
+                    for i in range(0, N, B):
+                        xb = Xg[perm[i:i + B]]
+                        lab = (cen.square().sum(1) - 2 * xb @ cen.T).argmin(1)
+                        n_j = torch.bincount(lab, minlength=k).float()
+                        s_j = torch.zeros_like(cen).index_add_(0, lab, xb)
+                        cnt += n_j
+                        hit = n_j > 0
+                        cen[hit] += (s_j[hit] - n_j[hit, None] * cen[hit]) / cnt[hit, None]
+                return cen
+            return timed(run)
         em = Emeans(D, k, nepochs=mc["nepochs"], seed=s) if method == "emeans" else QuantizedEmeans(D, k, quantizer=None, nepochs=mc["nepochs"], seed=s)
         (cen, _), sec = timed(lambda: em.train(Xg))
         fit.recipe[(method, k)] = {kk: (vv if isinstance(vv, (int, float, str, bool)) or vv is None else str(vv)) for kk, vv in em.recipe.items()}
