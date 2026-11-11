@@ -1,0 +1,42 @@
+# 0037: 対照群で見分けられない試験のまとまり（0035 control_similarity の B128、偶然の 95% 点で切ったもの）の中で、
+#       対照群＋投与群からプロトタイプを作り直し、試験を 1 つ伏せて所見を当てる（2026-11-11 ユーザー決定）。
+# 対象: まとまり 3（13 試験、SS1601）と 26（15 試験、SS1598）。投与群の特徴量は 0016 sub_group（2026-11-10、1,641 枚）。
+# 決定（ユーザー）: 表現は B128 と A128 の両方 / まとまりごとに別々に作る / 作り方は flat k = 100・200・500・1000 だけ /
+#                   評価は「試験を 1 つ伏せて当てる」（0035 scripts/group_crossstudy_findings.py と同じ選び方）＋記録の純度（0035 の (c)）。
+seed: 0
+exp0021: 0021_20261025_patch_prototypes
+exp0025: 0025_20261026_context_mixing_search
+exp0026: 0026_20261027_fatty_degeneration_prototypes
+exp0027: 0027_20261027_weak_supervision_extrapolation
+exp0030: 0030_20261028_tggates_unseen_findings
+exp0035: 0035_20261102_finer_prototypes_split_rejoin
+cache_from: cache_v1                # LDA の学習に使う Bayer 230 枚（0025 のキャッシュ）
+combo_resid_dim: 16                 # ex26.fit_combo が読む（使うのは LDA の部分だけ）
+combo_resid_weight: 0.5
+lda_beta: 1.0
+lda_exclude_slides: outputs/target_slide_list/bayer_lda_exclude_fat_vacuole.csv
+groups_csv: outputs/0035_20261102_finer_prototypes_split_rejoin/control_similarity/experiments.csv
+groups: [3, 26]
+qc_catalog: /workspace/andre01/honzawa/02-playground/tggate-wsi-qc/outputs/qc/catalog/slide_quality.csv
+pathology_csv: data/corrected/open_tggates_pathology.csv
+features_dirs:
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko
+  - outputs/0016_20261013_tier1_macenko_embeddings/20x_256px_0px_overlap/features_uni_v2_macenko_sub2048
+patches_per_slide: 2048
+workers: 12
+reps: {B128_sphering: false, A128_sphering_lda: true}   # 白色化 128 次元（まとまり内の各試験の対照群で）。true = Bayer の LDA 13 次元を連結
+sphere_dim: 128
+# 所見: 2 つのまとまりのどちらかで、投与群の 2 試験以上に記録があるもの（肝臓、2026-11-11 集計）。伏せる評価に使えるかは下の条件で自動で決まる
+findings: [Hypertrophy, Increased mitosis, Ground glass appearance, Necrosis, Cellular infiltration, "Change, eosinophilic",
+           "Inclusion body, intracytoplasmic", Single cell necrosis, Fibrosis, Microgranuloma, Swelling, "Proliferation, bile duct"]
+grade_map: {minimal: 1, slight: 2, moderate: 3, severe: 4, P: 1}
+flat:
+  k_list: [100, 200, 500, 1000]
+  consensus_runs: {100: 10, 200: 10, 500: 5, 1000: 5}   # 0035 と同じ
+  fit_points: 600000                                     # 1 回あたりの学習点（0035 と同じ数）。プールはその 2 倍
+loso:                               # 0035 group_crossstudy と同じ規則
+  min_n: 2                          # 試験に所見の slide と記録のない投与群の slide がそれぞれこの数以上
+  lr_up: 1.0                        # log2 比の閾値（2 倍）
+eval:
+  precision_thr: 0.8                # 記録の純度: share がこれ以上のプロトタイプ
+  min_proto_patches: 200
