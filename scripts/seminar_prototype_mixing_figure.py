@@ -16,6 +16,7 @@ F2: 別の試験・別のスキャナ・同じ解剖時点の対照群 2 枚の�
     全 patch の割り当て: 補正なしは PCA64 を tggates_unseen_batch_mixing.py と同じ乱数で作り直し、k-means の重心への最近傍。
     D・C は 0030 と同じ手順（slide 内の順位 → 0021 の PCA256、LDA は 0030 と同じ設定で学び直す）で、0032 の重心への最近傍
 F3: F2 の補正なしの行だけ（2026-11-10 ユーザー: スライドをまたがない図は全 patch で）
+F4: 補正なしで、F3 の 2 枚の片方にだけ出るプロトタイプの patch の見た目（2026-11-11 ユーザー）
 出力: outputs/0030_20261028_tggates_unseen_findings/v4/batch_mixing/seminar/
 usage: PYTHONPATH=.:scripts python scripts/seminar_prototype_mixing_figure.py   （コンテナ内、Slurm経由。CPU、20 分程度）
 """
@@ -291,6 +292,39 @@ def main():
     draw(REPS[:1], "F3_control_maps_raw_fullpatch.png", "補正なし（UNI2-h → PCA64、k = 100）では、同じ「正常」の肝臓 2 枚がほとんど別のプロトタイプで埋まる\n"
          "全 patch を、プロトタイプがどちらの slide に偏るかで色分け")
     print("pair", sids[a], sids[b], {r: round(float(np.minimum(P[r][a], P[r][b]).sum()), 3) for r, _ in REPS}, flush=True)
+
+    # F4: 補正なしで、片方の slide にだけ出るプロトタイプの見た目（2026-11-11 ユーザー）。
+    # 左だけ（side >= SIDE_THR）・右だけ（side <= 1 − SIDE_THR）のプロトタイプを、その slide での patch 数の多い順に N_PROTO 個。各 N_TILE 枚を無作為に
+    N_PROTO, N_TILE, SIDE_THR = 4, 5, 0.8
+    r = "raw_pca64"
+    pa, pb = [np.bincount(full[s_][2][r], minlength=K) / len(full[s_][2][r]) for s_ in (a, b)]
+    side = np.where(pa + pb > 0, pa / np.maximum(pa + pb, 1e-12), 0.5)
+    trng = np.random.default_rng(SEED)
+    fig = plt.figure(figsize=(2.0 * N_TILE + 2.6, 2 * (2.0 * N_PROTO + 0.8)), layout="constrained")
+    sfs = fig.subfigures(2, 1)
+    for sf, s_, pp, sel, col in [(sfs[0], a, pa, side >= SIDE_THR, SIDE_COL[2]), (sfs[1], b, pb, side <= 1 - SIDE_THR, SIDE_COL[0])]:
+        c_, ps, lb = full[s_]
+        o = openslide.OpenSlide(str([p_ for d in WSI_DIRS for p_ in d.glob(f"*/{sids[s_]}.svs")][0]))
+        top = [j for j in np.argsort(-pp) if sel[j]][:N_PROTO]
+        axs = sf.subplots(N_PROTO, N_TILE, squeeze=False)
+        for i, j in enumerate(top):
+            idx = trng.choice(np.where(lb[r] == j)[0], min(N_TILE, int((lb[r] == j).sum())), replace=False)
+            for t in range(N_TILE):
+                ax = axs[i, t]
+                ax.set(xticks=[], yticks=[])
+                for sp_ in ax.spines.values():
+                    sp_.set_color(col)
+                    sp_.set_linewidth(2)
+                if t < len(idx):
+                    x0, y0 = c_[idx[t]]
+                    ax.imshow(np.asarray(o.read_region((int(x0), int(y0)), 0, (ps, ps)).convert("RGB").resize((256, 256))))
+            axs[i, 0].set_ylabel(f"プロトタイプ {j}\nこの slide の {pp[j]:.0%}\n（もう一方 {(pb if s_ == a else pa)[j]:.1%}）", fontsize=9)
+        k_ = ci[s_]
+        sf.suptitle(f"{'左' if s_ == a else '右'}の slide にだけ出るプロトタイプ（多い順に {len(top)} 個、各 {N_TILE} 枚を無作為に）："
+                    f"{sl.COMPOUND_NAME.iloc[k_]} 試験（{sl.EXP_ID.iloc[k_]}）の対照群、スキャナ {sl.scanscope_id.iloc[k_]}、slide {sids[s_]}", fontsize=10)
+    fig.suptitle("補正なし（UNI2-h → PCA64、k = 100）で、片方の slide にだけ出るプロトタイプの patch（F3 と同じ 2 枚）\n"
+                 f"「だけ出る」= 2 枚での割合の比が {SIDE_THR:.0%} 以上。patch は 256 px・20 倍、スキャンしたまま", fontsize=11)
+    fig.savefig(OUT / "F4_raw_slide_specific_prototypes.png", dpi=150)
     print("done", flush=True)
 
 
